@@ -23,13 +23,21 @@ public class Scriptable : MonoBehaviour
 
         StartCoroutine(GetPosition());
         StartCoroutine(UpdatingVariables());
+
+        ScriptManager.instance.AddWrappedScriptable(new scriptable{
+            id = GetInstanceID(),
+            position = new Position {
+                x = transform.position.x,
+                y = transform.position.y
+            }
+        });
     }
 
     void Update()
     {
         if (stoppable)
             return;
-        ExecuteFunc<System.Action>("update", (act, args) =>
+        ExecuteFunc<System.Action>("__update", (act, args) =>
         {
             act.Invoke();
         });
@@ -39,7 +47,7 @@ public class Scriptable : MonoBehaviour
     {
         if (stoppable)
             return;
-        ExecuteFunc<System.Action>("fixed_update", (act, args) =>
+        ExecuteFunc<System.Action>("__fixed_update", (act, args) =>
         {
             act.Invoke();
         });
@@ -52,7 +60,7 @@ public class Scriptable : MonoBehaviour
             ScriptManager.instance.SetScriptable(this, script);
             ScriptManager.instance.SetActivePanel(true);
 
-            ExecuteFunc<System.Action>("on_left_mouse_up", (act, args) =>
+            ExecuteFunc<System.Action>("__on_left_mouse_up", (act, args) =>
             {
                 act.Invoke();
             });
@@ -60,7 +68,7 @@ public class Scriptable : MonoBehaviour
 
         if (Input.GetMouseButtonUp(1))
         {
-            ExecuteFunc<System.Action>("on_right_mouse_up", (act, args) =>
+            ExecuteFunc<System.Action>("__on_right_mouse_up", (act, args) =>
             {
                 act.Invoke();
             });
@@ -71,14 +79,14 @@ public class Scriptable : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            ExecuteFunc<System.Action>("on_left_mouse_down", (act, args) =>
+            ExecuteFunc<System.Action>("__on_left_mouse_down", (act, args) =>
             {
                 act.Invoke();
             });
         }
         if (Input.GetMouseButtonDown(1))
         {
-            ExecuteFunc<System.Action>("on_right_mouse_down", (act, args) =>
+            ExecuteFunc<System.Action>("__on_right_mouse_down", (act, args) =>
             {
                 act.Invoke();
             });
@@ -219,4 +227,12 @@ public class Scriptable : MonoBehaviour
             UpdateVariables();
         }
     }
+}
+
+// Wrapped scriptable object for Python
+public class scriptable
+{
+    public int id { get; set; }
+    public int name { get; set; }
+    public Position position { get; set; }
 }

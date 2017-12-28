@@ -59,8 +59,7 @@ public class Pixel : Scriptable
 }
 
 // Wrapped Pixel object for Python
-public class pixel
+public class pixel : scriptable
 {
-    public int id { get; set; }
-    public Position position { get; set; }
+    
 }

@@ -33,6 +33,8 @@ public class ScriptManager : MonoBehaviour
     public RectTransform scriptPanel;
     public InputField scriptText;
 
+    List<scriptable> wrappedScriptableList = new List<scriptable>();
+
     Scriptable scriptable;
 
     public void SetScriptable(Scriptable scriptable, string scriptContent = "")
@@ -56,6 +58,12 @@ public class ScriptManager : MonoBehaviour
         return scriptText.text;
     }
 
+    public void Save(){
+        if (scriptable.IsNull())
+            return;
+        scriptable.SetScript(scriptText.text);
+    }
+
     public void Execute()
     {
         if (scriptable.IsNull())
@@ -74,5 +82,14 @@ public class ScriptManager : MonoBehaviour
     public void SetActivePanel(bool active)
     {
         scriptPanel.gameObject.SetActive(active);
+    }
+
+    public void AddWrappedScriptable(scriptable scriptable)
+    {
+        wrappedScriptableList.Add(scriptable);
+    }
+
+    public void SyncScriptable(){
+        
     }
 }

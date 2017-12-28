@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using Microsoft.Scripting.Hosting;
 using UnityEngine;
 using UnityEngine.UI;
-using IronPython;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class Scriptable : MonoBehaviour
@@ -16,17 +15,26 @@ public class Scriptable : MonoBehaviour
     public ScriptScope scope;
     public ScriptRuntime runtime;
 
+    public List<KeyValuePair<string, object>> pythonVariables = new List<KeyValuePair<string, object>>();
+
     void Start()
     {
         stoppable = true;
         engine = UnityPython.CreateEngine();
 
         StartCoroutine(GetPosition());
-        StartCoroutine(UpdatingVariables());
+        StartCoroutine(UpdatingUnityVariables());
 
-        ScriptManager.instance.AddWrappedScriptable(new scriptable{
+        pythonVariables.Add(new KeyValuePair<string, object>("position", new Position{
+            x = transform.position.x,
+            y = transform.position.y
+        }));
+
+        ScriptManager.instance.AddWrappedScriptable(new scriptable
+        {
             id = GetInstanceID(),
-            position = new Position {
+            position = new Position
+            {
                 x = transform.position.x,
                 y = transform.position.y
             }
@@ -109,14 +117,18 @@ public class Scriptable : MonoBehaviour
         // create script source from content
         var source = engine.CreateScriptSourceFromString(scriptContent);
 
-        // include variables
-        IncludeVariables();
-        // updated variables
-        UpdateVariables();
-
+        // include unity variables
+        IncludeUnityVariables();
+        // updated unity variables
+        UpdateUnityVariables();
+        // include python variables
+        IncludePythonVariables();
         try
         {
+            // execute python script
             source.Execute(scope);
+            // store python variables
+            StorePythonVariables();
         }
         catch (System.Exception exc)
         {
@@ -141,7 +153,7 @@ public class Scriptable : MonoBehaviour
         return content;
     }
 
-    public virtual void IncludeVariables()
+    public virtual void IncludeUnityVariables()
     {
         // Position of scriptable object
         scope.SetVariable("position", new Position
@@ -159,7 +171,7 @@ public class Scriptable : MonoBehaviour
         }));
     }
 
-    void UpdateVariables()
+    void UpdateUnityVariables()
     {
         // Time
         scope.SetVariable("delta_time", Time.deltaTime);
@@ -199,6 +211,27 @@ public class Scriptable : MonoBehaviour
         }
     }
 
+    void StorePythonVariables()
+    {
+        if (scope.IsNull())
+            return;
+        pythonVariables.Clear();
+        var items = scope.GetItems();
+        items = items.Where(x => !x.Key.StartsWith("__"));
+        pythonVariables = scope.GetItems().ToList();
+    }
+
+    void IncludePythonVariables()
+    {
+        if(scope.IsNull())
+            return;
+        if(!pythonVariables.Any())
+            return;
+        foreach(var pyVar in pythonVariables){
+            scope.SetVariable(pyVar.Key, pyVar.Value);
+        }
+    }
+
     IEnumerator GetPosition()
     {
         while (!gameObject.IsNull())
@@ -215,7 +248,7 @@ public class Scriptable : MonoBehaviour
         }
     }
 
-    IEnumerator UpdatingVariables()
+    IEnumerator UpdatingUnityVariables()
     {
         while (!gameObject.IsNull())
         {
@@ -224,7 +257,7 @@ public class Scriptable : MonoBehaviour
                 continue;
             if (scope.IsNull())
                 continue;
-            UpdateVariables();
+            UpdateUnityVariables();
         }
     }
 }

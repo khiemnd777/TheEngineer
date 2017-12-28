@@ -8,12 +8,12 @@ using IronPython;
 
 public class Pixel : Scriptable
 {
-    public override void IncludeVariables()
+    public override void IncludeUnityVariables()
     {
-        base.IncludeVariables();
+        base.IncludeUnityVariables();
 
         // Create Pixel
-        scope.SetVariable("create_pixel", new System.Action<string, float, float, string>((name, x, y, parentName) =>
+        scope.SetVariable("__create_pixel", new System.Action<string, float, float, string>((name, x, y, parentName) =>
         {
             var pixelPrefab = Resources.Load<Pixel>(Constants.PIXEL_PREFAB);
             if (pixelPrefab.IsNull())
@@ -40,19 +40,21 @@ public class Pixel : Scriptable
         }));
 
         // Find Pixels
-        scope.SetVariable("find_pixels", new System.Func<string, object>((name) =>
+        scope.SetVariable("__find_pixels", new System.Func<string, object>((name) =>
         {
             var objs = FindObjectsOfType<Pixel>();
             var objsWithName = objs.Where(go => name.Equals(go.name));
-            var objsWrap = objsWithName.Select(go => new pixel
-            {
-                id = go.GetInstanceID(),
-                position = new Position
-                {
-                    x = go.transform.position.x,
-                    y = go.transform.position.y
-                },
+            var objsWrap = objsWithName.Select(go => {
+                var dynObj = new System.Dynamic.ExpandoObject();
+                dynObj.AddVariable("id", GetInstanceID());
+                if(go.pythonVariables.Any()){
+                    foreach(var pyVar in go.pythonVariables){
+                        dynObj.AddVariable(pyVar.Key, pyVar.Value);
+                    }
+                }
+                return dynObj;
             });
+            
             return objsWrap.ToArray();
         }));
     }

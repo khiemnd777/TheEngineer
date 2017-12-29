@@ -14,7 +14,7 @@ public class Pixel : Scriptable
         base.IncludeUnityVariables();
 
         // Create Pixel
-        scope.SetVariable("__create_pixel", new System.Action<string, float, float, string>((name, x, y, parentName) =>
+        scope.SetVariable("__createpixel", new System.Action<string, float, float, string>((name, x, y, parentName) =>
         {
             var pixelPrefab = Resources.Load<Pixel>(Constants.PIXEL_PREFAB);
             if (pixelPrefab.IsNull())
@@ -41,7 +41,7 @@ public class Pixel : Scriptable
         }));
 
         // Find Pixels
-        scope.SetVariable("__find_pixel", new System.Func<string, object>((name) =>
+        scope.SetVariable("__findpixel", new System.Func<string, object>((name) =>
         {
             var objs = FindObjectsOfType<Pixel>();
             var objsWithName = objs.FirstOrDefault(go => name.Equals(go.name));

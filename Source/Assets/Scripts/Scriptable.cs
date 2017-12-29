@@ -42,6 +42,7 @@ public class Scriptable : MonoBehaviour
         ExecuteFunc<System.Action>("__update", (act, args) =>
         {
             act.Invoke();
+            StorePythonVariables();
         });
     }
 
@@ -49,9 +50,10 @@ public class Scriptable : MonoBehaviour
     {
         if (stoppable)
             return;
-        ExecuteFunc<System.Action>("__fixed_update", (act, args) =>
+        ExecuteFunc<System.Action>("__fixedupdate", (act, args) =>
         {
             act.Invoke();
+            StorePythonVariables();
         });
     }
 
@@ -62,7 +64,7 @@ public class Scriptable : MonoBehaviour
             ScriptManager.instance.SetScriptable(this, script);
             ScriptManager.instance.SetActivePanel(true);
 
-            ExecuteFunc<System.Action>("__on_left_mouse_up", (act, args) =>
+            ExecuteFunc<System.Action>("__onleftmouseup", (act, args) =>
             {
                 act.Invoke();
             });
@@ -70,7 +72,7 @@ public class Scriptable : MonoBehaviour
 
         if (Input.GetMouseButtonUp(1))
         {
-            ExecuteFunc<System.Action>("__on_right_mouse_up", (act, args) =>
+            ExecuteFunc<System.Action>("__onrightmouseup", (act, args) =>
             {
                 act.Invoke();
             });
@@ -81,14 +83,14 @@ public class Scriptable : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            ExecuteFunc<System.Action>("__on_left_mouse_down", (act, args) =>
+            ExecuteFunc<System.Action>("__onleftmousedown", (act, args) =>
             {
                 act.Invoke();
             });
         }
         if (Input.GetMouseButtonDown(1))
         {
-            ExecuteFunc<System.Action>("__on_right_mouse_down", (act, args) =>
+            ExecuteFunc<System.Action>("__onrightmousedown", (act, args) =>
             {
                 act.Invoke();
             });
@@ -157,27 +159,27 @@ public class Scriptable : MonoBehaviour
         });
 
         // Find
-        scope.SetVariable("__find", new System.Func<string, object>((name) =>
-        {
-            var objs = FindObjectsOfType<Scriptable>();
-            var objsWithName = objs.Where(go => name.Equals(go.name));
-            return objsWithName.ToArray();
-        }));
+        // scope.SetVariable("__find", new System.Func<string, object>((name) =>
+        // {
+        //     var objs = FindObjectsOfType<Scriptable>();
+        //     var objsWithName = objs.Where(go => name.Equals(go.name));
+        //     return objsWithName.ToArray();
+        // }));
     }
 
     void UpdateUnityVariables()
     {
         // Time
-        scope.SetVariable("__delta_time", Time.deltaTime);
-        scope.SetVariable("__fixed_delta_time", Time.fixedDeltaTime);
-        scope.SetVariable("__fixed_time", Time.fixedTime);
-        scope.SetVariable("__frame_count", Time.frameCount);
+        scope.SetVariable("__deltatime", Time.deltaTime);
+        scope.SetVariable("__fixeddeltatime", Time.fixedDeltaTime);
+        scope.SetVariable("__fixedtime", Time.fixedTime);
+        scope.SetVariable("__framecount", Time.frameCount);
         scope.SetVariable("__time", Time.time);
-        scope.SetVariable("__time_scale", Time.timeScale);
+        scope.SetVariable("__timescale", Time.timeScale);
 
         // Mouse position
         var mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        scope.SetVariable("__mouse_position", new Position
+        scope.SetVariable("__mouseposition", new Position
         {
             x = mousePosition.x,
             y = mousePosition.y
@@ -253,7 +255,6 @@ public class Scriptable : MonoBehaviour
                 continue;
             if(scope.IsNull())
                 continue;
-            IncludePythonVariables();
             StorePythonVariables();
         }
     }

@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Dynamic;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Scripting.Hosting;
@@ -14,8 +15,7 @@ public class Scriptable : MonoBehaviour
     public ScriptEngine engine;
     public ScriptScope scope;
     public ScriptRuntime runtime;
-
-    public List<KeyValuePair<string, object>> pythonVariables = new List<KeyValuePair<string, object>>();
+    public ExpandoObject pythonScriptable;
 
     void Start()
     {
@@ -24,20 +24,14 @@ public class Scriptable : MonoBehaviour
 
         StartCoroutine(GetPosition());
         StartCoroutine(UpdatingUnityVariables());
+        // StartCoroutine(SyncPythonVariablesAndUnityVariables());
 
-        pythonVariables.Add(new KeyValuePair<string, object>("position", new Position{
+        // instance python's scriptable object
+        pythonScriptable = new ExpandoObject();
+        ExpandoObjectUtility.SetVariable(pythonScriptable, "id", GetInstanceID());
+        ExpandoObjectUtility.SetVariable(pythonScriptable, "position", new Position {
             x = transform.position.x,
             y = transform.position.y
-        }));
-
-        ScriptManager.instance.AddWrappedScriptable(new scriptable
-        {
-            id = GetInstanceID(),
-            position = new Position
-            {
-                x = transform.position.x,
-                y = transform.position.y
-            }
         });
     }
 
@@ -163,7 +157,7 @@ public class Scriptable : MonoBehaviour
         });
 
         // Find
-        scope.SetVariable("find", new System.Func<string, object>((name) =>
+        scope.SetVariable("__find", new System.Func<string, object>((name) =>
         {
             var objs = FindObjectsOfType<Scriptable>();
             var objsWithName = objs.Where(go => name.Equals(go.name));
@@ -174,16 +168,16 @@ public class Scriptable : MonoBehaviour
     void UpdateUnityVariables()
     {
         // Time
-        scope.SetVariable("delta_time", Time.deltaTime);
-        scope.SetVariable("fixed_delta_time", Time.fixedDeltaTime);
-        scope.SetVariable("fixed_time", Time.fixedTime);
-        scope.SetVariable("frame_count", Time.frameCount);
-        scope.SetVariable("time", Time.time);
-        scope.SetVariable("time_scale", Time.timeScale);
+        scope.SetVariable("__delta_time", Time.deltaTime);
+        scope.SetVariable("__fixed_delta_time", Time.fixedDeltaTime);
+        scope.SetVariable("__fixed_time", Time.fixedTime);
+        scope.SetVariable("__frame_count", Time.frameCount);
+        scope.SetVariable("__time", Time.time);
+        scope.SetVariable("__time_scale", Time.timeScale);
 
         // Mouse position
         var mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        scope.SetVariable("mouse_position", new Position
+        scope.SetVariable("__mouse_position", new Position
         {
             x = mousePosition.x,
             y = mousePosition.y
@@ -215,18 +209,18 @@ public class Scriptable : MonoBehaviour
     {
         if (scope.IsNull())
             return;
-        pythonVariables.Clear();
         var items = scope.GetItems();
         items = items.Where(x => !x.Key.StartsWith("__"));
-        pythonVariables = scope.GetItems().ToList();
+        foreach(var pyVar in items){
+            ExpandoObjectUtility.SetVariable(pythonScriptable, pyVar.Key, pyVar.Value);
+        }
     }
 
     void IncludePythonVariables()
     {
         if(scope.IsNull())
             return;
-        if(!pythonVariables.Any())
-            return;
+        var pythonVariables = pythonScriptable as IDictionary<string, object>;
         foreach(var pyVar in pythonVariables){
             scope.SetVariable(pyVar.Key, pyVar.Value);
         }
@@ -243,8 +237,24 @@ public class Scriptable : MonoBehaviour
                 continue;
             if (scope.IsNull())
                 continue;
-            var position = scope.GetVariable<Position>("position");
+            var position = (Position) ExpandoObjectUtility.GetVariable(pythonScriptable, "position");
             transform.position = new Vector3(position.x, position.y, 0f);
+        }
+    }
+
+    IEnumerator SyncPythonVariablesAndUnityVariables()
+    {
+        while (!gameObject.IsNull())
+        {
+            yield return null;
+            if(!gameObject.activeSelf)
+                continue;
+            if(stoppable)
+                continue;
+            if(scope.IsNull())
+                continue;
+            IncludePythonVariables();
+            StorePythonVariables();
         }
     }
 

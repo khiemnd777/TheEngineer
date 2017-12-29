@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Dynamic;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Scripting.Hosting;
@@ -40,22 +41,13 @@ public class Pixel : Scriptable
         }));
 
         // Find Pixels
-        scope.SetVariable("__find_pixels", new System.Func<string, object>((name) =>
+        scope.SetVariable("__find_pixel", new System.Func<string, object>((name) =>
         {
             var objs = FindObjectsOfType<Pixel>();
-            var objsWithName = objs.Where(go => name.Equals(go.name));
-            var objsWrap = objsWithName.Select(go => {
-                var dynObj = new System.Dynamic.ExpandoObject();
-                dynObj.AddVariable("id", GetInstanceID());
-                if(go.pythonVariables.Any()){
-                    foreach(var pyVar in go.pythonVariables){
-                        dynObj.AddVariable(pyVar.Key, pyVar.Value);
-                    }
-                }
-                return dynObj;
-            });
-            
-            return objsWrap.ToArray();
+            var objsWithName = objs.FirstOrDefault(go => name.Equals(go.name));
+            if(objsWithName.IsNull())
+                return null;
+            return objsWithName.pythonScriptable;
         }));
     }
 }

@@ -9,13 +9,4 @@ public static class ObjectExtensions
     {
         return target == null || target is Object && target.Equals(null);
     }
-
-    public static void AddVariable(this ExpandoObject expando, string varName, object varValue)
-    {
-        var expandoDict = expando as IDictionary<string, object>;
-        if (expandoDict.ContainsKey(varName))
-            expandoDict[varName] = varValue;
-        else
-            expandoDict.Add(varName, varValue);
-    }
 }

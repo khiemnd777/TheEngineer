@@ -24,7 +24,7 @@ public class Scriptable : MonoBehaviour
 
         StartCoroutine(GetPosition());
         StartCoroutine(UpdatingUnityVariables());
-        // StartCoroutine(SyncPythonVariablesAndUnityVariables());
+        StartCoroutine(SyncPythonVariablesAndUnityVariables());
 
         // instance python's scriptable object
         pythonScriptable = new ExpandoObject();
@@ -42,7 +42,7 @@ public class Scriptable : MonoBehaviour
         ExecuteFunc<System.Action>("__update", (act, args) =>
         {
             act.Invoke();
-            StorePythonVariables();
+            // StorePythonVariables();
         });
     }
 
@@ -53,7 +53,7 @@ public class Scriptable : MonoBehaviour
         ExecuteFunc<System.Action>("__fixedupdate", (act, args) =>
         {
             act.Invoke();
-            StorePythonVariables();
+            // StorePythonVariables();
         });
     }
 
@@ -114,7 +114,7 @@ public class Scriptable : MonoBehaviour
         var source = engine.CreateScriptSourceFromString(scriptContent);
 
         // include unity variables
-        IncludeUnityVariables();
+        IncludeVariables();
         // updated unity variables
         UpdateUnityVariables();
         // include python variables
@@ -149,7 +149,7 @@ public class Scriptable : MonoBehaviour
         return content;
     }
 
-    public virtual void IncludeUnityVariables()
+    public virtual void IncludeVariables()
     {
         // Position of scriptable object
         scope.SetVariable("position", new Position
@@ -158,13 +158,55 @@ public class Scriptable : MonoBehaviour
             y = transform.position.y
         });
 
-        // Find
-        // scope.SetVariable("__find", new System.Func<string, object>((name) =>
-        // {
-        //     var objs = FindObjectsOfType<Scriptable>();
-        //     var objsWithName = objs.Where(go => name.Equals(go.name));
-        //     return objsWithName.ToArray();
-        // }));
+        // Create Pixel
+        scope.SetVariable("__createpixel", new System.Action<string, float, float, string, string>((name, x, y, scriptableName, parentName) =>
+        {
+            var pixelPrefab = Resources.Load<Pixel>(Constants.PIXEL_PREFAB);
+            if (pixelPrefab.IsNull())
+                return;
+
+            var objs = GameObject.FindGameObjectsWithTag("Pixel");
+            var objsWithName = objs.Where(go => name.Equals(go.name));
+            Pixel pixelObj = null;
+            if (objsWithName.Any())
+            {
+                var firstObjsWithName = objsWithName.FirstOrDefault();
+                pixelObj = Instantiate(pixelPrefab, new Vector2(x, y), Quaternion.identity, firstObjsWithName.transform);
+
+            }
+            else
+            {
+                pixelObj = Instantiate(pixelPrefab, new Vector2(x, y), Quaternion.identity);
+            }
+
+            if (!pixelObj.IsNull())
+            {
+                pixelObj.name = name;
+                // pixelObj.scriptable
+                // Find scriptable from hierachy
+                if(!string.IsNullOrEmpty(scriptableName)){
+                    var scriptableGO =GameObject.Find("Scriptable/" + scriptableName);
+                    if(!scriptableGO.IsNull()){
+                        var scriptable = scriptableGO.GetComponent<Scriptable>();
+                        pixelObj.scriptable = scriptable;
+                        scriptable = null;
+                    }
+                    scriptableGO = null;
+                }
+                pixelObj = null;
+            }
+            pixelPrefab = null;
+        }));
+
+        // Find Pixels
+        scope.SetVariable("__findpixel", new System.Func<string, object>((name) =>
+        {
+            var objs = FindObjectsOfType<Pixel>();
+            var objsWithName = objs.FirstOrDefault(go => name.Equals(go.name));
+            if(objsWithName.IsNull())
+                return null;
+            return objsWithName.scriptable.pythonScriptable;
+        }));
     }
 
     void UpdateUnityVariables()
@@ -255,7 +297,14 @@ public class Scriptable : MonoBehaviour
                 continue;
             if(scope.IsNull())
                 continue;
-            StorePythonVariables();
+            System.Action update;
+            System.Action fixedUpdate;
+            if(scope.TryGetVariable("__update", out update)
+                || scope.TryGetVariable("__fixedupdate", out fixedUpdate)){
+                    StorePythonVariables();
+                }
+            update = null;
+            fixedUpdate = null;
         }
     }
 
@@ -268,7 +317,14 @@ public class Scriptable : MonoBehaviour
                 continue;
             if (scope.IsNull())
                 continue;
-            UpdateUnityVariables();
+            System.Action update;
+            System.Action fixedUpdate;
+            if(scope.TryGetVariable("__update", out update)
+                || scope.TryGetVariable("__fixedupdate", out fixedUpdate)){
+                    UpdateUnityVariables();
+                }
+            update = null;
+            fixedUpdate = null;
         }
     }
 }

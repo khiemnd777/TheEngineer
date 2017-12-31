@@ -128,6 +128,7 @@ GameObject:
   - component: {fileID: 203842652}
   - component: {fileID: 203842651}
   - component: {fileID: 203842650}
+  - component: {fileID: 203842649}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -135,6 +136,22 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &203842649
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 203842648}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2279bf054c14b401789005a3e0fa6c71, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultOrthographicSize: 5
+  orthographicSizeMin: 1
+  orthographicSizeMax: 11
+  zoomValue: 0.525
+  normalizedZoomSpeed: 10
 --- !u!81 &203842650
 AudioListener:
   m_ObjectHideFlags: 0
@@ -191,11 +208,11 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 203842648}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -8.71}
+  m_LocalPosition: {x: 0, y: 0, z: -15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &402260111
 Prefab:
@@ -346,6 +363,7 @@ MonoBehaviour:
   scriptPanel: {fileID: 84816670}
   scriptText: {fileID: 1718277932}
   title: {fileID: 846436050}
+  scriptablePrefab: {fileID: 0}
 --- !u!4 &840960922
 Transform:
   m_ObjectHideFlags: 0
@@ -447,13 +465,13 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 901693386}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 453, y: 255, z: 0}
-  m_LocalScale: {x: 0.85, y: 0.85, z: 0.85}
+  m_LocalPosition: {x: 384, y: 216, z: 0}
+  m_LocalScale: {x: 0.72, y: 0.72, z: 0.72}
   m_Children:
   - {fileID: 2050763826}
   - {fileID: 84816670}
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}

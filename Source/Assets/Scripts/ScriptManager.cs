@@ -33,6 +33,8 @@ public class ScriptManager : MonoBehaviour
     public RectTransform scriptPanel;
     public InputField scriptText;
     public Text title;
+    [Space]
+    public Scriptable scriptablePrefab;
 
     Scriptable scriptable;
 
@@ -54,11 +56,13 @@ public class ScriptManager : MonoBehaviour
         scriptText.text = content;
     }
 
-    public string GetScriptContent(){
+    public string GetScriptContent()
+    {
         return scriptText.text;
     }
 
-    public void Save(){
+    public void Save()
+    {
         if (scriptable.IsNull())
             return;
         scriptable.SetScript(scriptText.text);
@@ -82,5 +86,39 @@ public class ScriptManager : MonoBehaviour
     public void SetActivePanel(bool active)
     {
         scriptPanel.gameObject.SetActive(active);
+    }
+
+    public bool ScriptableExists(string name)
+    {
+        var go = GameObject.Find("Scriptable/" + name);
+        return !go.IsNull();
+    }
+
+    public void CreateScriptable()
+    {
+        // create scriptable
+        var initPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        var stored = GetStoredScriptable();
+        var initial = Instantiate<Scriptable>(scriptablePrefab, initPosition, Quaternion.identity, stored);
+        // then, set script content into panel
+        SetScriptable(initial, initial.script);
+        SetActivePanel(true);
+        stored = null;
+        initial = null;
+    }
+
+    Transform GetStoredScriptable()
+    {
+        // find stored scriptable
+        var stored = GameObject.Find("Scriptable");
+        if(stored.IsNull()){
+            // if not exists, then immediately create it
+            stored = new GameObject("Scriptable");
+            stored.transform.position = Vector3.zero;
+            stored.transform.localScale = Vector3.one;
+            stored.transform.rotation = Quaternion.identity;
+            return stored.transform;
+        }
+        return stored.transform;
     }
 }

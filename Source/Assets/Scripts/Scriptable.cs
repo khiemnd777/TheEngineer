@@ -185,7 +185,7 @@ public class Scriptable : MonoBehaviour
                 // pixelObj.scriptable
                 // Find scriptable from hierachy
                 if(!string.IsNullOrEmpty(scriptableName)){
-                    var scriptableGO =GameObject.Find("Scriptable/" + scriptableName);
+                    var scriptableGO = GameObject.Find("Scriptable/" + scriptableName);
                     if(!scriptableGO.IsNull()){
                         var scriptable = scriptableGO.GetComponent<Scriptable>();
                         pixelObj.scriptable = scriptable;

@@ -203,6 +203,7 @@ public class Scriptable : MonoBehaviour
         {
             var objs = FindObjectsOfType<Pixel>();
             var objsWithName = objs.FirstOrDefault(go => name.Equals(go.name));
+            objs = null;
             if(objsWithName.IsNull())
                 return null;
             return objsWithName.scriptable.pythonScriptable;

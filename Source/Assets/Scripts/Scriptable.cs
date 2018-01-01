@@ -17,6 +17,8 @@ public class Scriptable : MonoBehaviour
     public ScriptRuntime runtime;
     public ExpandoObject pythonScriptable;
 
+    public Pixel pixel;
+
     void Start()
     {
         stoppable = true;
@@ -29,7 +31,8 @@ public class Scriptable : MonoBehaviour
         // instance python's scriptable object
         pythonScriptable = new ExpandoObject();
         ExpandoObjectUtility.SetVariable(pythonScriptable, "id", GetInstanceID());
-        ExpandoObjectUtility.SetVariable(pythonScriptable, "position", new Position {
+        ExpandoObjectUtility.SetVariable(pythonScriptable, "position", new Position
+        {
             x = transform.position.x,
             y = transform.position.y
         });
@@ -159,7 +162,7 @@ public class Scriptable : MonoBehaviour
         });
 
         // Create Pixel
-        scope.SetVariable("__createpixel", new System.Action<string, float, float, string, string>((name, x, y, scriptableName, parentName) =>
+        scope.SetVariable("__create", new System.Action<string, float, float, string, string>((name, x, y, scriptableName, parentName) =>
         {
             var pixelPrefab = Resources.Load<Pixel>(Constants.PIXEL_PREFAB);
             if (pixelPrefab.IsNull())
@@ -184,11 +187,13 @@ public class Scriptable : MonoBehaviour
                 pixelObj.name = name;
                 // pixelObj.scriptable
                 // Find scriptable from hierachy
-                if(!string.IsNullOrEmpty(scriptableName)){
+                if (!string.IsNullOrEmpty(scriptableName))
+                {
                     var scriptableGO = GameObject.Find("Scriptable/" + scriptableName);
-                    if(!scriptableGO.IsNull()){
+                    if (!scriptableGO.IsNull())
+                    {
                         var scriptable = scriptableGO.GetComponent<Scriptable>();
-                        pixelObj.scriptable = scriptable;
+                        pixelObj.AddScriptable(scriptable);
                         scriptable = null;
                     }
                     scriptableGO = null;
@@ -199,14 +204,23 @@ public class Scriptable : MonoBehaviour
         }));
 
         // Find Pixels
-        scope.SetVariable("__findpixel", new System.Func<string, object>((name) =>
+        scope.SetVariable("__find", new System.Func<string, object>((name) =>
         {
             var objs = FindObjectsOfType<Pixel>();
             var objsWithName = objs.FirstOrDefault(go => name.Equals(go.name));
             objs = null;
-            if(objsWithName.IsNull())
+            if (objsWithName.IsNull())
                 return null;
-            return objsWithName.scriptable.pythonScriptable;
+            return objsWithName.pythonPixel;
+        }));
+
+        scope.SetVariable("__setparent", new System.Action<string>((parentName) => {
+            var objs = FindObjectsOfType<Pixel>();
+            var objWithName = objs.FirstOrDefault(go => parentName.Equals(go.name));
+            objs = null;
+            if(objWithName.IsNull())
+                return;
+            this.pixel.transform.SetParent(objWithName.transform);
         }));
     }
 
@@ -256,17 +270,19 @@ public class Scriptable : MonoBehaviour
             return;
         var items = scope.GetItems();
         items = items.Where(x => !x.Key.StartsWith("__"));
-        foreach(var pyVar in items){
+        foreach (var pyVar in items)
+        {
             ExpandoObjectUtility.SetVariable(pythonScriptable, pyVar.Key, pyVar.Value);
         }
     }
 
     void IncludePythonVariables()
     {
-        if(scope.IsNull())
+        if (scope.IsNull())
             return;
         var pythonVariables = pythonScriptable as IDictionary<string, object>;
-        foreach(var pyVar in pythonVariables){
+        foreach (var pyVar in pythonVariables)
+        {
             scope.SetVariable(pyVar.Key, pyVar.Value);
         }
     }
@@ -282,7 +298,11 @@ public class Scriptable : MonoBehaviour
                 continue;
             if (scope.IsNull())
                 continue;
-            var position = (Position) ExpandoObjectUtility.GetVariable(pythonScriptable, "position");
+            var position = (Position)ExpandoObjectUtility.GetVariable(pythonScriptable, "position");
+            if (position.x == transform.position.x && position.y == transform.position.y)
+            {
+                continue;
+            }
             transform.position = new Vector3(position.x, position.y, 0f);
         }
     }
@@ -292,18 +312,19 @@ public class Scriptable : MonoBehaviour
         while (!gameObject.IsNull())
         {
             yield return null;
-            if(!gameObject.activeSelf)
+            if (!gameObject.activeSelf)
                 continue;
-            if(stoppable)
+            if (stoppable)
                 continue;
-            if(scope.IsNull())
+            if (scope.IsNull())
                 continue;
             System.Action update;
             System.Action fixedUpdate;
-            if(scope.TryGetVariable("__update", out update)
-                || scope.TryGetVariable("__fixedupdate", out fixedUpdate)){
-                    StorePythonVariables();
-                }
+            if (scope.TryGetVariable("__update", out update)
+                || scope.TryGetVariable("__fixedupdate", out fixedUpdate))
+            {
+                StorePythonVariables();
+            }
             update = null;
             fixedUpdate = null;
         }
@@ -320,10 +341,11 @@ public class Scriptable : MonoBehaviour
                 continue;
             System.Action update;
             System.Action fixedUpdate;
-            if(scope.TryGetVariable("__update", out update)
-                || scope.TryGetVariable("__fixedupdate", out fixedUpdate)){
-                    UpdateUnityVariables();
-                }
+            if (scope.TryGetVariable("__update", out update)
+                || scope.TryGetVariable("__fixedupdate", out fixedUpdate))
+            {
+                UpdateUnityVariables();
+            }
             update = null;
             fixedUpdate = null;
         }

@@ -15,7 +15,6 @@ public class Scriptable : MonoBehaviour
     public ScriptEngine engine;
     public ScriptScope scope;
     public ScriptRuntime runtime;
-    public ExpandoObject pythonScriptable;
 
     public Pixel pixel;
 
@@ -24,18 +23,8 @@ public class Scriptable : MonoBehaviour
         stoppable = true;
         engine = UnityPython.CreateEngine();
 
-        StartCoroutine(GetPosition());
         StartCoroutine(UpdatingUnityVariables());
         StartCoroutine(SyncPythonVariablesAndUnityVariables());
-
-        // instance python's scriptable object
-        pythonScriptable = new ExpandoObject();
-        ExpandoObjectUtility.SetVariable(pythonScriptable, "id", GetInstanceID());
-        ExpandoObjectUtility.SetVariable(pythonScriptable, "position", new Position
-        {
-            x = transform.position.x,
-            y = transform.position.y
-        });
     }
 
     void Update()
@@ -155,11 +144,7 @@ public class Scriptable : MonoBehaviour
     public virtual void IncludeVariables()
     {
         // Position of scriptable object
-        scope.SetVariable("position", new Position
-        {
-            x = transform.position.x,
-            y = transform.position.y
-        });
+        scope.SetVariable("position", ExpandoObjectUtility.GetVariable(pixel.pythonPixel, "position"));
 
         // Create Pixel
         scope.SetVariable("__create", new System.Action<string, float, float, string, string>((name, x, y, scriptableName, parentName) =>
@@ -272,7 +257,7 @@ public class Scriptable : MonoBehaviour
         items = items.Where(x => !x.Key.StartsWith("__"));
         foreach (var pyVar in items)
         {
-            ExpandoObjectUtility.SetVariable(pythonScriptable, pyVar.Key, pyVar.Value);
+            ExpandoObjectUtility.SetVariable(pixel.pythonPixel, pyVar.Key, pyVar.Value);
         }
     }
 
@@ -280,30 +265,10 @@ public class Scriptable : MonoBehaviour
     {
         if (scope.IsNull())
             return;
-        var pythonVariables = pythonScriptable as IDictionary<string, object>;
+        var pythonVariables = pixel.pythonPixel as IDictionary<string, object>;
         foreach (var pyVar in pythonVariables)
         {
             scope.SetVariable(pyVar.Key, pyVar.Value);
-        }
-    }
-
-    IEnumerator GetPosition()
-    {
-        while (!gameObject.IsNull())
-        {
-            yield return null;
-            if (!gameObject.activeSelf)
-                continue;
-            if (stoppable)
-                continue;
-            if (scope.IsNull())
-                continue;
-            var position = (Position)ExpandoObjectUtility.GetVariable(pythonScriptable, "position");
-            if (position.x == transform.position.x && position.y == transform.position.y)
-            {
-                continue;
-            }
-            transform.position = new Vector3(position.x, position.y, 0f);
         }
     }
 
@@ -350,12 +315,4 @@ public class Scriptable : MonoBehaviour
             fixedUpdate = null;
         }
     }
-}
-
-// Wrapped scriptable object for Python
-public class scriptable
-{
-    public int id { get; set; }
-    public int name { get; set; }
-    public Position position { get; set; }
 }

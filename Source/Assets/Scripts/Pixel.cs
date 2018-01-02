@@ -9,9 +9,62 @@ using IronPython;
 
 public class Pixel : MonoBehaviour
 {
-    public pixel pythonPixel;
+    public TextMesh text;
+    public Transform selection;
+    public Transform hoverable;
+    public bool selecting;
+
+    public ExpandoObject pythonPixel;
 
     List<Scriptable> scriptableList;
+
+    void Start(){
+        StartCoroutine(GetPosition());
+
+        text.text = name;
+        // instance python's scriptable object
+        pythonPixel = new ExpandoObject();
+        ExpandoObjectUtility.SetVariable(pythonPixel, "id", GetInstanceID());
+        ExpandoObjectUtility.SetVariable(pythonPixel, "position", new Position
+        {
+            x = transform.position.x,
+            y = transform.position.y
+        });
+    }
+
+    void OnMouseOver(){
+        if(selecting)
+            return;
+        VisibleHoverable(true);
+    }
+
+    void OnMouseExit(){
+        if(selecting)
+            return;
+        VisibleHoverable(false);
+    }
+
+    public void Select(){
+        selecting = true;
+        VisibleSelection(true);
+        VisibleHoverable(false);
+    }
+
+    public void Deselect(){
+        selecting = false;
+        VisibleSelection(false);
+    }
+
+    void VisibleHoverable(bool visible){
+        if(!selecting)
+            text.gameObject.SetActive(visible);
+        hoverable.gameObject.SetActive(visible);
+    }
+
+    void VisibleSelection(bool visible){
+        text.gameObject.SetActive(visible);
+        selection.gameObject.SetActive(visible);
+    }
 
     public void AddScriptable(Scriptable scriptable)
     {
@@ -20,12 +73,27 @@ public class Pixel : MonoBehaviour
         scriptable.pixel = this;
         scriptableList.Add(scriptable);
     }
-}
 
-// Wrapped Pixel object for Python
-public class pixel
-{
-    public int id { get; set; }
-    public int name { get; set; }
-    public Position position { get; set; }
+    public T GetScriptable<T>() where T : Scriptable
+    {
+        if (scriptableList.IsNull())
+            return null;
+        var scriptable = scriptableList.FirstOrDefault(x => typeof(T).IsAssignableFrom(x.GetType()));
+        return (T)scriptable;
+    }
+
+    IEnumerator GetPosition()
+    {
+        while (!gameObject.IsNull())
+        {
+            yield return null;
+            if (!gameObject.activeSelf)
+                continue;
+            var position = (Position)ExpandoObjectUtility.GetVariable(pythonPixel, "position");
+            if (position.x == transform.position.x && position.y == transform.position.y)
+                continue;
+            transform.position = new Vector3(position.x, position.y, 0f);
+        }
+    }
+
 }

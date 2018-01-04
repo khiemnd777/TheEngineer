@@ -9,4 +9,9 @@ public static class ObjectExtensions
     {
         return target == null || target is Object && target.Equals(null);
     }
+
+    public static bool IsNotNull(this object target)
+    {
+        return !IsNull(target);
+    }
 }

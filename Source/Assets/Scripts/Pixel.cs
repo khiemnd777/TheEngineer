@@ -13,14 +13,16 @@ public class Pixel : MonoBehaviour
     public Transform selection;
     public Transform hoverable;
     public bool selecting;
+    public bool tempSelecting;
+    public bool dragMove;
 
     public ExpandoObject pythonPixel;
+
+    Vector2 _anchorMovePoint;
 
     List<Scriptable> scriptableList;
 
     void Start(){
-        StartCoroutine(GetPosition());
-
         text.text = name;
         // instance python's scriptable object
         pythonPixel = new ExpandoObject();
@@ -30,6 +32,36 @@ public class Pixel : MonoBehaviour
             x = transform.position.x,
             y = transform.position.y
         });
+        StartCoroutine(SetPythonPixelPosition());
+    }
+
+    void Update()
+    {
+        if(Input.GetMouseButton(0)){
+            DragMove();
+        }
+    }
+
+    void DragMove(){
+        if(dragMove){
+            if (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0)
+            {
+                // move if mouse has any movement
+                var mousePosition = Input.mousePosition;
+                var worldMousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
+                var targetPosition = new Vector2(worldMousePosition.x, worldMousePosition.y);
+                transform.position = targetPosition + _anchorMovePoint;
+            }
+        }
+    }
+
+    void OnMouseDown(){
+        _anchorMovePoint = transform.localPosition - Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        dragMove = true;
+    }
+
+    void OnMouseUp(){
+        dragMove = false;
     }
 
     void OnMouseOver(){
@@ -55,8 +87,19 @@ public class Pixel : MonoBehaviour
         VisibleSelection(false);
     }
 
+    public void SelectTemp(){
+        tempSelecting = true;
+        VisibleSelection(true);
+        VisibleHoverable(false);
+    }
+
+    public void DeselectTemp(){
+        tempSelecting = false;
+        VisibleSelection(false);
+    }
+
     void VisibleHoverable(bool visible){
-        if(!selecting)
+        if(!selecting && !tempSelecting)
             text.gameObject.SetActive(visible);
         hoverable.gameObject.SetActive(visible);
     }
@@ -82,7 +125,7 @@ public class Pixel : MonoBehaviour
         return (T)scriptable;
     }
 
-    IEnumerator GetPosition()
+    IEnumerator SetPythonPixelPosition()
     {
         while (!gameObject.IsNull())
         {
@@ -92,8 +135,10 @@ public class Pixel : MonoBehaviour
             var position = (Position)ExpandoObjectUtility.GetVariable(pythonPixel, "position");
             if (position.x == transform.position.x && position.y == transform.position.y)
                 continue;
-            transform.position = new Vector3(position.x, position.y, 0f);
+            ExpandoObjectUtility.SetVariable(pythonPixel, "position", new Position{
+                x = transform.position.x,
+                y = transform.position.y
+            });
         }
     }
-
 }

@@ -602,7 +602,7 @@ PlayerSettings:
   cloudServicesEnabled:
     UNet: 1
   facebookSdkVersion: 7.9.4
-  apiCompatibilityLevel: 2
+  apiCompatibilityLevel: 3
   cloudProjectId: 5800579f-0edc-4028-b56e-a5120df4e162
   projectName: TheEngineer
   organizationId: miraclebox-gaming-studio

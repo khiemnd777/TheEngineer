@@ -8,6 +8,7 @@ public class SelectObjectManager : MonoBehaviour
 
     bool multipleChoice;
     bool _mouseMoveToSelect;
+    bool _dragToSelect = true;
     Vector2 _anchorSelectRectPoint;
 
     void Update()
@@ -30,11 +31,12 @@ public class SelectObjectManager : MonoBehaviour
 
     void DrawSelectRect()
     {
+        if(!_dragToSelect)
+            return;
         if (Input.GetMouseButtonDown(0))
         {
             _anchorSelectRectPoint = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
             selectRect.anchoredPosition = _anchorSelectRectPoint;
-            StartCoroutine("SelectRectSelect");
         }
         if (Input.GetMouseButton(0))
         {
@@ -62,31 +64,30 @@ public class SelectObjectManager : MonoBehaviour
                 if (RectTransformUtility.RectangleContainsScreenPoint(selectRect, screenPoint))
                 {
                     if(!multipleChoice){
-                        if(!pixel.selecting)
-                            pixel.Select();
+                        if(!pixel.selecting || !pixel.tempSelecting)
+                            pixel.SelectTemp();
                     }else{
                         if(!pixel.selecting)
-                            pixel.Select();
+                            pixel.SelectTemp();
+                        else
+                            pixel.DeselectTemp();
                     }
-                    // if (!pixel.selecting)
-                    //     if(!multipleChoice)
-                    //         pixel.Select();
-                    //     else
-                    //         pixel.Deselect();
-                    // else
-                    //     if(multipleChoice)
-                    //         pixel.Deselect();
-                    //     else
-                    //         pixel.Select();
                         
                 }
                 else
                 {
-                    if(multipleChoice){
-                        
+                    if(!multipleChoice){
+                        if(pixel.selecting || pixel.tempSelecting)
+                            pixel.DeselectTemp();
                     }else{
-                        if(pixel.selecting)
-                            pixel.Deselect();
+                        if(pixel.tempSelecting)
+                            pixel.DeselectTemp();
+                        if(pixel.selecting){
+                            if(!pixel.tempSelecting)
+                                pixel.SelectTemp();
+                            else
+                                pixel.DeselectTemp();
+                        }
                     }
                 }
             }
@@ -98,18 +99,17 @@ public class SelectObjectManager : MonoBehaviour
             _anchorSelectRectPoint = Vector2.zero;
             selectRect.anchoredPosition = Vector2.zero;
             selectRect.sizeDelta = Vector2.zero;
-            StopCoroutine("SelectRectSelect");
-        }
-    }
 
-    IEnumerator SelectRectSelect()
-    {
-        while (true)
-        {
-            yield return null;
-            if(!_mouseMoveToSelect)
-                continue;
-            
+            var pixels = FindObjectsOfType<Pixel>();
+            foreach (var pixel in pixels)
+            {
+                if(pixel.tempSelecting){
+                    pixel.DeselectTemp();
+                    pixel.Select();
+                }
+                else
+                    pixel.Deselect();
+            }
         }
     }
 
@@ -117,6 +117,7 @@ public class SelectObjectManager : MonoBehaviour
     {
         if (Input.GetMouseButtonUp(0))
         {
+            _dragToSelect = true;
             // get hit of raycast when mouse is on object
             RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
             if (hit.collider != null)
@@ -132,22 +133,32 @@ public class SelectObjectManager : MonoBehaviour
                             continue;
                         // deselect another pixel object if a pixel selected
                         // if multipleChoice actived, then, ignore below
-                        anotherPixel.Deselect();
+                        anotherPixel.DeselectTemp();
                     }
                     // pixel selected
                     // if multipleChoice actived, then selects any pixels without selected
                     if (multipleChoice)
                         if (pixel.selecting)
-                            pixel.Deselect();
+                            pixel.DeselectTemp();
                         else
-                            pixel.Select();
+                            pixel.SelectTemp();
                     else
-                        pixel.Select();
+                        pixel.SelectTemp();
                 }
             }
         }
         if (Input.GetMouseButtonDown(0))
         {
+            RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+            if (hit.collider != null)
+            {
+                // just get pixel object
+                var pixel = hit.transform.GetComponent<Pixel>();
+                if (pixel.IsNotNull())
+                {
+                    _dragToSelect = false;
+                }
+            }
             // deselect all pixels if mouse is on blank space
             if (multipleChoice)
                 return;

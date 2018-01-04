@@ -7,7 +7,6 @@ public class SelectObjectManager : MonoBehaviour
     public RectTransform selectRect;
 
     bool multipleChoice;
-    bool _mouseMoveToSelect;
     bool _dragToSelect = true;
     Vector2 _anchorSelectRectPoint;
 
@@ -55,7 +54,6 @@ public class SelectObjectManager : MonoBehaviour
             }
             selectRect.anchoredPosition = startPoint;
             selectRect.sizeDelta = diff;
-            _mouseMoveToSelect = diff.sqrMagnitude > 1;
 
             var pixels = FindObjectsOfType<Pixel>();
             foreach (var pixel in pixels)
@@ -95,7 +93,6 @@ public class SelectObjectManager : MonoBehaviour
         }
         if (Input.GetMouseButtonUp(0))
         {
-            _mouseMoveToSelect = false;
             _anchorSelectRectPoint = Vector2.zero;
             selectRect.anchoredPosition = Vector2.zero;
             selectRect.sizeDelta = Vector2.zero;

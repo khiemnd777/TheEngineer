@@ -12,6 +12,7 @@ public class Pixel : MonoBehaviour
     public TextMesh text;
     public Transform selection;
     public Transform hoverable;
+    public Transform colliderGroup;
     public bool selecting;
     public bool tempSelecting;
     public bool dragMove;
@@ -51,6 +52,12 @@ public class Pixel : MonoBehaviour
                 var worldMousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
                 var targetPosition = new Vector2(worldMousePosition.x, worldMousePosition.y);
                 transform.position = targetPosition + _anchorMovePoint;
+
+                // var closestPixel = GetClosestPixel();
+                // if(closestPixel.IsNotNull()){
+                    
+                //     closestPixel = null;
+                // }
             }
         }
     }
@@ -74,6 +81,24 @@ public class Pixel : MonoBehaviour
         if(selecting)
             return;
         VisibleHoverable(false);
+    }
+
+    public Pixel GetClosestPixel(){
+        var pixels = FindObjectsOfType<Pixel>();
+        Pixel bestTarget = null;
+        var closestDistanceSqr = 1.5f;
+        var currentPosition = transform.position;
+        foreach(var potentialTarget in pixels){
+            if(potentialTarget == this)
+                continue;
+            var directionToTarget = potentialTarget.transform.position - currentPosition;
+            var dSqrToTarget = directionToTarget.sqrMagnitude;
+            if(dSqrToTarget < closestDistanceSqr){
+                closestDistanceSqr = dSqrToTarget;
+                bestTarget = potentialTarget;
+            }
+        }
+        return bestTarget;
     }
 
     public void Select(){

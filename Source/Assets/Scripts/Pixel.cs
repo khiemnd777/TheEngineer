@@ -7,15 +7,25 @@ using UnityEngine;
 using UnityEngine.UI;
 using IronPython;
 
+public delegate void OnDragStart(Vector2 position);
+public delegate void OnDrag(Vector2 position);
+public delegate void OnDrop(Vector2 position);
+
 public class Pixel : MonoBehaviour
 {
     public TextMesh text;
+    public bool selecting;
+    public bool tempSelecting;
+    public bool draggedHold;
     public Transform selection;
     public Transform hoverable;
     public Transform colliderGroup;
-    public bool selecting;
-    public bool tempSelecting;
-    public bool dragMove;
+    public Transform[] anchors;
+
+    // events
+    public OnDragStart onDragStart;
+    public OnDrag onDrag;
+    public OnDrop onDrop;
 
     public ExpandoObject pythonPixel;
 
@@ -23,7 +33,8 @@ public class Pixel : MonoBehaviour
 
     List<Scriptable> scriptableList;
 
-    void Start(){
+    void Start()
+    {
         text.text = name;
         // instance python's scriptable object
         pythonPixel = new ExpandoObject();
@@ -38,98 +49,137 @@ public class Pixel : MonoBehaviour
 
     void Update()
     {
-        if(Input.GetMouseButton(0)){
-            DragMove();
+        if (Input.GetMouseButton(0))
+        {
+            Drag();
         }
     }
 
-    void DragMove(){
-        if(dragMove){
+    void DragStart()
+    {
+        _anchorMovePoint = transform.localPosition - Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        draggedHold = true;
+        if (onDragStart.IsNotNull())
+        {
+            onDragStart.Invoke(transform.position);
+        }
+    }
+
+    void Drag()
+    {
+        if (draggedHold)
+        {
             if (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0)
             {
                 // move if mouse has any movement
                 var mousePosition = Input.mousePosition;
                 var worldMousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
                 var targetPosition = new Vector2(worldMousePosition.x, worldMousePosition.y);
-                transform.position = targetPosition + _anchorMovePoint;
-
-                // var closestPixel = GetClosestPixel();
-                // if(closestPixel.IsNotNull()){
-                    
-                //     closestPixel = null;
-                // }
+                var realPosition = targetPosition + _anchorMovePoint;
+                transform.position = realPosition;
+                
+                if (onDrag.IsNotNull())
+                {
+                    onDrag.Invoke(realPosition);
+                }
             }
         }
     }
 
-    void OnMouseDown(){
-        _anchorMovePoint = transform.localPosition - Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        dragMove = true;
+    void Drop()
+    {
+        draggedHold = false;
+        var closestPixel = GetClosestPixel();
+        if (closestPixel.IsNotNull())
+        {
+            var closestAnchor = GetClosestAnchor(closestPixel);
+            if (closestAnchor.IsNotNull())
+            {
+                transform.position = closestAnchor.transform.position;
+            }
+        }
+        if (onDrop.IsNotNull())
+        {
+            onDrop.Invoke(transform.position);
+        }
     }
 
-    void OnMouseUp(){
-        dragMove = false;
+    void OnMouseDown()
+    {
+        DragStart();
     }
 
-    void OnMouseOver(){
-        if(selecting)
+    void OnMouseUp()
+    {
+        Drop();
+    }
+
+    void OnMouseOver()
+    {
+        if (selecting)
             return;
         VisibleHoverable(true);
     }
 
-    void OnMouseExit(){
-        if(selecting)
+    void OnMouseExit()
+    {
+        if (selecting)
             return;
         VisibleHoverable(false);
     }
 
-    public Pixel GetClosestPixel(){
-        var pixels = FindObjectsOfType<Pixel>();
-        Pixel bestTarget = null;
-        var closestDistanceSqr = 1.5f;
-        var currentPosition = transform.position;
-        foreach(var potentialTarget in pixels){
-            if(potentialTarget == this)
-                continue;
-            var directionToTarget = potentialTarget.transform.position - currentPosition;
-            var dSqrToTarget = directionToTarget.sqrMagnitude;
-            if(dSqrToTarget < closestDistanceSqr){
-                closestDistanceSqr = dSqrToTarget;
-                bestTarget = potentialTarget;
-            }
-        }
-        return bestTarget;
+    public void SetPosition(Vector2 newPosition)
+    {
+        transform.position = newPosition;
     }
 
-    public void Select(){
+    public Pixel GetClosestPixel()
+    {
+        var bestPotential = TransformUtility.FindClosestObjectsOfType<Pixel>(transform.position, Constants.CLOSEST_PIXEL_DISTANCE, x => x != this);
+        return bestPotential;
+    }
+
+    public Transform GetClosestAnchor(Pixel pixel)
+    {
+        var bestPotential = TransformUtility.FindClosestObjectsBySpecific<Transform>(transform.position, Constants.CLOSEST_ANCHOR_DISTANCE, pixel.anchors);
+        return bestPotential;
+    }
+
+    public void Select()
+    {
         selecting = true;
         VisibleSelection(true);
         VisibleHoverable(false);
     }
 
-    public void Deselect(){
+    public void Deselect()
+    {
         selecting = false;
         VisibleSelection(false);
     }
 
-    public void SelectTemp(){
+    public void SelectTemp()
+    {
         tempSelecting = true;
         VisibleSelection(true);
         VisibleHoverable(false);
     }
 
-    public void DeselectTemp(){
+    public void DeselectTemp()
+    {
         tempSelecting = false;
         VisibleSelection(false);
     }
 
-    void VisibleHoverable(bool visible){
-        if(!selecting && !tempSelecting)
+    void VisibleHoverable(bool visible)
+    {
+        if (!selecting && !tempSelecting)
             text.gameObject.SetActive(visible);
         hoverable.gameObject.SetActive(visible);
     }
 
-    void VisibleSelection(bool visible){
+    void VisibleSelection(bool visible)
+    {
         text.gameObject.SetActive(visible);
         selection.gameObject.SetActive(visible);
     }
@@ -160,7 +210,8 @@ public class Pixel : MonoBehaviour
             var position = (Position)ExpandoObjectUtility.GetVariable(pythonPixel, "position");
             if (position.x == transform.position.x && position.y == transform.position.y)
                 continue;
-            ExpandoObjectUtility.SetVariable(pythonPixel, "position", new Position{
+            ExpandoObjectUtility.SetVariable(pythonPixel, "position", new Position
+            {
                 x = transform.position.x,
                 y = transform.position.y
             });

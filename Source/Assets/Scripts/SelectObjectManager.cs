@@ -30,7 +30,7 @@ public class SelectObjectManager : MonoBehaviour
 
     void DrawSelectRect()
     {
-        if(!_dragToSelect)
+        if (!_dragToSelect)
             return;
         if (Input.GetMouseButtonDown(0))
         {
@@ -61,27 +61,34 @@ public class SelectObjectManager : MonoBehaviour
                 var screenPoint = Camera.main.WorldToScreenPoint(pixel.transform.position);
                 if (RectTransformUtility.RectangleContainsScreenPoint(selectRect, screenPoint))
                 {
-                    if(!multipleChoice){
-                        if(!pixel.selecting || !pixel.tempSelecting)
+                    if (!multipleChoice)
+                    {
+                        if (!pixel.selecting || !pixel.tempSelecting)
                             pixel.SelectTemp();
-                    }else{
-                        if(!pixel.selecting)
+                    }
+                    else
+                    {
+                        if (!pixel.selecting)
                             pixel.SelectTemp();
                         else
                             pixel.DeselectTemp();
                     }
-                        
+
                 }
                 else
                 {
-                    if(!multipleChoice){
-                        if(pixel.selecting || pixel.tempSelecting)
+                    if (!multipleChoice)
+                    {
+                        if (pixel.selecting || pixel.tempSelecting)
                             pixel.DeselectTemp();
-                    }else{
-                        if(pixel.tempSelecting)
+                    }
+                    else
+                    {
+                        if (pixel.tempSelecting)
                             pixel.DeselectTemp();
-                        if(pixel.selecting){
-                            if(!pixel.tempSelecting)
+                        if (pixel.selecting)
+                        {
+                            if (!pixel.tempSelecting)
                                 pixel.SelectTemp();
                             else
                                 pixel.DeselectTemp();
@@ -100,7 +107,8 @@ public class SelectObjectManager : MonoBehaviour
             var pixels = FindObjectsOfType<Pixel>();
             foreach (var pixel in pixels)
             {
-                if(pixel.tempSelecting){
+                if (pixel.tempSelecting)
+                {
                     pixel.DeselectTemp();
                     pixel.Select();
                 }
@@ -135,10 +143,16 @@ public class SelectObjectManager : MonoBehaviour
                     // pixel selected
                     // if multipleChoice actived, then selects any pixels without selected
                     if (multipleChoice)
-                        if (pixel.selecting)
+                    {
+                        if (pixel.tempSelecting)
+                        {
                             pixel.DeselectTemp();
+                        }
                         else
+                        {
                             pixel.SelectTemp();
+                        }
+                    }
                     else
                         pixel.SelectTemp();
                 }
@@ -158,11 +172,21 @@ public class SelectObjectManager : MonoBehaviour
             }
             // deselect all pixels if mouse is on blank space
             if (multipleChoice)
-                return;
-            var pixels = FindObjectsOfType<Pixel>();
-            foreach (var anotherPixel in pixels)
             {
-                anotherPixel.Deselect();
+                var pixels = FindObjectsOfType<Pixel>();
+                foreach (var anotherPixel in pixels)
+                {
+                    if (anotherPixel.selecting)
+                        anotherPixel.SelectTemp();
+                }
+            }
+            else
+            {
+                var pixels = FindObjectsOfType<Pixel>();
+                foreach (var anotherPixel in pixels)
+                {
+                    anotherPixel.Deselect();
+                }
             }
         }
     }

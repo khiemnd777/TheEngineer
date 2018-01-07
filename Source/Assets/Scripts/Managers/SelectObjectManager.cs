@@ -160,6 +160,9 @@ public class SelectObjectManager : MonoBehaviour
                 var pixel = hit.transform.GetComponent<Pixel>();
                 if (pixel.IsNotNull())
                 {
+                    if(EventObserver.instance.happeningEvent == Events.DragToMultipleSelect){
+                        return;
+                    }
                     var pixels = FindObjectsOfType<Pixel>();
                     foreach (var anotherPixel in pixels)
                     {

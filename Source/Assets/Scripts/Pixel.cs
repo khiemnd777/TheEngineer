@@ -13,6 +13,7 @@ public delegate void OnDrop(Vector2 position);
 
 public class Pixel : MonoBehaviour
 {
+    public int id;
     public TextMesh text;
     public bool selecting;
     public bool tempSelecting;
@@ -21,7 +22,7 @@ public class Pixel : MonoBehaviour
     public Transform hoverable;
     public Transform colliderGroup;
     public Transform[] anchors;
-
+    
     // events
     public OnDragStart onDragStart;
     public OnDrag onDrag;
@@ -33,8 +34,17 @@ public class Pixel : MonoBehaviour
 
     List<Scriptable> scriptableList;
 
+    static int _currentID;
+
+    public static int GetUniqueID()
+    {
+        return ++_currentID;
+    }
+
     void Start()
     {
+        id = GetUniqueID();
+        name = "Pixel " + id;
         text.text = name;
         // instance python's scriptable object
         pythonPixel = new ExpandoObject();
@@ -59,6 +69,7 @@ public class Pixel : MonoBehaviour
     {
         _anchorMovePoint = transform.localPosition - Camera.main.ScreenToWorldPoint(Input.mousePosition);
         draggedHold = true;
+        EventObserver.instance.happeningEvent = Events.DragPixel;
         if (onDragStart.IsNotNull())
         {
             onDragStart.Invoke(transform.position);

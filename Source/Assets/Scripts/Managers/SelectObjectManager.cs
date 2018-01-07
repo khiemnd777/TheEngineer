@@ -42,6 +42,12 @@ public class SelectObjectManager : MonoBehaviour
             var position = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
             var diff = position - _anchorSelectRectPoint;
             var startPoint = _anchorSelectRectPoint;
+
+            if(diff != Vector2.zero)
+            {
+                EventObserver.instance.happeningEvent = Events.DragToMultipleSelect;
+            }
+
             if (diff.x < 0)
             {
                 startPoint.x = position.x;
@@ -103,10 +109,12 @@ public class SelectObjectManager : MonoBehaviour
             _anchorSelectRectPoint = Vector2.zero;
             selectRect.anchoredPosition = Vector2.zero;
             selectRect.sizeDelta = Vector2.zero;
-
+            var selectNumber = 0;
             var pixels = FindObjectsOfType<Pixel>();
             foreach (var pixel in pixels)
             {
+                if(pixel.selecting)
+                    ++selectNumber;
                 if (pixel.tempSelecting)
                 {
                     pixel.DeselectTemp();
@@ -115,11 +123,18 @@ public class SelectObjectManager : MonoBehaviour
                 else
                     pixel.Deselect();
             }
+            if(selectNumber > 0){
+                EventObserver.instance.happeningEvent = Events.OutFocusSelect;
+            }
         }
     }
 
     void SelectPixels()
     {
+        if(EventObserver.instance.happeningEvent == Events.CreatePixel){
+            EventObserver.instance.happeningEvent = Events.None;
+            return;
+        }
         if (Input.GetMouseButtonUp(0))
         {
             _dragToSelect = true;
@@ -155,6 +170,7 @@ public class SelectObjectManager : MonoBehaviour
                     }
                     else
                         pixel.SelectTemp();
+                    EventObserver.instance.happeningEvent = Events.SelectPixel;
                 }
             }
         }
@@ -174,18 +190,30 @@ public class SelectObjectManager : MonoBehaviour
             if (multipleChoice)
             {
                 var pixels = FindObjectsOfType<Pixel>();
+                var selectNumber = 0;
                 foreach (var anotherPixel in pixels)
                 {
-                    if (anotherPixel.selecting)
+                    if (anotherPixel.selecting){
+                        ++selectNumber;
                         anotherPixel.SelectTemp();
+                    }
+                }
+                if(selectNumber > 0){
+                    EventObserver.instance.happeningEvent = Events.OutFocusSelect;
                 }
             }
             else
             {
                 var pixels = FindObjectsOfType<Pixel>();
+                var selectNumber = 0;
                 foreach (var anotherPixel in pixels)
                 {
+                    if(anotherPixel.selecting)
+                        ++selectNumber;
                     anotherPixel.Deselect();
+                }
+                if(selectNumber > 0){
+                    EventObserver.instance.happeningEvent = Events.OutFocusSelect;
                 }
             }
         }

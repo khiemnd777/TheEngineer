@@ -11,10 +11,15 @@ public class PixelCreatingManager : MonoBehaviour
     {
         if (Input.GetMouseButtonUp(0))
         {
-            if(EventObserver.instance.happeningEvent == Events.DragPixel
-                || EventObserver.instance.happeningEvent == Events.DragToMultipleSelect
-                || EventObserver.instance.happeningEvent == Events.OutFocusSelect){
-                EventObserver.instance.happeningEvent = Events.None;
+            // if(EventObserver.instance.happeningEvent == Events.DragPixel
+            //     || EventObserver.instance.happeningEvent == Events.DragToMultipleSelect
+            //     || EventObserver.instance.happeningEvent == Events.OutFocusSelect){
+            //     EventObserver.instance.happeningEvent = Events.None;
+            //     return;
+            // }
+            if(EventObserver.instance.happeningEvent != Events.CreatePixel
+                && EventObserver.instance.happeningEvent != Events.SelectPixel
+                && EventObserver.instance.happeningEvent != Events.None){
                 return;
             }
             EventObserver.instance.happeningEvent = Events.CreatePixel;

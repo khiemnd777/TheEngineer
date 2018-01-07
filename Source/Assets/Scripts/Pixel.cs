@@ -69,7 +69,7 @@ public class Pixel : MonoBehaviour
     {
         _anchorMovePoint = transform.localPosition - Camera.main.ScreenToWorldPoint(Input.mousePosition);
         draggedHold = true;
-        EventObserver.instance.happeningEvent = Events.DragPixel;
+        EventObserver.instance.happeningEvent = Events.DragPixelStart;
         if (onDragStart.IsNotNull())
         {
             onDragStart.Invoke(transform.position);
@@ -82,6 +82,7 @@ public class Pixel : MonoBehaviour
         {
             if (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0)
             {
+                EventObserver.instance.happeningEvent = Events.DragPixel;
                 // move if mouse has any movement
                 var mousePosition = Input.mousePosition;
                 var worldMousePosition = Camera.main.ScreenToWorldPoint(mousePosition);

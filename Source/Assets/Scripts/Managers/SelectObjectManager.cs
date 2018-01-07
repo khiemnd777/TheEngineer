@@ -12,6 +12,7 @@ public class SelectObjectManager : MonoBehaviour
 
     void Update()
     {
+        OutFocusAll();
         MultipleChoice();
         // select pixel objects
         SelectPixels();
@@ -28,6 +29,17 @@ public class SelectObjectManager : MonoBehaviour
             || Input.GetKey(KeyCode.RightControl);
     }
 
+    void OutFocusAll(){
+        if(Input.GetMouseButtonUp(1)){
+            EventObserver.instance.happeningEvent = Events.None;
+            var pixels = FindObjectsOfType<Pixel>();
+            foreach (var pixel in pixels)
+            {
+                pixel.Deselect();
+            }
+        }
+    }
+
     void DrawSelectRect()
     {
         if (!_dragToSelect)
@@ -39,14 +51,14 @@ public class SelectObjectManager : MonoBehaviour
         }
         if (Input.GetMouseButton(0))
         {
-            var position = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
-            var diff = position - _anchorSelectRectPoint;
-            var startPoint = _anchorSelectRectPoint;
-
-            if(diff != Vector2.zero)
+            if(selectRect.sizeDelta.x > 12.25f || selectRect.sizeDelta.y > 12.25f)
             {
                 EventObserver.instance.happeningEvent = Events.DragToMultipleSelect;
             }
+
+            var position = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+            var diff = position - _anchorSelectRectPoint;
+            var startPoint = _anchorSelectRectPoint;
 
             if (diff.x < 0)
             {
@@ -106,6 +118,9 @@ public class SelectObjectManager : MonoBehaviour
         }
         if (Input.GetMouseButtonUp(0))
         {
+            if(EventObserver.instance.happeningEvent == Events.OutFocusMultipleSelect){
+                EventObserver.instance.happeningEvent = Events.None;
+            }
             _anchorSelectRectPoint = Vector2.zero;
             selectRect.anchoredPosition = Vector2.zero;
             selectRect.sizeDelta = Vector2.zero;
@@ -113,28 +128,27 @@ public class SelectObjectManager : MonoBehaviour
             var pixels = FindObjectsOfType<Pixel>();
             foreach (var pixel in pixels)
             {
-                if(pixel.selecting)
-                    ++selectNumber;
                 if (pixel.tempSelecting)
                 {
+                    ++selectNumber;
                     pixel.DeselectTemp();
                     pixel.Select();
                 }
                 else
                     pixel.Deselect();
             }
-            if(selectNumber > 0){
-                EventObserver.instance.happeningEvent = Events.OutFocusSelect;
+            if(EventObserver.instance.happeningEvent == Events.DragToMultipleSelect)
+            {
+                if(selectNumber == 0)
+                {
+                    EventObserver.instance.happeningEvent = Events.None;
+                }
             }
         }
     }
 
     void SelectPixels()
     {
-        if(EventObserver.instance.happeningEvent == Events.CreatePixel){
-            EventObserver.instance.happeningEvent = Events.None;
-            return;
-        }
         if (Input.GetMouseButtonUp(0))
         {
             _dragToSelect = true;
@@ -198,22 +212,16 @@ public class SelectObjectManager : MonoBehaviour
                         anotherPixel.SelectTemp();
                     }
                 }
-                if(selectNumber > 0){
-                    EventObserver.instance.happeningEvent = Events.OutFocusSelect;
-                }
             }
             else
             {
+                if(EventObserver.instance.happeningEvent == Events.DragToMultipleSelect){
+                    EventObserver.instance.happeningEvent = Events.OutFocusMultipleSelect;
+                }
                 var pixels = FindObjectsOfType<Pixel>();
-                var selectNumber = 0;
                 foreach (var anotherPixel in pixels)
                 {
-                    if(anotherPixel.selecting)
-                        ++selectNumber;
                     anotherPixel.Deselect();
-                }
-                if(selectNumber > 0){
-                    EventObserver.instance.happeningEvent = Events.OutFocusSelect;
                 }
             }
         }

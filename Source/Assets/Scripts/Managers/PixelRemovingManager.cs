@@ -19,6 +19,7 @@ public class PixelRemovingManager : MonoBehaviour
                     continue;
                 Destroy(pixel.gameObject);
             }
+            EventObserver.instance.happeningEvent = Events.None;
         }
     }
 }

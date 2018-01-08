@@ -118,9 +118,9 @@ public class SelectObjectManager : MonoBehaviour
         }
         if (Input.GetMouseButtonUp(0))
         {
-            if(EventObserver.instance.happeningEvent == Events.OutFocusMultipleSelect){
-                EventObserver.instance.happeningEvent = Events.None;
-            }
+            // if(EventObserver.instance.happeningEvent == Events.OutFocusMultipleSelect){
+            //     EventObserver.instance.happeningEvent = Events.None;
+            // }
             _anchorSelectRectPoint = Vector2.zero;
             selectRect.anchoredPosition = Vector2.zero;
             selectRect.sizeDelta = Vector2.zero;
@@ -193,6 +193,11 @@ public class SelectObjectManager : MonoBehaviour
         }
         if (Input.GetMouseButtonDown(0))
         {
+            if(EventObserver.instance.happeningEvent == Events.OutFocusMultipleSelect
+                || EventObserver.instance.happeningEvent == Events.OutFocusSelect){
+                EventObserver.instance.happeningEvent = Events.None;
+                return;
+            }
             RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
             if (hit.collider != null)
             {
@@ -220,6 +225,9 @@ public class SelectObjectManager : MonoBehaviour
             {
                 if(EventObserver.instance.happeningEvent == Events.DragToMultipleSelect){
                     EventObserver.instance.happeningEvent = Events.OutFocusMultipleSelect;
+                }
+                if(EventObserver.instance.happeningEvent == Events.SelectPixel){
+                    EventObserver.instance.happeningEvent = Events.OutFocusSelect;
                 }
                 var pixels = FindObjectsOfType<Pixel>();
                 foreach (var anotherPixel in pixels)

@@ -4,14 +4,19 @@ using UnityEngine;
 
 public class CameraMovementController : MonoBehaviour
 {
-    public float defaultOrthographicSize = 5f;
-    public float orthographicSizeMin = 1f;
-    public float orthographicSizeMax = 11f;
+    public float defaultOrthographicSize = 9f;
+    public float orthographicSizeMin = 5f;
+    public float orthographicSizeMax = 20f;
     [Space]
     public float zoomValue = 0.525f;
     public float normalizedZoomSpeed = 10f;
 
     Vector2 _anchorPointToMove;
+
+    void Start()
+    {
+        Camera.main.orthographicSize = Mathf.Clamp(defaultOrthographicSize, orthographicSizeMin, orthographicSizeMax);
+    }
 
     void Update()
     {

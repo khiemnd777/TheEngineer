@@ -11,7 +11,6 @@ public class PixelCreatingManager : MonoBehaviour
     {
         if (Input.GetMouseButtonUp(0))
         {
-            Debug.Log(EventObserver.instance.happeningEvent);
             if(EventObserver.instance.happeningEvent == Events.SelectPixel
                 || EventObserver.instance.happeningEvent == Events.DragPixel
                 || EventObserver.instance.happeningEvent == Events.DragToMultipleSelect
@@ -20,20 +19,18 @@ public class PixelCreatingManager : MonoBehaviour
                 return;
             }
             
-            // if(EventObserver.instance.happeningEvent != Events.CreatePixel
-            //     && EventObserver.instance.happeningEvent != Events.SelectPixel
-            //     && EventObserver.instance.happeningEvent != Events.None){
-            //     return;
-            // }
             EventObserver.instance.happeningEvent = Events.CreatePixel;
             
             var mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            var pixelPosition = mousePosition.ToVector2().Round2();
+            
             RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
             if (hit.collider.IsNotNull())
                 return;
+
             var pixelPrefab = Resources.Load<Pixel>(Constants.PIXEL_PREFAB);
             // create an instance of pixel
-            var instancePixel = Instantiate<Pixel>(pixelPrefab, mousePosition.ToVector2(), Quaternion.identity);
+            var instancePixel = Instantiate<Pixel>(pixelPrefab, pixelPosition, Quaternion.identity);
             // find out a closest pixel excepts instance pixel
             var closestPixel = TransformUtility.FindClosestObjectsOfType<Pixel>(instancePixel.transform.position, Constants.CLOSEST_PIXEL_DISTANCE, x => x != instancePixel);
             if (closestPixel.IsNotNull())

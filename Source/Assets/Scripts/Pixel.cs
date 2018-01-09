@@ -88,6 +88,7 @@ public class Pixel : MonoBehaviour
                 var worldMousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
                 var targetPosition = new Vector2(worldMousePosition.x, worldMousePosition.y);
                 var realPosition = targetPosition + _anchorMovePoint;
+                realPosition = realPosition.Round2();
                 transform.position = realPosition;
                 
                 if (onDrag.IsNotNull())

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class CameraMovementController : MonoBehaviour
 {
@@ -16,13 +17,14 @@ public class CameraMovementController : MonoBehaviour
     void Start()
     {
         Camera.main.orthographicSize = Mathf.Clamp(defaultOrthographicSize, orthographicSizeMin, orthographicSizeMax);
+        MouseClickDetector.instance.onDoubleClick += () => {
+            NormalizeZoom();
+        };
     }
 
     void Update()
     {
-        DetectDoubleMouseClick();
         Zoom();
-        NormalizeZoom();
         Move();
     }
 
@@ -60,12 +62,11 @@ public class CameraMovementController : MonoBehaviour
 
     void NormalizeZoom()
     {
-        if (Input.GetMouseButtonDown(0) && !oneClick)
-        {
-            var mousePosition = Input.mousePosition;
-            var worldMousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
-            NormalizeCamera(worldMousePosition);
-        }
+        if(EventSystem.current.IsPointerOverGameObject())
+            return;
+        var mousePosition = Input.mousePosition;
+        var worldMousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
+        NormalizeCamera(worldMousePosition);
     }
 
     void Zoom()
@@ -116,34 +117,6 @@ public class CameraMovementController : MonoBehaviour
             camPosition.x -= worldMousePosition.x - _anchorPointToMove.x;
             camPosition.y -= worldMousePosition.y - _anchorPointToMove.y;
             Camera.main.transform.position = camPosition;
-        }
-    }
-
-    // double-click detection
-    bool oneClick = true;
-    float doubleClickTimer;
-    float delay = 0.325f;
-
-    void DetectDoubleMouseClick()
-    {
-        if (Input.GetMouseButtonDown(0))
-        {
-            if (!oneClick)
-            {
-                oneClick = true;
-                doubleClickTimer = Time.time;
-            }
-            else
-            {
-                oneClick = false;
-            }
-        }
-        if (oneClick)
-        {
-            if ((Time.time - doubleClickTimer) > delay)
-            {
-                oneClick = false;
-            }
         }
     }
 }

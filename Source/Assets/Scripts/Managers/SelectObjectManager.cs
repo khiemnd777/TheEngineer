@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class SelectObjectManager : MonoBehaviour
 {
@@ -47,17 +48,23 @@ public class SelectObjectManager : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             _anchorSelectRectPoint = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
-            selectRect.anchoredPosition = _anchorSelectRectPoint;
         }
         if (Input.GetMouseButton(0))
         {
+            if(EventSystem.current.IsPointerOverGameObject()){
+                return;
+            }
             if(selectRect.sizeDelta.x > 12.25f || selectRect.sizeDelta.y > 12.25f)
             {
                 EventObserver.instance.happeningEvent = Events.DragToMultipleSelect;
             }
 
+            // selectRect.anchoredPosition = _anchorSelectRectPoint;
+
             var position = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
             var diff = position - _anchorSelectRectPoint;
+            if(diff == Vector2.zero)
+                return;
             var startPoint = _anchorSelectRectPoint;
 
             if (diff.x < 0)

@@ -1,10 +1,22 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PixelCreatingManager : MonoBehaviour
 {
+    public bool allowCreating;
+
+    void Start(){
+        MouseClickDetector.instance.onSingleClick += () => {
+            CreatePixel();
+        };
+        MouseClickDetector.instance.onDoubleClick += () => {
+            // allowCreating = false;
+        };
+    }
+
     void Update()
     {
-        CreatePixel();
+        // CreatePixel();
     }
 
     void CreatePixel()
@@ -19,6 +31,9 @@ public class PixelCreatingManager : MonoBehaviour
                 return;
             }
             
+            if(EventSystem.current.IsPointerOverGameObject())
+                return;       
+
             EventObserver.instance.happeningEvent = Events.CreatePixel;
             
             var mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);

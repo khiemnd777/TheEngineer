@@ -17,7 +17,7 @@ public class CameraMovementController : MonoBehaviour
     void Start()
     {
         Camera.main.orthographicSize = Mathf.Clamp(defaultOrthographicSize, orthographicSizeMin, orthographicSizeMax);
-        MouseClickDetector.instance.onDoubleClick += () => {
+        MouseEventDetector.instance.onDoubleClick += () => {
             NormalizeZoom();
         };
     }

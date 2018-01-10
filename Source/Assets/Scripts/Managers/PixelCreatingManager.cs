@@ -35,9 +35,9 @@ public class PixelCreatingManager : MonoBehaviour
         //     return;
         // }
 
-        var pixelPrefab = Resources.Load<Pixel>(Constants.PIXEL_PREFAB);
+        // var pixelPrefab = Resources.Load<Pixel>(Constants.PIXEL_PREFAB);
         // create an instance of pixel
-        var instancePixel = Instantiate<Pixel>(pixelPrefab, pixelPosition, Quaternion.identity);
+        // var instancePixel = Instantiate<Pixel>(pixelPrefab, pixelPosition, Quaternion.identity);
         // find out a closest pixel excepts instance pixel
         // var closestPixel = TransformUtility.FindClosestObjectsOfType<Pixel>(instancePixel.transform.position, Constants.CLOSEST_PIXEL_DISTANCE, x => x != instancePixel);
         // if (closestPixel.IsNotNull())
@@ -52,7 +52,12 @@ public class PixelCreatingManager : MonoBehaviour
         //     }
         //     closestPixel = null;
         // }
-        instancePixel = null;
+        // instancePixel = null;
+        // pixelPrefab = null;
+
+        var pixelPrefab = Resources.Load<Pixel>(Constants.PIXEL_PREFAB);
+        // create an instance of pixel
+        Instantiate<Pixel>(pixelPrefab, pixelPosition, Quaternion.identity);
         pixelPrefab = null;
     }
 }

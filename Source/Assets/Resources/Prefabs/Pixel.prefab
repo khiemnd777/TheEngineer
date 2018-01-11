@@ -23,6 +23,7 @@ GameObject:
   - component: {fileID: 23243944689546696}
   - component: {fileID: 61772555213636278}
   - component: {fileID: 114582471897549128}
+  - component: {fileID: 114267375513769988}
   m_Layer: 5
   m_Name: Pixel
   m_TagString: Pixel
@@ -78,7 +79,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1486549130779886
 GameObject:
   m_ObjectHideFlags: 1
@@ -762,6 +763,27 @@ TextMesh:
   m_Color:
     serializedVersion: 2
     rgba: 4294967295
+--- !u!114 &114267375513769988
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1071217643609370}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 125aecb46f31d43ba92755690ebc7581, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  contextMenuCanvas: {fileID: 223024279539345258, guid: 8d8d50dcfeef7478dac8972d5eb25482,
+    type: 2}
+  contextMenuUIPrefab: {fileID: 224498362891323608, guid: 066a7261a31f44833a2ada6108577f36,
+    type: 2}
+  itemPrefab: {fileID: 114026877021426518, guid: 72664b4755fc044f8be36332929ab84c,
+    type: 2}
+  scriptItPrefab: {fileID: 114406115276373680, guid: 8110f1ab1ca1948778661b4433a393ae,
+    type: 2}
+  takeOffPrefab: {fileID: 114011054351170752, guid: 6e5095a8080934b55a76c433839d7dc9,
+    type: 2}
 --- !u!114 &114582471897549128
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -13,7 +13,7 @@ public class SelectObjectManager : MonoBehaviour
 
     void Update()
     {
-        OutFocusAll();
+        // OutFocusAll();
         MultipleChoice();
         // select pixel objects
         SelectPixels();

@@ -11,12 +11,6 @@ public class PixelCreatingManager : MonoBehaviour
         };
     }
 
-    // void Update(){
-    //     if(Input.GetMouseButtonDown(0)){
-    //         CreatePixel(Input.mousePosition);
-    //     }
-    // }
-
     void CreatePixel(Vector2 position)
     {
         if (EventObserver.instance.happeningEvent == Events.SelectPixel
@@ -33,33 +27,6 @@ public class PixelCreatingManager : MonoBehaviour
 
         var mousePosition = Camera.main.ScreenToWorldPoint(position);
         var pixelPosition = mousePosition.ToVector2().Round2();
-
-        // RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
-        // if (hit.collider.IsNotNull()){
-        //     Debug.Log(hit.collider);
-        //     return;
-        // }
-
-        // var pixelPrefab = Resources.Load<Pixel>(Constants.PIXEL_PREFAB);
-        // create an instance of pixel
-        // var instancePixel = Instantiate<Pixel>(pixelPrefab, pixelPosition, Quaternion.identity);
-        // find out a closest pixel excepts instance pixel
-        // var closestPixel = TransformUtility.FindClosestObjectsOfType<Pixel>(instancePixel.transform.position, Constants.CLOSEST_PIXEL_DISTANCE, x => x != instancePixel);
-        // if (closestPixel.IsNotNull())
-        // {
-        //     // find out a closest anchor of closest pixel
-        //     var closestAnchor = TransformUtility.FindClosestObjectsBySpecific<Transform>(instancePixel.transform.position, Constants.CLOSEST_ANCHOR_DISTANCE, closestPixel.anchors);
-        //     if (closestAnchor.IsNotNull())
-        //     {
-        //         // assign position of closest anchor to instance of pixel
-        //         instancePixel.transform.position = closestAnchor.transform.position;
-        //         closestAnchor = null;
-        //     }
-        //     closestPixel = null;
-        // }
-        // instancePixel = null;
-        // pixelPrefab = null;
-
         var pixelPrefab = Resources.Load<Pixel>(Constants.PIXEL_PREFAB);
         // create an instance of pixel
         Instantiate<Pixel>(pixelPrefab, pixelPosition, Quaternion.identity);

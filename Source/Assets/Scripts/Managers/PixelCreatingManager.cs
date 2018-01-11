@@ -5,14 +5,19 @@ public class PixelCreatingManager : MonoBehaviour
 {
     void Start()
     {
-        MouseEventDetector.instance.onSingleMouseUp += () =>
+        MouseEventDetector.instance.onSingleMouseUp += (position) =>
         {
-            Debug.Log(1);
-            CreatePixel();
+            CreatePixel(position);
         };
     }
 
-    void CreatePixel()
+    // void Update(){
+    //     if(Input.GetMouseButtonDown(0)){
+    //         CreatePixel(Input.mousePosition);
+    //     }
+    // }
+
+    void CreatePixel(Vector2 position)
     {
         if (EventObserver.instance.happeningEvent == Events.SelectPixel
                 || EventObserver.instance.happeningEvent == Events.DragPixel
@@ -26,7 +31,7 @@ public class PixelCreatingManager : MonoBehaviour
             return;
         EventObserver.instance.happeningEvent = Events.CreatePixel;
 
-        var mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        var mousePosition = Camera.main.ScreenToWorldPoint(position);
         var pixelPosition = mousePosition.ToVector2().Round2();
 
         // RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);

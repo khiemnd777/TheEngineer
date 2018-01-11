@@ -2,8 +2,6 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public delegate void OnClick();
-
 public class MouseEventDetector : MonoBehaviour
 {
     #region Singleton
@@ -30,8 +28,10 @@ public class MouseEventDetector : MonoBehaviour
     }
     #endregion
 
-    public float doubleClickThreshold = 0.25f;
-    public float singleMouseUpThreshold = 0.165f;
+    public float doubleClickThreshold = 0.1925f;
+    public float singleMouseUpThreshold = 0.15f;
+
+    public delegate void OnClick(Vector2 position);
 
     public OnClick onDoubleClick;
     public OnClick onSingleClick;
@@ -55,32 +55,31 @@ public class MouseEventDetector : MonoBehaviour
                 StartCoroutine(MouseUpEvent(() => {
                     singleMouseUpIsFired = true;
                 }, singleMouseUpThreshold));
-                yield return ClickEvent();
+                yield return ClickEvent(Input.mousePosition);
             }
             yield return null;
         }
     }
 
-    IEnumerator ClickEvent()
+    IEnumerator ClickEvent(Vector2 position)
     {
         //pause a frame so you don't pick up the same mouse down event.
-        yield return new WaitForEndOfFrame();
-
+        yield return new WaitForSeconds(Time.deltaTime);
         var count = 0f;
         while (count < doubleClickThreshold)
         {
             if (Input.GetMouseButtonDown(0))
             {
-                DoubleClick();
+                DoubleClick(position);
                 yield return MouseUpEvent(() => {
-                    DoubleMouseUp();
+                    DoubleMouseUp(position);
                 }, doubleClickThreshold);
                 yield break;
             }
             count += Time.deltaTime;// increment counter by change in time between frames
             yield return null; // wait for the next frame
         }
-        SingleClick();
+        SingleClick(position);
     }
 
     IEnumerator MouseUpEvent(System.Action action, float threshold)
@@ -97,33 +96,33 @@ public class MouseEventDetector : MonoBehaviour
         }
     }
 
-    void SingleClick()
+    void SingleClick(Vector2 position)
     {
         if (onSingleClick.IsNotNull())
         {
-            onSingleClick.Invoke();
+            onSingleClick.Invoke(position);
         }
         if(singleMouseUpIsFired){
             singleMouseUpIsFired = false;
             if(onSingleMouseUp.IsNotNull())
-                onSingleMouseUp.Invoke();
+                onSingleMouseUp.Invoke(position);
         }
     }
 
-    void DoubleClick()
+    void DoubleClick(Vector2 position)
     {
         singleMouseUpIsFired = false;
         if (onDoubleClick.IsNotNull())
         {
-            onDoubleClick.Invoke();
+            onDoubleClick.Invoke(position);
         }
     }
 
-    void DoubleMouseUp()
+    void DoubleMouseUp(Vector2 position)
     {
         if (onDoubleMouseUp.IsNotNull())
         {
-            onDoubleMouseUp.Invoke();
+            onDoubleMouseUp.Invoke(position);
         }
     }
 }

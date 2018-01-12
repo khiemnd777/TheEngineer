@@ -771,15 +771,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1071217643609370}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 125aecb46f31d43ba92755690ebc7581, type: 3}
+  m_Script: {fileID: 11500000, guid: cbf00428173044134b383adf82c16692, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  contextMenuCanvas: {fileID: 223024279539345258, guid: 8d8d50dcfeef7478dac8972d5eb25482,
-    type: 2}
-  contextMenuUIPrefab: {fileID: 224498362891323608, guid: 066a7261a31f44833a2ada6108577f36,
-    type: 2}
-  itemPrefab: {fileID: 114026877021426518, guid: 72664b4755fc044f8be36332929ab84c,
-    type: 2}
   scriptItPrefab: {fileID: 114406115276373680, guid: 8110f1ab1ca1948778661b4433a393ae,
     type: 2}
   takeOffPrefab: {fileID: 114011054351170752, guid: 6e5095a8080934b55a76c433839d7dc9,

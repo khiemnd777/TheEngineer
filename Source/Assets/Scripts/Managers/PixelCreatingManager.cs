@@ -14,10 +14,12 @@ public class PixelCreatingManager : MonoBehaviour
     void CreatePixel(Vector2 position)
     {
         if (EventObserver.instance.happeningEvent == Events.SelectPixel
-                || EventObserver.instance.happeningEvent == Events.DragPixel
-                || EventObserver.instance.happeningEvent == Events.DragToMultipleSelect
-                || EventObserver.instance.happeningEvent == Events.OutFocusMultipleSelect
-                || EventObserver.instance.happeningEvent == Events.OutFocusSelect)
+            || EventObserver.instance.happeningEvent == Events.ShowContextMenu
+            || EventObserver.instance.happeningEvent == Events.HideContextMenu
+            || EventObserver.instance.happeningEvent == Events.DragPixel
+            || EventObserver.instance.happeningEvent == Events.DragToMultipleSelect
+            || EventObserver.instance.happeningEvent == Events.OutFocusMultipleSelect
+            || EventObserver.instance.happeningEvent == Events.OutFocusSelect)
         {
             return;
         }

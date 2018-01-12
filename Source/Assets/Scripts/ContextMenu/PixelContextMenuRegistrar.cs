@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PixelContextMenu : ContextMenu
+public class PixelContextMenuRegistrar : ContextMenuRegistrar
 {
     public Button scriptItPrefab;
     public Button takeOffPrefab;

@@ -200,6 +200,8 @@ public class SelectObjectManager : MonoBehaviour
         }
         if (Input.GetMouseButtonDown(0))
         {
+            if(EventObserver.instance.happeningEvent == Events.ShowContextMenu)
+                return;
             if(EventObserver.instance.happeningEvent == Events.OutFocusMultipleSelect
                 || EventObserver.instance.happeningEvent == Events.OutFocusSelect){
                 EventObserver.instance.happeningEvent = Events.None;

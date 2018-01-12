@@ -2,7 +2,7 @@ using UnityEngine;
 
 public enum Events
 {
-    None, DragPixelStart, DragPixel, CreatePixel, SelectPixel, DragToMultipleSelect, OutFocusMultipleSelect, OutFocusSelect
+    None, DragPixelStart, DragPixel, CreatePixel, SelectPixel, DragToMultipleSelect, OutFocusMultipleSelect, OutFocusSelect, ShowContextMenu, HideContextMenu
 }
 
 public class EventObserver : MonoBehaviour

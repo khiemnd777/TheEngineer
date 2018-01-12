@@ -153,7 +153,12 @@ public class ContextMenu : MonoBehaviour
             var prefab = (Button)ExpandoObjectUtility.GetVariable(eo, "itemPrefab");
             var item = Instantiate<Button>(prefab, Vector2.one, Quaternion.identity, contextMenu.transform);
             var name = (string)ExpandoObjectUtility.GetVariable(eo, "name");
+            var action = (System.Action)ExpandoObjectUtility.GetVariable(eo, "action");
             var text = item.GetComponentInChildren<Text>();
+            item.onClick.RemoveAllListeners();
+            item.onClick.AddListener(() => {
+                action.Invoke();
+            });
             text.text = name;
             item.name = name;
             text = null;

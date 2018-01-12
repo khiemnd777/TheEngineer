@@ -45,6 +45,10 @@ public class ContextMenu : MonoBehaviour
         {
             HideOnMouseUp();
         };
+
+        SelectObjectManager.instance.onMultipleSelecting += () => {
+            Hide();
+        };
     }
 
     void Update()
@@ -142,14 +146,22 @@ public class ContextMenu : MonoBehaviour
         _currentContextMenuCanvas = Instantiate<Canvas>(contextMenuCanvas);
         var contextMenu = _currentContextMenuCanvas.GetComponentInChildren<Image>();
         contextMenu.transform.position = position;
+        target.OnBeforeShow();
         foreach (var menuItem in target.GetItems())
         {
             var eo = menuItem.Value;
             var prefab = (Button)ExpandoObjectUtility.GetVariable(eo, "itemPrefab");
-            Instantiate<Button>(prefab, Vector2.one, Quaternion.identity, contextMenu.transform);
+            var item = Instantiate<Button>(prefab, Vector2.one, Quaternion.identity, contextMenu.transform);
+            var name = (string)ExpandoObjectUtility.GetVariable(eo, "name");
+            var text = item.GetComponentInChildren<Text>();
+            text.text = name;
+            item.name = name;
+            text = null;
+            item = null;
             prefab = null;
             eo = null;
         }
+        target.OnAfterShow();
         contextMenu = null;
     }
 

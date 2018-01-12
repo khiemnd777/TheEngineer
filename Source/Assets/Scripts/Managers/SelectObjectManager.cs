@@ -3,9 +3,37 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+public delegate void OnMultipleSelecting();
+
 public class SelectObjectManager : MonoBehaviour
 {
+    #region Singleton
+    static SelectObjectManager _instance;
+
+    public static SelectObjectManager instance
+    {
+        get
+        {
+            if (!_instance)
+            {
+                _instance = FindObjectOfType<SelectObjectManager>();
+                if (!_instance)
+                {
+                    Debug.LogError("There needs to be one active SelectObjectManager script on a GameObject in your scene.");
+                }
+                else
+                {
+
+                }
+            }
+            return _instance;
+        }
+    }
+    #endregion
+
     public RectTransform selectRect;
+
+    public OnMultipleSelecting onMultipleSelecting;
 
     bool multipleChoice;
     bool _dragToSelect = true;
@@ -79,6 +107,10 @@ public class SelectObjectManager : MonoBehaviour
             }
             selectRect.anchoredPosition = startPoint;
             selectRect.sizeDelta = diff;
+
+            if(onMultipleSelecting.IsNotNull()){
+                onMultipleSelecting.Invoke();
+            }
 
             var pixels = FindObjectsOfType<Pixel>();
             foreach (var pixel in pixels)

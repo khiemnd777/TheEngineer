@@ -2,6 +2,8 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+public delegate void OnClick(Vector2 position);
+
 public class MouseEventDetector : MonoBehaviour
 {
     #region Singleton
@@ -30,8 +32,6 @@ public class MouseEventDetector : MonoBehaviour
 
     public float doubleClickThreshold = 0.1925f;
     public float singleMouseUpThreshold = 0.15f;
-
-    public delegate void OnClick(Vector2 position);
 
     public OnClick onDoubleClick;
     public OnClick onSingleClick;

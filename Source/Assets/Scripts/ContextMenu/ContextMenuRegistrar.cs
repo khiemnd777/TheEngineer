@@ -1,16 +1,19 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Linq;
 using System.Dynamic;
 using System.Collections;
 using System.Collections.Generic;
 
 public class ContextMenuRegistrar : MonoBehaviour
 {
-    Dictionary<string, ExpandoObject> menuItems;
+    protected Dictionary<string, ExpandoObject> menuItems;
+    protected Dictionary<string, ExpandoObject> shownItems;
 
     void Start()
     {
         menuItems = new Dictionary<string, ExpandoObject>();
+        shownItems = new Dictionary<string, ExpandoObject>();
         Register();
     }
 
@@ -19,8 +22,17 @@ public class ContextMenuRegistrar : MonoBehaviour
         
     }
 
+    public virtual void OnBeforeShow(){
+
+    }
+
+    public virtual void OnAfterShow(){
+        shownItems.Clear();
+    }
+
     public Dictionary<string, ExpandoObject> GetItems(){
-        return menuItems;
+        var items = !shownItems.Any() ? menuItems : shownItems;
+        return items;
     }
 
     public void RegisterItem(string key, string name, Button itemPrefab, System.Action action)
@@ -33,6 +45,11 @@ public class ContextMenuRegistrar : MonoBehaviour
         ExpandoObjectUtility.SetVariable(itemEO, "name", name);
         ExpandoObjectUtility.SetVariable(itemEO, "action", action);
         ExpandoObjectUtility.SetVariable(itemEO, "itemPrefab", itemPrefab);
+    }
+
+    public void RegisterItem(string key, string name, System.Action action)
+    {
+        RegisterItem(key, name, ContextMenu.instance.itemPrefab, action);
     }
 
     public void SetName(string key, string name)
@@ -51,7 +68,7 @@ public class ContextMenuRegistrar : MonoBehaviour
         ExpandoObjectUtility.SetVariable(itemEO, "action", action);
     }
 
-    public void SetAction(string key, Button itemPrefab)
+    public void SetItemPrefab(string key, Button itemPrefab)
     {
         if (!menuItems.ContainsKey(key))
             return;

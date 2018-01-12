@@ -31,4 +31,13 @@ public class TransformUtility
         }
         return bestPotential;
     }
+
+    public static Vector3 ComputeCenterPoint(Vector3[] points)
+    {
+        var center = Vector3.zero;
+        for(var i = 0; i < points.Length; i++){
+            center += points[i];
+        }
+        return center / points.Length;
+    }
 }

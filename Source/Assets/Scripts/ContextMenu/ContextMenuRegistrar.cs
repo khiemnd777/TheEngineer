@@ -10,7 +10,7 @@ public class ContextMenuRegistrar : MonoBehaviour
     protected Dictionary<string, ExpandoObject> menuItems;
     protected Dictionary<string, ExpandoObject> shownItems;
 
-    void Start()
+    protected virtual void Start()
     {
         menuItems = new Dictionary<string, ExpandoObject>();
         shownItems = new Dictionary<string, ExpandoObject>();

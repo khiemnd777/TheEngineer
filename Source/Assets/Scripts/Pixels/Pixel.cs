@@ -7,9 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using IronPython;
 
-public delegate void OnDragStart(Vector2 position);
-public delegate void OnDrag(Vector2 position);
-public delegate void OnDrop(Vector2 position);
+public delegate void OnDragEvent(Vector2 position);
 
 public class Pixel : MonoBehaviour
 {
@@ -18,15 +16,16 @@ public class Pixel : MonoBehaviour
     public bool selecting;
     public bool tempSelecting;
     public bool draggedHold;
+    public bool grouping;
     public Transform selection;
     public Transform hoverable;
     public Transform colliderGroup;
     public Transform[] anchors;
     
     // events
-    public OnDragStart onDragStart;
-    public OnDrag onDrag;
-    public OnDrop onDrop;
+    public OnDragEvent onDragStart;
+    public OnDragEvent onDrag;
+    public OnDragEvent onDrop;
 
     public ExpandoObject pythonPixel;
 
@@ -211,6 +210,12 @@ public class Pixel : MonoBehaviour
             return null;
         var scriptable = scriptableList.FirstOrDefault(x => typeof(T).IsAssignableFrom(x.GetType()));
         return (T)scriptable;
+    }
+
+    public bool IsInGroup()
+    {
+        var group = GetComponentInParent<Group>();
+        return group.IsNotNull();
     }
 
     IEnumerator SetPythonPixelPosition()

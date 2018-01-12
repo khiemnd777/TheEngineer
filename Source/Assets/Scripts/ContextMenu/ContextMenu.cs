@@ -34,7 +34,6 @@ public class ContextMenu : MonoBehaviour
 
     [System.NonSerialized]
     public ContextMenuRegistrar target;
-    public Canvas contextMenuCanvas;
     public Button itemPrefab;
 
     Canvas _currentContextMenuCanvas;
@@ -143,6 +142,7 @@ public class ContextMenu : MonoBehaviour
             return;
         EventObserver.instance.happeningEvent = Events.ShowContextMenu;
         var position = Camera.main.WorldToScreenPoint(target.transform.position);
+        var contextMenuCanvas = Resources.Load<Canvas>(Constants.CONTEXT_MENU_PREFAB);
         _currentContextMenuCanvas = Instantiate<Canvas>(contextMenuCanvas);
         var contextMenu = _currentContextMenuCanvas.GetComponentInChildren<Image>();
         contextMenu.transform.position = position;

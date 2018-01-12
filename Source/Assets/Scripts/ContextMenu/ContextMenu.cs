@@ -158,6 +158,9 @@ public class ContextMenu : MonoBehaviour
             item.onClick.RemoveAllListeners();
             item.onClick.AddListener(() => {
                 action.Invoke();
+                if(EventObserver.instance.happeningEvent == Events.ShowContextMenu)
+                    EventObserver.instance.happeningEvent = Events.HideContextMenu;
+                Hide();
             });
             text.text = name;
             item.name = name;

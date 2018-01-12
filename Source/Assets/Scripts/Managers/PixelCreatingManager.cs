@@ -31,7 +31,22 @@ public class PixelCreatingManager : MonoBehaviour
         var pixelPosition = mousePosition.ToVector2().Round2();
         var pixelPrefab = Resources.Load<Pixel>(Constants.PIXEL_PREFAB);
         // create an instance of pixel
-        Instantiate<Pixel>(pixelPrefab, pixelPosition, Quaternion.identity);
+        var instancePixel = Instantiate<Pixel>(pixelPrefab, pixelPosition, Quaternion.identity);
+        // find out a closest pixel excepts instance pixel
+        var closestPixel = TransformUtility.FindClosestObjectsOfType<Pixel>(instancePixel.transform.position, Constants.CLOSEST_PIXEL_DISTANCE, x => x != instancePixel);
+        if (closestPixel.IsNotNull())
+        {
+            // find out a closest anchor of closest pixel
+            var closestAnchor = TransformUtility.FindClosestObjectsBySpecific<Transform>(instancePixel.transform.position, Constants.CLOSEST_ANCHOR_DISTANCE, closestPixel.anchors);
+            if (closestAnchor.IsNotNull())
+            {
+                // assign position of closest anchor to instance of pixel
+                instancePixel.transform.position = closestAnchor.transform.position;
+                closestAnchor = null;
+            }
+            closestPixel = null;
+        }
         pixelPrefab = null;
+        instancePixel = null;
     }
 }

@@ -239,7 +239,9 @@ public class SelectObjectManager : MonoBehaviour
                         }
                     }
                     else
+                    {
                         pixel.SelectTemp();
+                    }
                     EventObserver.instance.happeningEvent = Events.SelectPixel;
                 }
             }
@@ -254,12 +256,13 @@ public class SelectObjectManager : MonoBehaviour
                 EventObserver.instance.happeningEvent = Events.None;
                 return;
             }
-            RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+            Pixel hittingPixel = null;
+            var hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
             if (hit.collider != null)
             {
                 // just get pixel object
-                var pixel = hit.transform.GetComponent<Pixel>();
-                if (pixel.IsNotNull())
+                hittingPixel = hit.transform.GetComponent<Pixel>();
+                if (hittingPixel.IsNotNull())
                 {
                     _dragToSelect = false;
                 }
@@ -280,6 +283,10 @@ public class SelectObjectManager : MonoBehaviour
             }
             else
             {
+                if(EventObserver.instance.happeningEvent == Events.DragPixelStart){
+                    if(hittingPixel.IsNotNull())
+                        return;
+                }
                 if (EventObserver.instance.happeningEvent == Events.DragToMultipleSelect)
                 {
                     EventObserver.instance.happeningEvent = Events.OutFocusMultipleSelect;

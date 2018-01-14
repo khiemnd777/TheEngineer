@@ -10,18 +10,28 @@ public class Group : MonoBehaviour
     public static void Create()
     {
         var pixels = FindObjectsOfType<Pixel>();
-        var selectedPixels = pixels.Where(x => x.selecting && !x.grouping);
+        // var selectedPixels = pixels.Where(x => x.selecting && !x.grouping);
+        var selectedPixels = pixels.Where(x => x.selecting);
         if (selectedPixels.Any())
         {
             var selectedPoints = selectedPixels.Select(x => x.transform.position).ToArray();
             var centerPoint = TransformUtility.ComputeCenterPoint(selectedPoints);
             var groupPrefab = Resources.Load<Group>(Constants.GROUP_PREFAB);
             var group = Instantiate<Group>(groupPrefab, centerPoint, Quaternion.identity);
-            foreach (var pixel in selectedPixels)
+            // set parent for each selected pixel those are without any group
+            var selectedPixelsWithoutGroup = selectedPixels.Where(x => !HasGroup(x)).ToList();
+            foreach (var pixel in selectedPixelsWithoutGroup)
             {
-                pixel.grouping = true;
+                // pixel.grouping = true;
                 pixel.transform.SetParent(group.transform);
             }
+            // set parent for each group what has any selected pixel
+            var selectedGroups = GetManyGroups(selectedPixels);
+            foreach(var selectedGroup in selectedGroups){
+                selectedGroup.transform.SetParent(group.transform);
+            }
+
+            selectedGroups = null;
             selectedPoints = null;
             group = null;
             groupPrefab = null;
@@ -59,6 +69,30 @@ public class Group : MonoBehaviour
     {
         var groupOfPixel = pixel.GetComponentInParent<Group>();
         return groupOfPixel;
+    }
+
+    public static List<Group> GetManyGroups(IEnumerable<Pixel> pixels){
+        var groups = new List<Group>();
+        foreach(var pixel in pixels){
+            if(!HasGroup(pixel))
+                continue;
+            var group = GetGroup(pixel);
+            if(groups.Count > 0 && groups.Any(x => x.transform.GetInstanceID() == group.transform.GetInstanceID())){
+                group = null;
+                continue;
+            }
+            groups.Add(group);
+            group = null;
+        }
+        return groups;
+    }
+
+    public static bool HasGroup(Pixel pixel)
+    {
+        var groupOfPixel = GetGroup(pixel);
+        var result = groupOfPixel.IsNotNull();
+        groupOfPixel = null;
+        return result;
     }
 
     public static Pixel[] GetPixelsInGroupByPixel(Pixel pixel)

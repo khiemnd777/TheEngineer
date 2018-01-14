@@ -66,6 +66,9 @@ public class Pixel : MonoBehaviour
 
     void DragStart()
     {
+        var pixels = FindObjectsOfType<Pixel>();
+        var selectedPixels = pixels.Where(x => x.selecting).ToList();
+        
         // if pixel has been in any group, then getting world position of it for computing accurately.
         var realPosition = grouping ? transform.position : transform.localPosition;
         _anchorMovePoint = realPosition - Camera.main.ScreenToWorldPoint(Input.mousePosition);

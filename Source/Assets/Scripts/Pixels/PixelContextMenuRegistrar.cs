@@ -28,13 +28,13 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
         RegisterItem("group", "Group", () =>
         {
             Debug.Log("Group");
-            Group();
+            Group.Create();
         });
 
         RegisterItem("ungroup", "Ungroup", () =>
         {
             Debug.Log("Ungroup");
-            Ungroup();
+            Group.Ungroup();
         });
 
         RegisterItem("take-off", "Take Off", takeOffPrefab, () =>
@@ -66,47 +66,5 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
         }
         pixels = null;
         selectedPixels = null;
-    }
-
-    void Group()
-    {
-        var pixels = FindObjectsOfType<Pixel>();
-        var selectedPixels = pixels.Where(x => x.selecting && !x.grouping);
-        if (selectedPixels.Any())
-        {
-            var selectedPoints = selectedPixels.Select(x => x.transform.position).ToArray();
-            var centerPoint = TransformUtility.ComputeCenterPoint(selectedPoints);
-            var groupPrefab = Resources.Load<Group>(Constants.GROUP_PREFAB);
-            var group = Instantiate<Group>(groupPrefab, centerPoint, Quaternion.identity);
-            foreach (var pixel in selectedPixels)
-            {
-                pixel.grouping = true;
-                pixel.transform.SetParent(group.transform);
-            }
-            selectedPoints = null;
-            group = null;
-            groupPrefab = null;
-        }
-    }
-
-    void Ungroup()
-    {
-        var pixels = FindObjectsOfType<Pixel>();
-        var selectedPixels = pixels.Where(x => x.selecting && x.grouping);
-        if (selectedPixels.Any())
-        {
-            foreach(var pixel in selectedPixels){
-                var groupOfPixel = pixel.GetComponentInParent<Group>();
-                pixel.grouping = false;
-                pixel.transform.parent = null;
-                var pixelsInGroup = groupOfPixel.GetComponentsInChildren<Pixel>();
-                if(pixelsInGroup.Length == 0)
-                {
-                    Destroy(groupOfPixel.gameObject);
-                }
-                groupOfPixel = null;
-                pixelsInGroup = null;
-            }
-        }
     }
 }

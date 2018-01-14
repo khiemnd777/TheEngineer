@@ -16,7 +16,6 @@ public class Pixel : MonoBehaviour
     public bool selecting;
     public bool tempSelecting;
     public bool draggedHold;
-    public bool grouping;
     public Transform selection;
     public Transform hoverable;
     public Transform colliderGroup;
@@ -66,11 +65,12 @@ public class Pixel : MonoBehaviour
 
     void DragStart()
     {
-        var pixels = FindObjectsOfType<Pixel>();
-        var selectedPixels = pixels.Where(x => x.selecting).ToList();
+        // var pixels = FindObjectsOfType<Pixel>();
+        // var selectedPixels = pixels.Where(x => x.selecting).ToList();
         
         // if pixel has been in any group, then getting world position of it for computing accurately.
-        var realPosition = grouping ? transform.position : transform.localPosition;
+        // var realPosition = grouping ? transform.position : transform.localPosition;
+        var realPosition = Group.HasGroup(this) ? transform.position : transform.localPosition;
         _anchorMovePoint = realPosition - Camera.main.ScreenToWorldPoint(Input.mousePosition);
         draggedHold = true;
         EventObserver.instance.happeningEvent = Events.DragPixelStart;
@@ -93,10 +93,10 @@ public class Pixel : MonoBehaviour
                 var targetPosition = new Vector2(worldMousePosition.x, worldMousePosition.y);
                 var realPosition = targetPosition + _anchorMovePoint;
                 realPosition = realPosition.Round2();
-                if (grouping)
+                if (Group.HasGroup(this))
                 {
                     // if pixel has been in a group, then move that group
-                    var group = Group.GetGroup(this);
+                    var group = Group.GetFirstGroup(this);
                     if (group.IsNotNull())
                     {
                         group.transform.position = realPosition;

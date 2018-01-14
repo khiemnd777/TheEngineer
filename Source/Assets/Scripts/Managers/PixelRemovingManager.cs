@@ -17,7 +17,7 @@ public class PixelRemovingManager : MonoBehaviour
             {
                 if (!pixel.selecting)
                     continue;
-                if (pixel.grouping)
+                if (Group.HasGroup(pixel))
                 {
                     Group.UngroupSingle(pixel);
                 }

@@ -34,7 +34,7 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
         RegisterItem("ungroup", "Ungroup", () =>
         {
             Debug.Log("Ungroup");
-            Group.Ungroup();
+            Group.UngroupOneByOne();
         });
 
         RegisterItem("take-off", "Take Off", takeOffPrefab, () =>
@@ -47,20 +47,23 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
     {
         base.OnBeforeShow();
         var pixels = FindObjectsOfType<Pixel>();
-        var selectedPixels = pixels.Where(x => x.transform.GetInstanceID() != transform.GetInstanceID() && x.selecting);
+        var selectedPixels = pixels.Where(x => x.selecting);
         if (selectedPixels.Any())
         {
+            var numberOfSelectedGroup = Group.GetManyGroups(selectedPixels);
+            var numberOfPixelWithoutGroup = selectedPixels.Count(x => !Group.HasGroup(x));
             shownItems = menuItems.Where(x => 
-                !pixel.grouping && x.Key == "group" 
-                || pixel.grouping && x.Key == "ungroup"
+                (!Group.HasGroup(pixel) || numberOfSelectedGroup.Count > 1) && x.Key == "group" 
+                || numberOfSelectedGroup.Count >= 1 && numberOfPixelWithoutGroup >= 1 && x.Key == "group" 
+                || Group.HasGroup(pixel) && numberOfSelectedGroup.Count == 1 && x.Key == "ungroup"
                 || x.Key == "take-off")
-                .ToDictionary(x => x.Key, x => x.Value);
+            .ToDictionary(x => x.Key, x => x.Value); 
         }
         else
         {
             shownItems = menuItems.Where(x => 
                 x.Key == "script-it" 
-                || pixel.grouping && x.Key == "ungroup"
+                || Group.HasGroup(pixel) && x.Key == "ungroup"
                 || x.Key == "take-off")
             .ToDictionary(x => x.Key, x => x.Value);
         }

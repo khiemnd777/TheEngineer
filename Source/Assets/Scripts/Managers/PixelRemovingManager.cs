@@ -17,6 +17,10 @@ public class PixelRemovingManager : MonoBehaviour
             {
                 if (!pixel.selecting)
                     continue;
+                if (pixel.grouping)
+                {
+                    Group.UngroupSingle(pixel);
+                }
                 Destroy(pixel.gameObject);
             }
             EventObserver.instance.happeningEvent = Events.None;

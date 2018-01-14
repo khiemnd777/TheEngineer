@@ -170,6 +170,7 @@ public class SelectObjectManager : MonoBehaviour
             _anchorSelectRectPoint = Vector2.zero;
             selectRect.anchoredPosition = Vector2.zero;
             selectRect.sizeDelta = Vector2.zero;
+            // find any pixel has state is tempSelecting then selecting it.
             var selectNumber = 0;
             var pixels = FindObjectsOfType<Pixel>();
             foreach (var pixel in pixels)
@@ -186,28 +187,7 @@ public class SelectObjectManager : MonoBehaviour
                 }
             }
             // select a group follows selected pixel
-            var pixelsHasGroup = pixels.Where(x => x.grouping).ToList();
-            var pixelsHasGroupButWithoutSelected = new List<Pixel>();
-            foreach (var pixel in pixelsHasGroup)
-            {
-                if(pixelsHasGroupButWithoutSelected.Any(x => x.id == pixel.id))
-                    continue;
-                if(!pixel.selecting){
-                    pixelsHasGroupButWithoutSelected.Add(pixel);
-                    continue;
-                }
-                var groupOfPixel = pixel.GetComponentInParent<Group>();
-                var pixelsInGroup = groupOfPixel.GetComponentsInChildren<Pixel>();
-                pixelsInGroup = pixelsInGroup.Where(x => !x.selecting && x.grouping).ToArray();
-                foreach (var pixelInGroup in pixelsInGroup)
-                {
-                    pixelInGroup.Select();
-                }
-                pixelsInGroup = null;
-                groupOfPixel = null;
-            }
-            pixelsHasGroup = null;
-            pixelsHasGroupButWithoutSelected = null;
+            Group.SelectPixelsInGroupFollowSelectedPixel();
             // if happeningEvent was occuring DragToMultipleSelect, then assign to None.
             if (EventObserver.instance.happeningEvent == Events.DragToMultipleSelect)
             {

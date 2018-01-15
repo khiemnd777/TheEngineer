@@ -142,7 +142,8 @@ public class Pixel : MonoBehaviour
     void Drop()
     {
         draggedHold = false;
-        if (EventObserver.instance.happeningEvent == Events.DragMultiplePixels)
+        if (EventObserver.instance.happeningEvent == Events.DragMultiplePixelsStart 
+            || EventObserver.instance.happeningEvent == Events.DragMultiplePixels)
         {
             Group.UngroupOneByOne();
         }

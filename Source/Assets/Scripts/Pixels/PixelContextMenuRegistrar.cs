@@ -67,6 +67,7 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
             shownItems = menuItems.Where(x => 
                 !Group.HasGroup(pixel) && numberOfPixelWithoutGroup == 1 && x.Key == "script-it"
                 || numberOfPixelWithoutGroup > 1 && x.Key == "group" 
+                || numberOfSelectedGroup.Count > 1 && x.Key == "group" 
                 || numberOfSelectedGroup.Count >= 1 && numberOfPixelWithoutGroup >= 1 && x.Key == "group" 
                 || Group.HasGroup(pixel) && numberOfSelectedGroup.Count == 1 && x.Key == "ungroup-one-by-one"
                 || Group.HasGroup(pixel) && numberOfSelectedGroup.Count == 1 && x.Key == "ungroup-all"

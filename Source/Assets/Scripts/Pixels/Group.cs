@@ -77,7 +77,7 @@ public class Group : MonoBehaviour
     {
         var pixels = FindObjectsOfType<Pixel>();
         var selectedPixels = pixels.Where(x => x.selecting && HasGroup(x));
-        if (selectedPixels.Any())
+        if (!selectedPixels.Any())
             return;
         foreach (var pixel in selectedPixels)
         {
@@ -90,8 +90,11 @@ public class Group : MonoBehaviour
         var groupOfPixel = GetFirstGroup(pixel);
         pixel.transform.parent = null;
         var pixelsInGroup = groupOfPixel.GetComponentsInChildren<Pixel>();
-        if (pixelsInGroup.Length == 0)
+        if (pixelsInGroup.Length <= 1)
         {
+            if(pixelsInGroup.Length == 1){
+                pixelsInGroup[0].transform.parent = null;
+            }
             Destroy(groupOfPixel.gameObject);
         }
         groupOfPixel = null;

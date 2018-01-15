@@ -82,13 +82,16 @@ public class SelectObjectManager : MonoBehaviour
         }
         if (Input.GetMouseButton(0))
         {
-            if (EventSystem.current.IsPointerOverGameObject())
-            {
-                return;
-            }
             if (selectRect.sizeDelta.x > 12.25f || selectRect.sizeDelta.y > 12.25f)
             {
                 EventObserver.instance.happeningEvent = Events.DragToMultipleSelect;
+            }
+            else
+            {
+                if (EventSystem.current.IsPointerOverGameObject())
+                {
+                    return;
+                }
             }
 
             // selectRect.anchoredPosition = _anchorSelectRectPoint;

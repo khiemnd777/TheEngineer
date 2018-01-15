@@ -17,6 +17,7 @@ public class PixelCreatingManager : MonoBehaviour
             || EventObserver.instance.happeningEvent == Events.ShowContextMenu
             || EventObserver.instance.happeningEvent == Events.HideContextMenu
             || EventObserver.instance.happeningEvent == Events.DragPixel
+            || EventObserver.instance.happeningEvent == Events.DragMultiplePixels
             || EventObserver.instance.happeningEvent == Events.DragToMultipleSelect
             || EventObserver.instance.happeningEvent == Events.OutFocusMultipleSelect
             || EventObserver.instance.happeningEvent == Events.OutFocusSelect)

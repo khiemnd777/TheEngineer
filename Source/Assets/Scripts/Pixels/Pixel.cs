@@ -65,15 +65,20 @@ public class Pixel : MonoBehaviour
 
     void DragStart()
     {
-        // var pixels = FindObjectsOfType<Pixel>();
-        // var selectedPixels = pixels.Where(x => x.selecting).ToList();
-        
-        // if pixel has been in any group, then getting world position of it for computing accurately.
-        // var realPosition = grouping ? transform.position : transform.localPosition;
-        var realPosition = Group.HasGroup(this) ? transform.position : transform.localPosition;
-        _anchorMovePoint = realPosition - Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        var pixels = FindObjectsOfType<Pixel>();
+        var selectedPixels = pixels.Where(x => x.selecting).ToList();
+        var realPosition = transform.localPosition;
+        if(selectedPixels.Count > 1){
+            Group.Create();
+            realPosition = transform.position;
+            EventObserver.instance.happeningEvent = Events.DragMultiplePixelsStart;
+        } else {
+            // if pixel has been in any group, then getting world position of it for computing accurately.
+            realPosition = Group.HasGroup(this) ? transform.position : transform.localPosition;
+            _anchorMovePoint = realPosition - Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            EventObserver.instance.happeningEvent = Events.DragPixelStart;
+        }
         draggedHold = true;
-        EventObserver.instance.happeningEvent = Events.DragPixelStart;
         if (onDragStart.IsNotNull())
         {
             onDragStart.Invoke(transform.position);
@@ -86,7 +91,10 @@ public class Pixel : MonoBehaviour
         {
             if (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0)
             {
-                EventObserver.instance.happeningEvent = Events.DragPixel;
+                if(EventObserver.instance.happeningEvent == Events.DragPixelStart)
+                    EventObserver.instance.happeningEvent = Events.DragPixel;
+                if(EventObserver.instance.happeningEvent == Events.DragMultiplePixelsStart)
+                    EventObserver.instance.happeningEvent = Events.DragMultiplePixels;
                 // move if mouse has any movement
                 var mousePosition = Input.mousePosition;
                 var worldMousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
@@ -119,13 +127,17 @@ public class Pixel : MonoBehaviour
     void Drop()
     {
         draggedHold = false;
-        var closestPixel = GetClosestPixel();
-        if (closestPixel.IsNotNull())
-        {
-            var closestAnchor = GetClosestAnchor(closestPixel);
-            if (closestAnchor.IsNotNull())
+        if(EventObserver.instance.happeningEvent == Events.DragMultiplePixels){
+            Group.UngroupOneByOne();
+        } else {
+            var closestPixel = GetClosestPixel();
+            if (closestPixel.IsNotNull())
             {
-                transform.position = closestAnchor.transform.position;
+                var closestAnchor = GetClosestAnchor(closestPixel);
+                if (closestAnchor.IsNotNull())
+                {
+                    transform.position = closestAnchor.transform.position;
+                }
             }
         }
         if (onDrop.IsNotNull())

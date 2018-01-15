@@ -286,7 +286,7 @@ public class SelectObjectManager : MonoBehaviour
             }
             else
             {
-                if(EventObserver.instance.happeningEvent == Events.DragPixelStart){
+                if(EventObserver.instance.happeningEvent == Events.DragPixelStart || EventObserver.instance.happeningEvent == Events.DragMultiplePixelsStart){
                     if(hittingPixel.IsNotNull())
                         return;
                 }

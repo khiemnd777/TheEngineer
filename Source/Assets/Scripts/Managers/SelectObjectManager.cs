@@ -168,7 +168,8 @@ public class SelectObjectManager : MonoBehaviour
             // if(EventObserver.instance.happeningEvent == Events.OutFocusMultipleSelect){
             //     EventObserver.instance.happeningEvent = Events.None;
             // }
-            if(EventObserver.instance.happeningEvent == Events.DragMultiplePixels){
+            if (EventObserver.instance.happeningEvent == Events.DragMultiplePixels)
+            {
                 Group.SelectPixelsInGroupFollowSelectedPixel();
                 return;
             }
@@ -263,7 +264,8 @@ public class SelectObjectManager : MonoBehaviour
                 EventObserver.instance.happeningEvent = Events.None;
                 return;
             }
-            if (EventObserver.instance.happeningEvent == Events.DragMultiplePixels){
+            if (EventObserver.instance.happeningEvent == Events.DragMultiplePixels)
+            {
                 EventObserver.instance.happeningEvent = Events.OutFocusMultipleSelect;
             }
             Pixel hittingPixel = null;
@@ -294,14 +296,10 @@ public class SelectObjectManager : MonoBehaviour
             else
             {
                 var pixels = FindObjectsOfType<Pixel>();
-                if(EventObserver.instance.happeningEvent == Events.DragPixelStart || EventObserver.instance.happeningEvent == Events.DragMultiplePixelsStart){
-                    if(hittingPixel.IsNotNull()){
-                        var selectedPixels = pixels.Where(x => x.selecting);
-                        if(selectedPixels.Any(x => x.transform.GetInstanceID() == hittingPixel.transform.GetInstanceID()))
-                            return;
-                        foreach(var selectedPixel in selectedPixels)
-                            selectedPixel.Deselect();
-                    }
+                if (EventObserver.instance.happeningEvent == Events.DragPixelStart || EventObserver.instance.happeningEvent == Events.DragMultiplePixelsStart)
+                {
+                    if (hittingPixel.IsNotNull())
+                        return;
                 }
                 if (EventObserver.instance.happeningEvent == Events.DragToMultipleSelect)
                 {

@@ -14,4 +14,9 @@ public static class ObjectExtensions
     {
         return !IsNull(target);
     }
+
+    public static int GetID(this Component target)
+    {
+        return target.transform.GetInstanceID();
+    }
 }

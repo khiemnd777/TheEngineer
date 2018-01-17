@@ -31,7 +31,6 @@ public class Pixel : MonoBehaviour
     Vector2 _anchorMovePoint;
 
     List<Scriptable> scriptableList;
-    int flagDeselectAnotherPixels;
 
     static int _currentID;
 
@@ -71,14 +70,24 @@ public class Pixel : MonoBehaviour
         {
             // if hitting the pivot of group
             var hittingPivot = hit.transform.GetComponent<GroupPivot>();
-            if(hittingPivot.IsNotNull())
+            if (hittingPivot.IsNotNull())
             {
-
                 return;
             }
         }
-        flagDeselectAnotherPixels = 0;
         var pixels = FindObjectsOfType<Pixel>();
+        // if this pixel is non-selecting, then deselecting all another one
+        if (!selecting)
+        {
+            var pixelsWithoutThis = pixels.Where(x => x.GetID() != this.GetID() && x.selecting);
+            if (pixelsWithoutThis.Any())
+            {
+                foreach (var p in pixelsWithoutThis.ToArray())
+                {
+                    p.Deselect();
+                }
+            }
+        }
         var selectedPixels = pixels.Where(x => x.selecting).ToList();
         var realPosition = transform.localPosition;
         var mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -123,11 +132,7 @@ public class Pixel : MonoBehaviour
                     EventObserver.instance.happeningEvent = Events.DragPixel;
                 if (EventObserver.instance.happeningEvent == Events.DragMultiplePixelsStart)
                     EventObserver.instance.happeningEvent = Events.DragMultiplePixels;
-                // selecting this pixel and many anothers if it is in a group
-                if(flagDeselectAnotherPixels == 0){
-                    Group.DeselectAnotherPixelsByPixel(this);
-                    ++flagDeselectAnotherPixels;
-                }
+
                 // move if mouse has any movement
                 var mousePosition = Input.mousePosition;
                 var worldMousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
@@ -160,7 +165,7 @@ public class Pixel : MonoBehaviour
     void Drop()
     {
         draggedHold = false;
-        if (EventObserver.instance.happeningEvent == Events.DragMultiplePixelsStart 
+        if (EventObserver.instance.happeningEvent == Events.DragMultiplePixelsStart
             || EventObserver.instance.happeningEvent == Events.DragMultiplePixels)
         {
             Group.UngroupOneByOne();

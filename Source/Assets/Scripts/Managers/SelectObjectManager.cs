@@ -33,10 +33,10 @@ public class SelectObjectManager : MonoBehaviour
     #endregion
 
     public RectTransform selectRect;
-
     public OnMultipleSelecting onMultipleSelecting;
+    [System.NonSerialized]
+    public bool multipleChoice;
 
-    bool multipleChoice;
     bool _dragToSelect = true;
     Vector2 _anchorSelectRectPoint;
 
@@ -76,7 +76,7 @@ public class SelectObjectManager : MonoBehaviour
     {
         if (!_dragToSelect)
             return;
-        if(EventObserver.instance.happeningEvent == Events.DragPivotStart
+        if (EventObserver.instance.happeningEvent == Events.DragPivotStart
             || EventObserver.instance.happeningEvent == Events.DragPivot)
             return;
         if (Input.GetMouseButtonDown(0))
@@ -271,6 +271,20 @@ public class SelectObjectManager : MonoBehaviour
             {
                 EventObserver.instance.happeningEvent = Events.OutFocusMultipleSelect;
             }
+            var pixels = FindObjectsOfType<Pixel>();
+            if (multipleChoice)
+            {
+                var selectNumber = 0;
+                foreach (var anotherPixel in pixels)
+                {
+                    if (anotherPixel.selecting)
+                    {
+                        ++selectNumber;
+                        anotherPixel.SelectTemp();
+                    }
+                }
+                return;
+            }
             Pixel hittingPixel = null;
             var hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
             if (hit.collider != null)
@@ -282,42 +296,24 @@ public class SelectObjectManager : MonoBehaviour
                     _dragToSelect = false;
                 }
             }
-            // deselect all pixels if mouse is on blank space
-            if (multipleChoice)
+            if (EventObserver.instance.happeningEvent == Events.DragPixelStart
+                || EventObserver.instance.happeningEvent == Events.DragMultiplePixelsStart
+                || EventObserver.instance.happeningEvent == Events.DragPivotStart)
             {
-                var pixels = FindObjectsOfType<Pixel>();
-                var selectNumber = 0;
-                foreach (var anotherPixel in pixels)
-                {
-                    if (anotherPixel.selecting)
-                    {
-                        ++selectNumber;
-                        anotherPixel.SelectTemp();
-                    }
-                }
+                if (hittingPixel.IsNotNull())
+                    return;
             }
-            else
+            if (EventObserver.instance.happeningEvent == Events.DragToMultipleSelect)
             {
-                var pixels = FindObjectsOfType<Pixel>();
-                if (EventObserver.instance.happeningEvent == Events.DragPixelStart 
-                    || EventObserver.instance.happeningEvent == Events.DragMultiplePixelsStart
-                    || EventObserver.instance.happeningEvent == Events.DragPivotStart)
-                {
-                    if (hittingPixel.IsNotNull())
-                        return;
-                }
-                if (EventObserver.instance.happeningEvent == Events.DragToMultipleSelect)
-                {
-                    EventObserver.instance.happeningEvent = Events.OutFocusMultipleSelect;
-                }
-                if (EventObserver.instance.happeningEvent == Events.SelectPixel)
-                {
-                    EventObserver.instance.happeningEvent = Events.OutFocusSelect;
-                }
-                foreach (var anotherPixel in pixels)
-                {
-                    anotherPixel.Deselect();
-                }
+                EventObserver.instance.happeningEvent = Events.OutFocusMultipleSelect;
+            }
+            if (EventObserver.instance.happeningEvent == Events.SelectPixel)
+            {
+                EventObserver.instance.happeningEvent = Events.OutFocusSelect;
+            }
+            foreach (var anotherPixel in pixels)
+            {
+                anotherPixel.Deselect();
             }
         }
     }

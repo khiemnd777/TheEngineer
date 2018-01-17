@@ -65,6 +65,8 @@ public class Pixel : MonoBehaviour
 
     void DragStart()
     {
+        // if(SelectObjectManager.instance.multipleChoice)
+        //     return;
         var hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
         if (hit.collider != null)
         {
@@ -77,7 +79,7 @@ public class Pixel : MonoBehaviour
         }
         var pixels = FindObjectsOfType<Pixel>();
         // if this pixel is non-selecting, then deselecting all another one
-        if (!selecting)
+        if (!selecting && !SelectObjectManager.instance.multipleChoice)
         {
             var pixelsWithoutThis = pixels.Where(x => x.GetID() != this.GetID() && x.selecting);
             if (pixelsWithoutThis.Any())
@@ -91,7 +93,8 @@ public class Pixel : MonoBehaviour
         var selectedPixels = pixels.Where(x => x.selecting).ToList();
         var realPosition = transform.localPosition;
         var mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        if (selectedPixels.Count > 1)
+        // if multipleChoice was actived, then denying dragging start of group
+        if (selectedPixels.Count > 1 && !SelectObjectManager.instance.multipleChoice)
         {
             Group.Create();
             var group = Group.GetFirstGroup(this);
@@ -115,7 +118,8 @@ public class Pixel : MonoBehaviour
             EventObserver.instance.happeningEvent = Events.DragPixelStart;
         }
         _anchorMovePoint = realPosition - mousePosition;
-        draggedHold = true;
+        // if multipleChoice was actived, then denying of dragging
+        draggedHold = true && !SelectObjectManager.instance.multipleChoice;
         if (onDragStart.IsNotNull())
         {
             onDragStart.Invoke(transform.position);

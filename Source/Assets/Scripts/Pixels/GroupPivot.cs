@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class GroupPivot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class GroupPivot : MonoBehaviour
 {
     public Pivot pivot;
 
@@ -10,31 +10,50 @@ public class GroupPivot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     void Update()
     {
         // transform.parent.RotateAround(transform.position, Vector3.forward, Time.deltaTime * 10f);
-    }
-
-    public void OnBeginDrag(PointerEventData eventData)
-    {
-        var realPosition = transform.localPosition;
-        var mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        _anchorMovePoint = realPosition - mousePosition;
-
-    }
-
-    public void OnDrag(PointerEventData data)
-    {
-        if (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0)
+        if (Input.GetMouseButton(0))
         {
-            var mousePosition = Input.mousePosition;
-            var worldMousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
-            var targetPosition = worldMousePosition.ToVector2();
-            var realPosition = targetPosition + _anchorMovePoint;
-            realPosition = realPosition.Round2();
-            transform.position = realPosition;
+            Drag();
         }
     }
 
-    public void OnEndDrag(PointerEventData eventData)
+    void OnMouseDown()
     {
+        DragStart();
+    }
 
+    void OnMouseUp()
+    {
+        Drop();
+    }
+
+    public void DragStart()
+    {
+        var mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        _anchorMovePoint = transform.position - mousePosition;
+        EventObserver.instance.happeningEvent = Events.DragPivotStart;
+    }
+
+    public void Drag()
+    {
+        if (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0)
+        {
+            if(EventObserver.instance.happeningEvent == Events.DragPivotStart)
+                EventObserver.instance.happeningEvent = Events.DragPivot;
+            var mousePosition = Input.mousePosition;
+            var worldMousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
+            var targetPosition = worldMousePosition.ToVector2();
+            var realPosition = targetPosition.RoundHalf2();// + _anchorMovePoint;
+            // realPosition = realPosition.RoundHalf2();
+            transform.position = new Vector3(realPosition.x, realPosition.y, transform.position.z);
+        }
+    }
+
+    void Drop()
+    {
+        if(EventObserver.instance.happeningEvent == Events.DragPivotStart
+            || EventObserver.instance.happeningEvent == Events.DragPivot)
+        {
+
+        }
     }
 }

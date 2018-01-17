@@ -76,6 +76,9 @@ public class SelectObjectManager : MonoBehaviour
     {
         if (!_dragToSelect)
             return;
+        if(EventObserver.instance.happeningEvent == Events.DragPivotStart
+            || EventObserver.instance.happeningEvent == Events.DragPivot)
+            return;
         if (Input.GetMouseButtonDown(0))
         {
             _anchorSelectRectPoint = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
@@ -296,7 +299,9 @@ public class SelectObjectManager : MonoBehaviour
             else
             {
                 var pixels = FindObjectsOfType<Pixel>();
-                if (EventObserver.instance.happeningEvent == Events.DragPixelStart || EventObserver.instance.happeningEvent == Events.DragMultiplePixelsStart)
+                if (EventObserver.instance.happeningEvent == Events.DragPixelStart 
+                    || EventObserver.instance.happeningEvent == Events.DragMultiplePixelsStart
+                    || EventObserver.instance.happeningEvent == Events.DragPivotStart)
                 {
                     if (hittingPixel.IsNotNull())
                         return;

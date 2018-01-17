@@ -20,7 +20,7 @@ public class Group : MonoBehaviour
             var groupPrefab = Resources.Load<Group>(Constants.GROUP_PREFAB);
             var group = Instantiate<Group>(groupPrefab, groupPosition, Quaternion.identity);
             var pivot = group.GetComponentInChildren<GroupPivot>();
-            pivot.transform.position = centerPoint;
+            pivot.transform.position = new Vector3(centerPoint.x, centerPoint.y, pivot.transform.position.z);
             // set parent for each selected pixel those are without any group
             var selectedPixelsWithoutGroup = selectedPixels.Where(x => !HasGroup(x)).ToList();
             foreach (var pixel in selectedPixelsWithoutGroup)
@@ -32,6 +32,9 @@ public class Group : MonoBehaviour
             var selectedGroups = GetManyGroups(selectedPixels);
             foreach (var selectedGroup in selectedGroups)
             {
+                // disabling pivot of selected group before set parent for it
+                var pivotOfSelectedGroup = selectedGroup.GetComponentInChildren<GroupPivot>();
+                pivotOfSelectedGroup.GetComponent<MeshRenderer>().enabled = false;
                 selectedGroup.transform.SetParent(group.transform);
             }
 
@@ -166,6 +169,18 @@ public class Group : MonoBehaviour
         return pixelsInGroup;
     }
 
+    public static void DeselectAnotherPixelsByPixel(Pixel pixel){
+        var pixels = FindObjectsOfType<Pixel>();
+        var pixelsHasSelectedPixel = GetPixelsInGroupByPixel(pixel);
+        var selectedPixels = pixels.Where(x => x.selecting && !pixelsHasSelectedPixel.Any(y => y.id == x.id)).ToList();
+        foreach(var selectedPixel in selectedPixels){
+            selectedPixel.Deselect();
+        }
+        selectedPixels = null;
+        pixelsHasSelectedPixel = null;
+        pixels = null;
+    }
+
     public static void SelectPixelsInGroupFollowSelectedPixel()
     {
         var pixels = FindObjectsOfType<Pixel>();
@@ -188,7 +203,24 @@ public class Group : MonoBehaviour
             }
             pixelsInGroup = null;
         }
+        // active the pivot of group
+        var manySelectedGroups = GetManyGroups(pixelsHasGroup);
+        foreach(var group in manySelectedGroups){
+            var pivot = group.GetComponentInChildren<GroupPivot>();
+            if(pivot.IsNull())
+                continue;
+            var pixel = group.GetComponentInChildren<Pixel>();
+            if(pixel.IsNotNull())
+            {
+                pivot.GetComponent<MeshRenderer>().enabled = pixel.selecting;
+                pixel = null;
+            }
+            pivot = null;
+            
+        }
+        manySelectedGroups = null;
         pixelsHasGroup = null;
         pixelsHasGroupButWithoutSelected = null;
+        pixels = null;
     }
 }

@@ -149,7 +149,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   defaultOrthographicSize: 9
   orthographicSizeMin: 5
-  orthographicSizeMax: 20
+  orthographicSizeMax: 30
   zoomValue: 0.525
   normalizedZoomSpeed: 10
 --- !u!81 &203842650
@@ -296,8 +296,8 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 207339294}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 586, y: 329.5, z: 0}
-  m_LocalScale: {x: 1.0983334, y: 1.0983334, z: 1.0983334}
+  m_LocalPosition: {x: 391, y: 220, z: 0}
+  m_LocalScale: {x: 0.73333335, y: 0.73333335, z: 0.73333335}
   m_Children:
   - {fileID: 84816670}
   m_Father: {fileID: 0}
@@ -547,8 +547,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f119aed82ba045caba07346e69519ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  contextMenuCanvas: {fileID: 223024279539345258, guid: 8d8d50dcfeef7478dac8972d5eb25482,
-    type: 2}
   itemPrefab: {fileID: 114026877021426518, guid: 72664b4755fc044f8be36332929ab84c,
     type: 2}
 --- !u!1 &901693386
@@ -633,7 +631,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 901693386}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 586, y: 329.5, z: 0}
+  m_LocalPosition: {x: 391, y: 220, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 2050763826}

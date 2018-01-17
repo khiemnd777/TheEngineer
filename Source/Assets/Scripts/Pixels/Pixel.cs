@@ -31,6 +31,7 @@ public class Pixel : MonoBehaviour
     Vector2 _anchorMovePoint;
 
     List<Scriptable> scriptableList;
+    int flagDeselectAnotherPixels;
 
     static int _currentID;
 
@@ -65,6 +66,18 @@ public class Pixel : MonoBehaviour
 
     void DragStart()
     {
+        var hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+        if (hit.collider != null)
+        {
+            // if hitting the pivot of group
+            var hittingPivot = hit.transform.GetComponent<GroupPivot>();
+            if(hittingPivot.IsNotNull())
+            {
+
+                return;
+            }
+        }
+        flagDeselectAnotherPixels = 0;
         var pixels = FindObjectsOfType<Pixel>();
         var selectedPixels = pixels.Where(x => x.selecting).ToList();
         var realPosition = transform.localPosition;
@@ -110,6 +123,11 @@ public class Pixel : MonoBehaviour
                     EventObserver.instance.happeningEvent = Events.DragPixel;
                 if (EventObserver.instance.happeningEvent == Events.DragMultiplePixelsStart)
                     EventObserver.instance.happeningEvent = Events.DragMultiplePixels;
+                // selecting this pixel and many anothers if it is in a group
+                if(flagDeselectAnotherPixels == 0){
+                    Group.DeselectAnotherPixelsByPixel(this);
+                    ++flagDeselectAnotherPixels;
+                }
                 // move if mouse has any movement
                 var mousePosition = Input.mousePosition;
                 var worldMousePosition = Camera.main.ScreenToWorldPoint(mousePosition);

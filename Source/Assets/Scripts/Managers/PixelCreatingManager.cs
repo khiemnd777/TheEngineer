@@ -30,7 +30,7 @@ public class PixelCreatingManager : MonoBehaviour
         EventObserver.instance.happeningEvent = Events.CreatePixel;
 
         var mousePosition = Camera.main.ScreenToWorldPoint(position);
-        var pixelPosition = mousePosition.ToVector2().Round2();
+        var pixelPosition = mousePosition.ToVector2().Snap2();
         var pixelPrefab = Resources.Load<Pixel>(Constants.PIXEL_PREFAB);
         // create an instance of pixel
         var instancePixel = Instantiate<Pixel>(pixelPrefab, pixelPosition, Quaternion.identity);

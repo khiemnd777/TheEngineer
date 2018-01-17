@@ -4,10 +4,8 @@ public class Utility
 {
     public static float Snap(float value, float snapDelta)
     {
-        // var valRound = Mathf.Abs(Mathf.Floor(value) - value) < Mathf.Abs(Mathf.Ceil(value) - value)
-        //         ? Mathf.Floor(value) 
-        //         : Mathf.Ceil(value);
-        // return Mathf.Floor(value / snapDelta) * snapDelta + Mathf.Round((value % snapDelta) / snapDelta) * snapDelta;
-        return Mathf.Floor(value / snapDelta) * snapDelta;
+        var valApartSnap = value / snapDelta;
+        var valRound = value < 0 ? Mathf.Ceil(valApartSnap) : Mathf.Floor(valApartSnap);
+        return valRound * snapDelta + Mathf.Round((value % snapDelta) / snapDelta) * snapDelta;
     }
 }

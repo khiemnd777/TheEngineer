@@ -6,21 +6,9 @@ public static class VectorExtensions
         return new Vector2(vector3.x, vector3.y);
     }
 
-    public static Vector2 Round2(this Vector2 vector, float deltaSnapping = 0f){
-        var rx = Mathf.Abs(Mathf.Floor(vector.x) - vector.x) < Mathf.Abs(Mathf.Ceil(vector.x) - vector.x)
-                ? Mathf.Floor(vector.x) 
-                : Mathf.Ceil(vector.x);
-        var ry = Mathf.Abs(Mathf.Floor(vector.y) - vector.y) < Mathf.Abs(Mathf.Ceil(vector.y) - vector.y)
-            ? Mathf.Floor(vector.y)
-            : Mathf.Ceil(vector.y);
-        vector.x = rx;
-        vector.y = ry;
-        return vector;
-    }
-
-    public static Vector2 RoundHalf2(this Vector2 vector){
-        var rx = Utility.Snap(vector.x, .5f);
-        var ry = Utility.Snap(vector.y, .5f);
+    public static Vector2 Snap2(this Vector2 vector, float snapDelta = 1f){
+        var rx = Utility.Snap(vector.x, snapDelta);
+        var ry = Utility.Snap(vector.y, snapDelta);
         vector.x = rx;
         vector.y = ry;
         return vector;

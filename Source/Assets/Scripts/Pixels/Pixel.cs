@@ -138,7 +138,7 @@ public class Pixel : MonoBehaviour
                 var worldMousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
                 var targetPosition = worldMousePosition.ToVector2();
                 var realPosition = targetPosition + _anchorMovePoint;
-                realPosition = realPosition.Round2();
+                realPosition = realPosition.Snap2();
                 if (Group.HasGroup(this))
                 {
                     // if pixel has been in a group, then move that group

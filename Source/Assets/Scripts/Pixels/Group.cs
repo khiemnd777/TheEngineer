@@ -16,7 +16,7 @@ public class Group : MonoBehaviour
         {
             var selectedPoints = selectedPixels.Select(x => x.transform.position).ToArray();
             var centerPoint = TransformUtility.ComputeCenterPoint(selectedPoints);
-            var groupPosition = centerPoint.ToVector2().Round2();
+            var groupPosition = centerPoint.ToVector2().Snap2();
             var groupPrefab = Resources.Load<Group>(Constants.GROUP_PREFAB);
             var group = Instantiate<Group>(groupPrefab, groupPosition, Quaternion.identity);
             var pivot = group.GetComponentInChildren<GroupPivot>();

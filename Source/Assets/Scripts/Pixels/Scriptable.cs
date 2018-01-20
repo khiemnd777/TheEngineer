@@ -129,13 +129,6 @@ public class Scriptable : MonoBehaviour
         name = newName;
     }
 
-    public void SetNameAndVariableName(string newName)
-    {
-        SetName(newName);
-        var nameWithoutCaseSensitive = newName.ToLower();
-        SetVariableName(nameWithoutCaseSensitive);
-    }
-
     public void SetVariableName(string newVariableName)
     {
         if(Regex.IsMatch(newVariableName, @"\s+")){
@@ -147,6 +140,13 @@ public class Scriptable : MonoBehaviour
         }
         variableName = newVariableName;
         existingScripts = null;
+    }
+
+    public void SetNameAndVariableName(string newName)
+    {
+        SetName(newName);
+        var nameWithoutCaseSensitive = newName.ToLower();
+        SetVariableName(nameWithoutCaseSensitive);
     }
 
     public void SetScript(string script)

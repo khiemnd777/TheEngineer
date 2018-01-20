@@ -18,6 +18,7 @@ public class ScriptableHost : MonoBehaviour
     {
         var instanceOfScript = Instantiate<Scriptable>(script, Vector3.zero, Quaternion.identity);
         instanceOfScript.name = script.name;
+        instanceOfScript.host = this;
         instanceOfScript.transform.SetParent(container);
         _scripts.Add(instanceOfScript);
     }

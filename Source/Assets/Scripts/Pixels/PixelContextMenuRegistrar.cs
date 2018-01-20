@@ -20,9 +20,9 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
 
     public override void Register()
     {
-        RegisterItem("script-it", "Script It", scriptItPrefab, () =>
+        RegisterItem("add-script", "Add Script", scriptItPrefab, () =>
         {
-            Debug.Log("Script It");
+            Debug.Log("Script added");
         });
 
         RegisterItem("group", "Group", () =>
@@ -65,7 +65,8 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
             var numberOfSelectedGroup = Group.GetManyGroups(selectedPixels);
             var numberOfPixelWithoutGroup = selectedPixels.Count(x => !Group.HasGroup(x));
             shownItems = menuItems.Where(x => 
-                !Group.HasGroup(pixel) && numberOfPixelWithoutGroup == 1 && x.Key == "script-it"
+                !Group.HasGroup(pixel) && numberOfPixelWithoutGroup == 1 && x.Key == "add-script"
+                || Group.HasGroup(pixel) && x.Key == "add-script"
                 || numberOfPixelWithoutGroup > 1 && x.Key == "group" 
                 || numberOfSelectedGroup.Count > 1 && x.Key == "group" 
                 || numberOfSelectedGroup.Count >= 1 && numberOfPixelWithoutGroup >= 1 && x.Key == "group" 

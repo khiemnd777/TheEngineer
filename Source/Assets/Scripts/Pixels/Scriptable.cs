@@ -9,6 +9,7 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Scriptable : MonoBehaviour
 {
+    public new string name;
     public string script;
     public bool stoppable;
 
@@ -16,7 +17,7 @@ public class Scriptable : MonoBehaviour
     public ScriptScope scope;
     public ScriptRuntime runtime;
 
-    public ScriptableHost host;
+    public ScriptableContainer host;
 
     void Start()
     {

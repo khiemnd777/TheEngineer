@@ -2,14 +2,14 @@
 using System.Dynamic;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Microsoft.Scripting.Hosting;
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(Rigidbody2D))]
 public class Scriptable : MonoBehaviour
 {
-    public new string name;
+    public string variableName;
     public string script;
     public bool stoppable;
 
@@ -17,7 +17,41 @@ public class Scriptable : MonoBehaviour
     public ScriptScope scope;
     public ScriptRuntime runtime;
 
-    public ScriptableContainer host;
+    public ScriptableHost host;
+
+    public static Scriptable CreateInstance()
+    {   
+        var res = Resources.Load<Scriptable>(Constants.SCRIPT_PREFAB);
+        var instanceOfScript = Instantiate<Scriptable>(res, Vector3.zero, Quaternion.identity);
+        var name = "Script " + instanceOfScript.GetInstanceID();
+        instanceOfScript.name = name;
+        instanceOfScript.variableName = name.ToVariableName();
+        res = null;
+        name = null;
+        return instanceOfScript;
+    }
+
+    public static void CreateInstanceAndAssignTo(ScriptableHost host){
+        var instanceOfScript = CreateInstance();
+        host.AddScript(instanceOfScript);
+        Destroy(instanceOfScript.gameObject);
+    }
+
+    public static IEnumerable<Scriptable> FindByName(string name)
+    {
+        var scripts = FindObjectsOfType<Scriptable>();
+        var findingOut = scripts.Where(x => name.Equals(x.name));
+        scripts = null;
+        return findingOut;
+    }
+
+    public static IEnumerable<Scriptable> FindByVariableName(string variableName)
+    {
+        var scripts = FindObjectsOfType<Scriptable>();
+        var findingOut = scripts.Where(x => variableName.Equals(x.variableName));
+        scripts = null;
+        return findingOut;
+    }
 
     void Start()
     {
@@ -88,6 +122,31 @@ public class Scriptable : MonoBehaviour
                 act.Invoke();
             });
         }
+    }
+
+    public void SetName(string newName)
+    {
+        name = newName;
+    }
+
+    public void SetNameAndVariableName(string newName)
+    {
+        SetName(newName);
+        var nameWithoutCaseSensitive = newName.ToLower();
+        SetVariableName(nameWithoutCaseSensitive);
+    }
+
+    public void SetVariableName(string newVariableName)
+    {
+        if(Regex.IsMatch(newVariableName, @"\s+")){
+            newVariableName = Regex.Replace(newVariableName, @"\s+", "");
+        }
+        var existingScripts = FindByVariableName(newVariableName);
+        if(existingScripts.Any()){
+            newVariableName += "_clone";
+        }
+        variableName = newVariableName;
+        existingScripts = null;
     }
 
     public void SetScript(string script)

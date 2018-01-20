@@ -16,7 +16,7 @@ public class Scriptable : MonoBehaviour
     public ScriptScope scope;
     public ScriptRuntime runtime;
 
-    public Pixel pixel;
+    public ScriptableHost host;
 
     void Start()
     {
@@ -143,70 +143,70 @@ public class Scriptable : MonoBehaviour
 
     public virtual void IncludeVariables()
     {
-        // Position of scriptable object
-        scope.SetVariable("position", ExpandoObjectUtility.GetVariable(pixel.pythonPixel, "position"));
+        // // Position of scriptable object
+        // scope.SetVariable("position", ExpandoObjectUtility.GetVariable(pixel.pythonPixel, "position"));
 
-        // Create Pixel
-        scope.SetVariable("__create", new System.Action<string, float, float, string, string>((name, x, y, scriptableName, parentName) =>
-        {
-            var pixelPrefab = Resources.Load<Pixel>(Constants.PIXEL_PREFAB);
-            if (pixelPrefab.IsNull())
-                return;
+        // // Create Pixel
+        // scope.SetVariable("__create", new System.Action<string, float, float, string, string>((name, x, y, scriptableName, parentName) =>
+        // {
+        //     var pixelPrefab = Resources.Load<Pixel>(Constants.PIXEL_PREFAB);
+        //     if (pixelPrefab.IsNull())
+        //         return;
 
-            var objs = GameObject.FindGameObjectsWithTag("Pixel");
-            var objsWithName = objs.Where(go => name.Equals(go.name));
-            Pixel pixelObj = null;
-            if (objsWithName.Any())
-            {
-                var firstObjsWithName = objsWithName.FirstOrDefault();
-                pixelObj = Instantiate(pixelPrefab, new Vector2(x, y), Quaternion.identity, firstObjsWithName.transform);
+        //     var objs = GameObject.FindGameObjectsWithTag("Pixel");
+        //     var objsWithName = objs.Where(go => name.Equals(go.name));
+        //     Pixel pixelObj = null;
+        //     if (objsWithName.Any())
+        //     {
+        //         var firstObjsWithName = objsWithName.FirstOrDefault();
+        //         pixelObj = Instantiate(pixelPrefab, new Vector2(x, y), Quaternion.identity, firstObjsWithName.transform);
 
-            }
-            else
-            {
-                pixelObj = Instantiate(pixelPrefab, new Vector2(x, y), Quaternion.identity);
-            }
+        //     }
+        //     else
+        //     {
+        //         pixelObj = Instantiate(pixelPrefab, new Vector2(x, y), Quaternion.identity);
+        //     }
 
-            if (!pixelObj.IsNull())
-            {
-                pixelObj.name = name;
-                // pixelObj.scriptable
-                // Find scriptable from hierachy
-                if (!string.IsNullOrEmpty(scriptableName))
-                {
-                    var scriptableGO = GameObject.Find("Scriptable/" + scriptableName);
-                    if (!scriptableGO.IsNull())
-                    {
-                        var scriptable = scriptableGO.GetComponent<Scriptable>();
-                        pixelObj.AddScriptable(scriptable);
-                        scriptable = null;
-                    }
-                    scriptableGO = null;
-                }
-                pixelObj = null;
-            }
-            pixelPrefab = null;
-        }));
+        //     if (!pixelObj.IsNull())
+        //     {
+        //         pixelObj.name = name;
+        //         // pixelObj.scriptable
+        //         // Find scriptable from hierachy
+        //         if (!string.IsNullOrEmpty(scriptableName))
+        //         {
+        //             var scriptableGO = GameObject.Find("Scriptable/" + scriptableName);
+        //             if (!scriptableGO.IsNull())
+        //             {
+        //                 var scriptable = scriptableGO.GetComponent<Scriptable>();
+        //                 pixelObj.AddScriptable(scriptable);
+        //                 scriptable = null;
+        //             }
+        //             scriptableGO = null;
+        //         }
+        //         pixelObj = null;
+        //     }
+        //     pixelPrefab = null;
+        // }));
 
-        // Find Pixels
-        scope.SetVariable("__find", new System.Func<string, object>((name) =>
-        {
-            var objs = FindObjectsOfType<Pixel>();
-            var objsWithName = objs.FirstOrDefault(go => name.Equals(go.name));
-            objs = null;
-            if (objsWithName.IsNull())
-                return null;
-            return objsWithName.pythonPixel;
-        }));
+        // // Find Pixels
+        // scope.SetVariable("__find", new System.Func<string, object>((name) =>
+        // {
+        //     var objs = FindObjectsOfType<Pixel>();
+        //     var objsWithName = objs.FirstOrDefault(go => name.Equals(go.name));
+        //     objs = null;
+        //     if (objsWithName.IsNull())
+        //         return null;
+        //     return objsWithName.pythonPixel;
+        // }));
 
-        scope.SetVariable("__setparent", new System.Action<string>((parentName) => {
-            var objs = FindObjectsOfType<Pixel>();
-            var objWithName = objs.FirstOrDefault(go => parentName.Equals(go.name));
-            objs = null;
-            if(objWithName.IsNull())
-                return;
-            this.pixel.transform.SetParent(objWithName.transform);
-        }));
+        // scope.SetVariable("__setparent", new System.Action<string>((parentName) => {
+        //     var objs = FindObjectsOfType<Pixel>();
+        //     var objWithName = objs.FirstOrDefault(go => parentName.Equals(go.name));
+        //     objs = null;
+        //     if(objWithName.IsNull())
+        //         return;
+        //     this.pixel.transform.SetParent(objWithName.transform);
+        // }));
     }
 
     void UpdateUnityVariables()
@@ -251,25 +251,25 @@ public class Scriptable : MonoBehaviour
 
     void StorePythonVariables()
     {
-        if (scope.IsNull())
-            return;
-        var items = scope.GetItems();
-        items = items.Where(x => !x.Key.StartsWith("__"));
-        foreach (var pyVar in items)
-        {
-            ExpandoObjectUtility.SetVariable(pixel.pythonPixel, pyVar.Key, pyVar.Value);
-        }
+        // if (scope.IsNull())
+        //     return;
+        // var items = scope.GetItems();
+        // items = items.Where(x => !x.Key.StartsWith("__"));
+        // foreach (var pyVar in items)
+        // {
+        //     ExpandoObjectUtility.SetVariable(pixel.pythonPixel, pyVar.Key, pyVar.Value);
+        // }
     }
 
     void IncludePythonVariables()
     {
-        if (scope.IsNull())
-            return;
-        var pythonVariables = pixel.pythonPixel as IDictionary<string, object>;
-        foreach (var pyVar in pythonVariables)
-        {
-            scope.SetVariable(pyVar.Key, pyVar.Value);
-        }
+        // if (scope.IsNull())
+        //     return;
+        // var pythonVariables = pixel.pythonPixel as IDictionary<string, object>;
+        // foreach (var pyVar in pythonVariables)
+        // {
+        //     scope.SetVariable(pyVar.Key, pyVar.Value);
+        // }
     }
 
     IEnumerator SyncPythonVariablesAndUnityVariables()

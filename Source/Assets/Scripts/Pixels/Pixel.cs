@@ -16,6 +16,7 @@ public class Pixel : MonoBehaviour
     public bool selecting;
     public bool tempSelecting;
     public bool draggedHold;
+    public PixelPivot pivot;
     public Transform selection;
     public Transform hoverable;
     public Transform colliderGroup;
@@ -41,6 +42,7 @@ public class Pixel : MonoBehaviour
 
     void Start()
     {
+        // id
         id = GetUniqueID();
         name = "Pixel " + id;
         text.text = name;
@@ -65,8 +67,6 @@ public class Pixel : MonoBehaviour
 
     void DragStart()
     {
-        // if(SelectObjectManager.instance.multipleChoice)
-        //     return;
         var hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
         if (hit.collider != null)
         {
@@ -124,6 +124,7 @@ public class Pixel : MonoBehaviour
         {
             onDragStart.Invoke(transform.position);
         }
+        pixels = null;
     }
 
     void Drag()
@@ -238,12 +239,15 @@ public class Pixel : MonoBehaviour
         selecting = true;
         VisibleSelection(true);
         VisibleHoverable(false);
+        pivot.gameObject.SetActive(!Group.HasGroup(this));
     }
 
     public void Deselect()
     {
         selecting = false;
         VisibleSelection(false);
+        if(EventObserver.instance.happeningEvent != Events.DragPivotStart)
+            pivot.gameObject.SetActive(false);
     }
 
     public void SelectTemp()
@@ -270,22 +274,6 @@ public class Pixel : MonoBehaviour
     {
         text.gameObject.SetActive(visible);
         selection.gameObject.SetActive(visible);
-    }
-
-    public void AddScriptable(Scriptable scriptable)
-    {
-        if (scriptableList.IsNull())
-            scriptableList = new List<Scriptable>();
-        scriptable.pixel = this;
-        scriptableList.Add(scriptable);
-    }
-
-    public T GetScriptable<T>() where T : Scriptable
-    {
-        if (scriptableList.IsNull())
-            return null;
-        var scriptable = scriptableList.FirstOrDefault(x => typeof(T).IsAssignableFrom(x.GetType()));
-        return (T)scriptable;
     }
 
     public bool IsInGroup()

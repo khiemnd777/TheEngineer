@@ -11,11 +11,13 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
     public Button takeOffPrefab;
 
     Pixel pixel;
+    ScriptableHost host;
 
     protected override void Start()
     {
         base.Start();
         pixel = GetComponent<Pixel>();
+        host = GetComponent<ScriptableHost>();
     }
 
     public override void Register()
@@ -23,6 +25,7 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
         RegisterItem("add-script", "Add Script", scriptItPrefab, () =>
         {
             Debug.Log("Script added");
+            Scriptable.CreateInstanceAndAssignTo(host);
         });
 
         RegisterItem("group", "Group", () =>

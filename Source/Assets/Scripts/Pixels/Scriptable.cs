@@ -23,7 +23,7 @@ public class Scriptable : MonoBehaviour
     {   
         var res = Resources.Load<Scriptable>(Constants.SCRIPT_PREFAB);
         var instanceOfScript = Instantiate<Scriptable>(res, Vector3.zero, Quaternion.identity);
-        var name = "Script " + instanceOfScript.GetInstanceID();
+        var name = "Instanced Script";
         instanceOfScript.name = name;
         instanceOfScript.variableName = name.ToVariableName();
         res = null;

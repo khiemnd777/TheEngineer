@@ -11,13 +11,11 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
     public Button takeOffPrefab;
 
     Pixel pixel;
-    ScriptableHost host;
 
     protected override void Start()
     {
         base.Start();
         pixel = GetComponent<Pixel>();
-        host = GetComponent<ScriptableHost>();
     }
 
     public override void Register()
@@ -25,6 +23,9 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
         RegisterItem("add-script", "Add Script", scriptItPrefab, () =>
         {
             Debug.Log("Script added");
+            var host = !Group.HasGroup(pixel) 
+                ? GetComponent<ScriptableHost>()
+                : Group.GetFirstGroup(pixel).GetComponent<ScriptableHost>();
             Scriptable.CreateInstanceAndAssignTo(host);
         });
 
@@ -55,6 +56,7 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
         RegisterItem("take-off", "Take Off", takeOffPrefab, () =>
         {
             Debug.Log("Take Off");
+            PixelRemovingManager.instance.Remove();
         });
     }
 
@@ -68,6 +70,7 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
             var numberOfSelectedGroup = Group.GetManyGroups(selectedPixels);
             var numberOfPixelWithoutGroup = selectedPixels.Count(x => !Group.HasGroup(x));
             shownItems = menuItems.Where(x => 
+                // || Group.HasGroup(pixel) && x.Key == "add-script"
                 !Group.HasGroup(pixel) && numberOfPixelWithoutGroup == 1 && x.Key == "add-script"
                 || Group.HasGroup(pixel) && x.Key == "add-script"
                 || numberOfPixelWithoutGroup > 1 && x.Key == "group" 
@@ -81,7 +84,7 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
         else
         {
             shownItems = menuItems.Where(x => 
-                !Group.HasGroup(pixel) && x.Key == "script-it" 
+                !Group.HasGroup(pixel) && x.Key == "add-script" 
                 || Group.HasGroup(pixel) && x.Key == "ungroup-single"
                 || x.Key == "take-off")
             .ToDictionary(x => x.Key, x => x.Value);

@@ -17,24 +17,35 @@ public class Scriptable : MonoBehaviour
     public ScriptScope scope;
     public ScriptRuntime runtime;
 
-    public ScriptableHost host;
+    List<ScriptableHost> _hosts = new List<ScriptableHost>();
 
     public static Scriptable CreateInstance()
-    {   
+    {
         var res = Resources.Load<Scriptable>(Constants.SCRIPT_PREFAB);
         var instanceOfScript = Instantiate<Scriptable>(res, Vector3.zero, Quaternion.identity);
         var name = "Instanced Script";
         instanceOfScript.name = name;
         instanceOfScript.variableName = name.ToVariableName();
+
+        // contains into script container
+        var scriptContainer = GameObject.Find("/Scripts");
+        if (scriptContainer.IsNull())
+        {
+            scriptContainer = new GameObject("Scripts");
+        }
+        instanceOfScript.transform.SetParent(scriptContainer.transform);
+        // release memory
+        scriptContainer = null;
         res = null;
         name = null;
         return instanceOfScript;
     }
 
-    public static void CreateInstanceAndAssignTo(ScriptableHost host){
+    public static void CreateInstanceAndAssignTo(ScriptableHost host)
+    {
         var instanceOfScript = CreateInstance();
         host.AddScript(instanceOfScript);
-        Destroy(instanceOfScript.gameObject);
+        // Destroy(instanceOfScript.gameObject);
     }
 
     public static IEnumerable<Scriptable> FindByName(string name)
@@ -124,6 +135,15 @@ public class Scriptable : MonoBehaviour
         }
     }
 
+    public void AddHost(ScriptableHost host)
+    {
+        _hosts.Add(host);
+    }
+
+    public void RemoveHost(ScriptableHost host){
+        _hosts.Remove(host);
+    }
+
     public void SetName(string newName)
     {
         name = newName;
@@ -131,11 +151,13 @@ public class Scriptable : MonoBehaviour
 
     public void SetVariableName(string newVariableName)
     {
-        if(Regex.IsMatch(newVariableName, @"\s+")){
+        if (Regex.IsMatch(newVariableName, @"\s+"))
+        {
             newVariableName = Regex.Replace(newVariableName, @"\s+", "");
         }
         var existingScripts = FindByVariableName(newVariableName);
-        if(existingScripts.Any()){
+        if (existingScripts.Any())
+        {
             newVariableName += "_clone";
         }
         variableName = newVariableName;

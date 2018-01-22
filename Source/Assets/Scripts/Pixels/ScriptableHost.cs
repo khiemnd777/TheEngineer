@@ -16,17 +16,14 @@ public class ScriptableHost : MonoBehaviour
 
     public void AddScript(Scriptable script)
     {
-        var instanceOfScript = Instantiate<Scriptable>(script, Vector3.zero, Quaternion.identity);
-        instanceOfScript.name = script.name;
-        instanceOfScript.host = this;
-        instanceOfScript.transform.SetParent(container);
-        _scripts.Add(instanceOfScript);
+        script.AddHost(this);
+        _scripts.Add(script);
     }
 
     public void RemoveScript(Scriptable script)
     {
         _scripts.Remove(script);
-        Destroy(script.gameObject);
+        script.RemoveHost(this);
     }
 
     public IEnumerable<Scriptable> GetAllScripts()

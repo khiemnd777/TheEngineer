@@ -2,6 +2,30 @@ using UnityEngine;
 
 public class PixelRemovingManager : MonoBehaviour
 {
+    #region Singleton
+    static PixelRemovingManager _instance;
+
+    public static PixelRemovingManager instance
+    {
+        get
+        {
+            if (!_instance)
+            {
+                _instance = FindObjectOfType<PixelRemovingManager>();
+                if (!_instance)
+                {
+                    Debug.LogError("There needs to be one active PixelRemovingManager script on a GameObject in your scene.");
+                }
+                else
+                {
+
+                }
+            }
+            return _instance;
+        }
+    }
+    #endregion
+
     void Update()
     {
         if (
@@ -12,18 +36,23 @@ public class PixelRemovingManager : MonoBehaviour
             || Input.GetKeyUp(KeyCode.Delete)
             )
         {
-            var pixels = FindObjectsOfType<Pixel>();
-            foreach (var pixel in pixels)
-            {
-                if (!pixel.selecting)
-                    continue;
-                if (Group.HasGroup(pixel))
-                {
-                    Group.UngroupSingle(pixel);
-                }
-                Destroy(pixel.gameObject);
-            }
-            EventObserver.instance.happeningEvent = Events.None;
+            Remove();
         }
+    }
+
+    public void Remove()
+    {
+        var pixels = FindObjectsOfType<Pixel>();
+        foreach (var pixel in pixels)
+        {
+            if (!pixel.selecting)
+                continue;
+            if (Group.HasGroup(pixel))
+            {
+                Group.UngroupSingle(pixel);
+            }
+            Destroy(pixel.gameObject);
+        }
+        EventObserver.instance.happeningEvent = Events.RemovePixel;
     }
 }

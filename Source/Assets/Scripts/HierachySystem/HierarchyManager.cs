@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -42,57 +43,56 @@ public class HierarchyManager : MonoBehaviour
         }
     }
 
-    void Start(){
+    void Start()
+    {
         var scripts = Create("Scripts");
-            Create("instance-script.py", null, scripts);
-            Create("instance-script.py", null, scripts);
-            Create("instance-script.py", null, scripts);
+        Create("instance-script.py", null, scripts);
+        Create("instance-script.py", null, scripts);
+        Create("instance-script.py", null, scripts);
         var pixels = Create("Pixels");
-            Create("Pixel 1", null, pixels);
-            var groups = Create("Group 1", null, pixels);
-                Create("Pixel 2", null, groups);
-                Create("Pixel 3", null, groups);
+        Create("Pixel 1", null, pixels);
+        var groups = Create("Group 1", null, pixels);
+        Create("Pixel 2", null, groups);
+        Create("Pixel 3", null, groups);
     }
 
     void Update()
     {
-        var hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
-        if (hit.collider != null)
-        {
-            // just get pixel object
-            var hittingItem = hit.transform.GetComponent<HierarchyItem>();
-            if (hittingItem.IsNotNull())
-            {
-                Debug.Log(hittingItem);
-                hittingItem = null;
-            }
-        }
+        var itemEntered = GetHierarchyItemEntered();
+        if (itemEntered.IsNotNull())
+            Debug.Log(itemEntered.text.text);
     }
 
     public HierarchyItem Create(string name, GameObject reference = null, HierarchyItem parent = null)
-	{
-		var itemFromResource = Resources.Load<HierarchyItem>(Constants.HIERARCHY_ITEM_PREFAB);
-		var instanceItem = Instantiate<HierarchyItem>(itemFromResource, Vector3.zero, Quaternion.identity);
-        var textItem = instanceItem.GetComponentInChildren<Text>();
+    {
+        var itemFromResource = Resources.Load<HierarchyItem>(Constants.HIERARCHY_ITEM_PREFAB);
+        var instanceItem = Instantiate<HierarchyItem>(itemFromResource, Vector3.zero, Quaternion.identity);
+        var textItem = instanceItem.text;
         textItem.text = name;
-		instanceItem.name = name;
-		instanceItem.reference = reference;
-		if(parent.IsNotNull()){
-			instanceItem.SetParent(parent);
-            var textPosition = parent.GetComponentInChildren<Text>().transform.localPosition;
-            var x = textPosition.x + 35f;
-            var pos = instanceItem.GetComponentInChildren<Text>().transform.localPosition;
-            instanceItem.GetComponentInChildren<Text>().transform.localPosition = new Vector3(x, pos.y, pos.z);
-		}
-		// item contains into container
-		instanceItem.transform.SetParent(container.transform);
+        instanceItem.name = name;
+        instanceItem.reference = reference;
+        if (parent.IsNotNull())
+        {
+            instanceItem.SetParent(parent);
+        }
+        // item contains into container
+        instanceItem.transform.SetParent(container.transform);
         instanceItem.transform.localScale = Vector3.one;
         items.Add(instanceItem);
+        // release memory
+        textItem = null;
+        itemFromResource = null;
         return instanceItem;
-	}
+    }
 
-    public void SetParent(HierarchyItem parent)
+    public void SetParent(HierarchyItem item, HierarchyItem parent)
     {
+        item.SetParent(parent);
+    }
 
+    HierarchyItem GetHierarchyItemEntered()
+    {
+        var itemEntered = _items.FirstOrDefault(x => x.pointerEntered);
+        return itemEntered;
     }
 }

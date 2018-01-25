@@ -9,4 +9,5 @@ public class Constants{
     public const float CLOSEST_PIXEL_DISTANCE = 1.625f;
     public const float CLOSEST_ANCHOR_DISTANCE = 1f;
     public const float GROUP_PIVOT_SNAP_DELTA = .5f;
+    public const float HIERARCHY_ITEM_SPACE_LEVEL = 35f;
 }

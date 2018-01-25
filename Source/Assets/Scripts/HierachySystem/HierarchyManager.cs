@@ -45,6 +45,9 @@ public class HierarchyManager : MonoBehaviour
 
     void Start()
     {
+        var prefabs = Create("Prefabs");
+        Create("Prefab object A", null, prefabs);
+        Create("Prefab object B", null, prefabs);
         var scripts = Create("Scripts");
         Create("instance-script.py", null, scripts);
         Create("instance-script.py", null, scripts);
@@ -54,13 +57,10 @@ public class HierarchyManager : MonoBehaviour
         var groups = Create("Group 1", null, pixels);
         Create("Pixel 2", null, groups);
         Create("Pixel 3", null, groups);
-    }
-
-    void Update()
-    {
-        var itemEntered = GetHierarchyItemEntered();
-        if (itemEntered.IsNotNull())
-            Debug.Log(itemEntered.text.text);
+        Collapse(prefabs);
+        Collapse(scripts);
+        Collapse(pixels);
+        StartCoroutine(DetectHierarchyItemEntered());
     }
 
     public HierarchyItem Create(string name, GameObject reference = null, HierarchyItem parent = null)
@@ -90,9 +90,54 @@ public class HierarchyManager : MonoBehaviour
         item.SetParent(parent);
     }
 
+    public void Collapse(HierarchyItem item)
+    {
+        item.expanded = false;
+        var children = GetChildren(item.GetID());
+        children.ForEach(x => 
+        {
+            Collapse(x);
+            x.gameObject.SetActive(false);
+        });
+        children = null;
+    }
+
+    public void Expand(HierarchyItem item)
+    {
+        item.expanded = true;
+        var children = GetChildren(item.GetID());
+        children.ForEach(x => x.gameObject.SetActive(true));
+        children = null;
+    }
+
+    public List<HierarchyItem> GetChildren(int itemId)
+    {
+        var chilren = items.Where(x => x.parent.IsNotNull() && x.parent.GetID() == itemId).ToList();
+        return chilren;
+    }
+
+    public bool AnyChild(int itemId)
+    {
+        return items.Any(x=>x.parent.IsNotNull() && x.parent.GetID() == itemId);
+    }
+
     HierarchyItem GetHierarchyItemEntered()
     {
         var itemEntered = _items.FirstOrDefault(x => x.pointerEntered);
         return itemEntered;
+    }
+
+    IEnumerator DetectHierarchyItemEntered()
+    {
+        while (gameObject.IsNotNull())
+        {
+            var itemEntered = GetHierarchyItemEntered();
+            if (itemEntered.IsNotNull())
+            {
+                //  do any stuff here...
+                itemEntered = null;
+            }
+            yield return null;
+        }
     }
 }

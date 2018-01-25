@@ -4,24 +4,16 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-public class HierarchyItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class HierarchyItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
-    // private List<HierarchyItem> _items;
-
-    // public List<HierarchyItem> items
-    // {
-    //     get
-    //     {
-    //         return _items ?? (_items = new List<HierarchyItem>());
-    //     }
-    // }
-
     [System.NonSerialized]
     public HierarchyItem parent;
     [System.NonSerialized]
     public GameObject reference;
     [System.NonSerialized]
     public bool pointerEntered;
+    [System.NonSerialized]
+    public bool expanded;
 
     public Text text
     {
@@ -58,5 +50,20 @@ public class HierarchyItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public void OnPointerExit(PointerEventData eventData)
     {
         pointerEntered = false;
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (HierarchyManager.instance.AnyChild(this.GetID()))
+        {
+            if (!expanded)
+            {
+                HierarchyManager.instance.Expand(this);
+            }
+            else
+            {
+                HierarchyManager.instance.Collapse(this);
+            }
+        }
     }
 }

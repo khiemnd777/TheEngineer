@@ -58,12 +58,35 @@ public class HierarchyItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         {
             if (!expanded)
             {
-                HierarchyManager.instance.Expand(this);
+                Expand();
             }
             else
             {
-                HierarchyManager.instance.Collapse(this);
+                Collapse();
             }
         }
+    }
+
+    public void Collapse()
+    {
+        expanded = false;
+        var children = HierarchyManager.instance.GetChildren(this.GetID());
+        children.ForEach(x => 
+        {
+            x.Collapse();
+            x.gameObject.SetActive(false);
+        });
+        children = null;
+    }
+
+    public void Expand()
+    {
+        expanded = true;
+        var children = HierarchyManager.instance.GetChildren(this.GetID());
+        children.ForEach(x => 
+        {
+            x.gameObject.SetActive(true);
+        });
+        children = null;
     }
 }

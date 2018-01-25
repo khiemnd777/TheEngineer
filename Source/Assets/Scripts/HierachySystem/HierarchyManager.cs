@@ -57,9 +57,11 @@ public class HierarchyManager : MonoBehaviour
         var groups = Create("Group 1", null, pixels);
         Create("Pixel 2", null, groups);
         Create("Pixel 3", null, groups);
-        Collapse(prefabs);
-        Collapse(scripts);
-        Collapse(pixels);
+
+        prefabs.Collapse();
+        scripts.Collapse();
+        pixels.Collapse();
+
         StartCoroutine(DetectHierarchyItemEntered());
     }
 
@@ -92,22 +94,12 @@ public class HierarchyManager : MonoBehaviour
 
     public void Collapse(HierarchyItem item)
     {
-        item.expanded = false;
-        var children = GetChildren(item.GetID());
-        children.ForEach(x => 
-        {
-            Collapse(x);
-            x.gameObject.SetActive(false);
-        });
-        children = null;
+        item.Collapse();
     }
 
     public void Expand(HierarchyItem item)
     {
-        item.expanded = true;
-        var children = GetChildren(item.GetID());
-        children.ForEach(x => x.gameObject.SetActive(true));
-        children = null;
+        item.Expand();
     }
 
     public List<HierarchyItem> GetChildren(int itemId)

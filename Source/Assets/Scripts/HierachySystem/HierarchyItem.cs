@@ -34,12 +34,10 @@ public class HierarchyItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public void SetParent(HierarchyItem parent)
     {
         this.parent = parent;
-        var parentSiblingIndex = parent.siblingIndex;
         var textPosition = parent.text.transform.localPosition;
         var x = textPosition.x + Constants.HIERARCHY_ITEM_SPACE_LEVEL;
         var pos = text.transform.localPosition;
         text.transform.localPosition = new Vector3(x, pos.y, pos.z);
-        transform.SetSiblingIndex(parentSiblingIndex + 1);
     }
 
     public void OnPointerEnter(PointerEventData eventData)

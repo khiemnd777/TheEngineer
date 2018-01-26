@@ -32,6 +32,12 @@ public class HierarchyManager : MonoBehaviour
 
     public HierarchyItem itemPrefab;
     public RectTransform container;
+    [System.NonSerialized]
+    public HierarchyItem scriptPart;
+    [System.NonSerialized]
+    public HierarchyItem prefabPart;
+    [System.NonSerialized]
+    public HierarchyItem pixelPart;
 
     List<HierarchyItem> _items;
 
@@ -45,22 +51,27 @@ public class HierarchyManager : MonoBehaviour
 
     void Start()
     {
-        var prefabs = Create("Prefabs");
-        Create("Prefab object A", null, prefabs);
-        Create("Prefab object B", null, prefabs);
-        var scripts = Create("Scripts");
-        Create("instance-script.py", null, scripts);
-        Create("instance-script.py", null, scripts);
-        Create("instance-script.py", null, scripts);
-        var pixels = Create("Pixels");
-        Create("Pixel 1", null, pixels);
-        var groups = Create("Group 1", null, pixels);
+        CreatePrefabPart();
+        CreateScriptPart();
+        CreatePixelPart();
+        
+        Create("Prefab object A", null, prefabPart);
+        Create("Prefab object B", null, prefabPart);
+        
+        Create("instance-script.py", null, scriptPart);
+        Create("instance-script.py", null, scriptPart);
+        Create("instance-script.py", null, scriptPart);
+        
+        Create("Pixel 1", null, pixelPart);
+        var groups = Create("Group 1", null, pixelPart);
         Create("Pixel 2", null, groups);
         Create("Pixel 3", null, groups);
 
-        prefabs.Collapse();
-        scripts.Collapse();
-        pixels.Collapse();
+        prefabPart.Collapse();
+        scriptPart.Collapse();
+        pixelPart.Collapse();
+
+        Order();
 
         StartCoroutine(DetectHierarchyItemEntered());
     }
@@ -113,6 +124,24 @@ public class HierarchyManager : MonoBehaviour
         return items.Any(x=>x.parent.IsNotNull() && x.parent.GetID() == itemId);
     }
 
+    public void Order()
+    {
+        var workingItems = _items;
+        var total = workingItems.Count;
+        var index = -1;
+        System.Action<HierarchyItem> ordering =(root) => {
+            root.transform.SetSiblingIndex(++index);
+            var children = GetChildren(root.GetID());
+            foreach(var item in children)
+            {
+                item.transform.SetSiblingIndex(++index);
+            }
+        };
+        ordering(prefabPart);
+        ordering(scriptPart);
+        ordering(pixelPart);
+    }
+
     HierarchyItem GetHierarchyItemEntered()
     {
         var itemEntered = _items.FirstOrDefault(x => x.pointerEntered);
@@ -131,5 +160,17 @@ public class HierarchyManager : MonoBehaviour
             }
             yield return null;
         }
+    }
+
+    void CreatePrefabPart(){
+        prefabPart = Create("Prefabs");
+    }
+
+    void CreateScriptPart(){
+        scriptPart = Create("Scripts");
+    }
+
+    void CreatePixelPart(){
+        pixelPart = Create("Pixels");
     }
 }

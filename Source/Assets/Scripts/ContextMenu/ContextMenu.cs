@@ -86,15 +86,16 @@ public class ContextMenu : MonoBehaviour
             }
             if (registrar.IsNotNull())
             {
-                if (target.IsNotNull() && target.GetID() == registrar.GetID())
-                {
-                    registrar = null;
-                    return;
-                }
-                else
-                {
-                    Hide();
-                }
+                // if (target.IsNotNull() && target.GetID() == registrar.GetID())
+                // {
+                //     registrar = null;
+                //     Hide();
+                // }
+                // else
+                // {
+                //     Hide();
+                // }
+                Hide();
                 target = registrar;
                 Show();
                 registrar = null;
@@ -127,9 +128,8 @@ public class ContextMenu : MonoBehaviour
 
     void HideOnMouseUp()
     {
-        if (EventSystem.current.IsPointerOverGameObject())
-            return;
-
+        // if (EventSystem.current.IsPointerOverGameObject())
+        //     return;
         if (EventObserver.instance.happeningEvent == Events.HideContextMenu)
         {
             EventObserver.instance.happeningEvent = Events.None;
@@ -159,12 +159,21 @@ public class ContextMenu : MonoBehaviour
     {
         if (target.IsNull())
             return;
+        if(target.GetItems().Count == 0)
+        {
+            Hide();
+            return;
+        }
         EventObserver.instance.happeningEvent = Events.ShowContextMenu;
-        var position = Camera.main.WorldToScreenPoint(target.transform.position);
+        // var position = target.HasRectTransform()
+        //     ? target.transform.position
+        //     : Camera.main.WorldToScreenPoint(target.transform.position);
+        var mousePosition = Input.mousePosition;
+        // var anchorPosition = position - mousePosition;
         var contextMenuCanvas = Resources.Load<Canvas>(Constants.CONTEXT_MENU_PREFAB);
         _currentContextMenuCanvas = Instantiate<Canvas>(contextMenuCanvas);
         var contextMenu = _currentContextMenuCanvas.GetComponentInChildren<Image>();
-        contextMenu.transform.position = position;
+        contextMenu.transform.position = mousePosition;
         target.OnBeforeShow();
         foreach (var menuItem in target.GetItems())
         {

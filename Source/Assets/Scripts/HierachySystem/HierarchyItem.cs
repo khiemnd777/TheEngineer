@@ -4,8 +4,15 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-public class HierarchyItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerUpHandler
+public class HierarchyItem : MonoBehaviour
+    , IPointerEnterHandler
+    , IPointerExitHandler
+    , IPointerUpHandler
+    , IBeginDragHandler
+    , IDragHandler
+    , IEndDragHandler
 {
+    public Transform arrow;
     [System.NonSerialized]
     public HierarchyItem parent;
     [System.NonSerialized]
@@ -14,6 +21,12 @@ public class HierarchyItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public bool pointerEntered;
     [System.NonSerialized]
     public bool expanded;
+    [System.NonSerialized]
+    public bool draggable;
+
+    bool dragging;
+
+    HierarchyItem draggedInstance;
 
     public Text text
     {
@@ -31,6 +44,22 @@ public class HierarchyItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         }
     }
 
+    public Image arrowImage
+    {
+        get
+        {
+            return arrow.GetComponent<Image>();
+        }
+    }
+
+    public Canvas canvas
+    {
+        get
+        {
+            return GetComponentInParent<Canvas>();
+        }
+    }
+
     public void SetParent(HierarchyItem parent)
     {
         this.parent = parent;
@@ -38,6 +67,7 @@ public class HierarchyItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         var x = textPosition.x + Constants.HIERARCHY_ITEM_SPACE_LEVEL;
         var pos = text.transform.localPosition;
         text.transform.localPosition = new Vector3(x, pos.y, pos.z);
+        parent.arrowImage.enabled = true;
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -52,6 +82,8 @@ public class HierarchyItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     public void OnPointerUp(PointerEventData eventData)
     {
+        if(dragging)
+            return;
         if(!Input.GetMouseButtonUp(0))
             return;
         if (HierarchyManager.instance.AnyChild(this.GetID()))
@@ -67,6 +99,37 @@ public class HierarchyItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         }
     }
 
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        if(draggedInstance.IsNotNull())
+            Destroy(draggedInstance.gameObject);
+        if(!draggable)
+            return;
+        draggedInstance = Instantiate<HierarchyItem>(this, eventData.position, Quaternion.identity, canvas.transform);
+        dragging = true;
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        if(!draggable)
+            return;
+        if(draggedInstance.IsNotNull())
+        {
+            draggedInstance.transform.position = eventData.position;
+        }
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        if(!draggable)
+            return;
+        if(draggedInstance.IsNotNull())
+        {
+            Destroy(draggedInstance.gameObject);
+        }
+        dragging = false;
+    }
+
     public void Collapse()
     {
         expanded = false;
@@ -76,6 +139,7 @@ public class HierarchyItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
             x.Collapse();
             x.gameObject.SetActive(false);
         });
+        arrowImage.sprite = HierarchyManager.instance.rightArrowSprite;
         children = null;
     }
 
@@ -87,6 +151,7 @@ public class HierarchyItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         {
             x.gameObject.SetActive(true);
         });
+        arrowImage.sprite = HierarchyManager.instance.bottomArrowSprite;
         children = null;
     }
 }

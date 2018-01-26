@@ -440,6 +440,8 @@ MonoBehaviour:
   itemPrefab: {fileID: 114634185112051200, guid: 8dfff758c75c5485cb4bd40fb8fd4f44,
     type: 2}
   container: {fileID: 1957699756}
+  rightArrowSprite: {fileID: 21300000, guid: 3d5c0ac3a6f7b48088a5ccb839e93812, type: 3}
+  bottomArrowSprite: {fileID: 21300002, guid: 3d5c0ac3a6f7b48088a5ccb839e93812, type: 3}
 --- !u!1 &901693386
 GameObject:
   m_ObjectHideFlags: 0

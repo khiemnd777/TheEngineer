@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class ScriptableHost : MonoBehaviour
 {
-    public Transform container;
+    // public Transform container;
     public Transform includedScript;
 
     List<Scriptable> _scripts;

@@ -32,6 +32,8 @@ public class HierarchyManager : MonoBehaviour
 
     public HierarchyItem itemPrefab;
     public RectTransform container;
+    public Sprite rightArrowSprite;
+    public Sprite bottomArrowSprite;
     [System.NonSerialized]
     public HierarchyItem scriptPart;
     [System.NonSerialized]
@@ -54,18 +56,18 @@ public class HierarchyManager : MonoBehaviour
         CreatePrefabPart();
         CreateScriptPart();
         CreatePixelPart();
-        
-        Create("Prefab object A", "Prefab object A", null, prefabPart);
-        Create("Prefab object B", "Prefab object B", null, prefabPart);
-        
-        Create("instance-script.py", "instance-script.py", null, scriptPart);
-        Create("instance-script.py", "instance-script.py", null, scriptPart);
-        Create("instance-script.py", "instance-script.py", null, scriptPart);
-        
-        Create("Pixel 1", "Pixel 1", null, pixelPart);
-        var groups = Create("Group 1", "Group 1", null, pixelPart);
-        Create("Pixel 2", "Pixel 2", null, groups);
-        Create("Pixel 3", "Pixel 3", null, groups);
+
+        Create("Prefab object A", "Prefab object A", true, null, prefabPart);
+        Create("Prefab object B", "Prefab object B", true, null, prefabPart);
+
+        Create("instance-script.py", "instance-script.py", true, null, scriptPart);
+        Create("instance-script.py", "instance-script.py", true, null, scriptPart);
+        Create("instance-script.py", "instance-script.py", true, null, scriptPart);
+
+        Create("Pixel 1", "Pixel 1", true, null, pixelPart);
+        var groups = Create("Group 1", "Group 1", true, null, pixelPart);
+        Create("Pixel 2", "Pixel 2", true, null, groups);
+        Create("Pixel 3", "Pixel 3", true, null, groups);
 
         prefabPart.Collapse();
         scriptPart.Collapse();
@@ -74,14 +76,16 @@ public class HierarchyManager : MonoBehaviour
         Order();
 
         StartCoroutine(DetectHierarchyItemEntered());
+        StartCoroutine(DetectHierarchyItemShowArrow());
     }
 
-    public HierarchyItem Create(string name, string label, GameObject reference = null, HierarchyItem parent = null)
+    public HierarchyItem Create(string name, string label, bool draggable = true, GameObject reference = null, HierarchyItem parent = null)
     {
         var itemFromResource = Resources.Load<HierarchyItem>(Constants.HIERARCHY_ITEM_PREFAB);
         var instanceItem = Instantiate<HierarchyItem>(itemFromResource, Vector3.zero, Quaternion.identity);
         var textItem = instanceItem.text;
         textItem.text = label;
+        instanceItem.draggable = draggable;
         instanceItem.name = name;
         instanceItem.reference = reference;
         if (parent.IsNotNull())
@@ -121,17 +125,17 @@ public class HierarchyManager : MonoBehaviour
 
     public bool AnyChild(int itemId)
     {
-        return items.Any(x=>x.parent.IsNotNull() && x.parent.GetID() == itemId);
+        return items.Any(x => x.parent.IsNotNull() && x.parent.GetID() == itemId);
     }
 
     public void Order()
     {
-        var workingItems = _items;
         var index = -1;
-        System.Action<HierarchyItem> ordering = (root) => {
+        System.Action<HierarchyItem> ordering = (root) =>
+        {
             root.transform.SetSiblingIndex(++index);
             var children = GetChildren(root.GetID());
-            foreach(var item in children)
+            foreach (var item in children)
             {
                 item.transform.SetSiblingIndex(++index);
             }
@@ -142,7 +146,6 @@ public class HierarchyManager : MonoBehaviour
         ordering(pixelPart);
 
         ordering = null;
-        workingItems = null;
     }
 
     HierarchyItem GetHierarchyItemEntered()
@@ -165,15 +168,29 @@ public class HierarchyManager : MonoBehaviour
         }
     }
 
-    void CreatePrefabPart(){
-        prefabPart = Create(Constants.HIERARCHY_PREFAB_PART, Constants.HIERARCHY_PREFAB_PART_LABEL);
+    IEnumerator DetectHierarchyItemShowArrow()
+    {
+        while (gameObject.IsNotNull())
+        {
+            foreach(var item in items){
+                item.arrowImage.enabled = AnyChild(item.GetID());
+            }
+            yield return null;
+        }
     }
 
-    void CreateScriptPart(){
-        scriptPart = Create(Constants.HIERARCHY_SCRIPT_PART, Constants.HIERARCHY_SCRIPT_PART_LABEL);
+    void CreatePrefabPart()
+    {
+        prefabPart = Create(Constants.HIERARCHY_PREFAB_PART, Constants.HIERARCHY_PREFAB_PART_LABEL, false);
     }
 
-    void CreatePixelPart(){
-        pixelPart = Create(Constants.HIERARCHY_PIXEL_PART, Constants.HIERARCHY_PIXEL_PART_LABEL);
+    void CreateScriptPart()
+    {
+        scriptPart = Create(Constants.HIERARCHY_SCRIPT_PART, Constants.HIERARCHY_SCRIPT_PART_LABEL, false);
+    }
+
+    void CreatePixelPart()
+    {
+        pixelPart = Create(Constants.HIERARCHY_PIXEL_PART, Constants.HIERARCHY_PIXEL_PART_LABEL, false);
     }
 }

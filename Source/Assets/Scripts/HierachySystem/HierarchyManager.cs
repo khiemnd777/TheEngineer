@@ -55,17 +55,17 @@ public class HierarchyManager : MonoBehaviour
         CreateScriptPart();
         CreatePixelPart();
         
-        Create("Prefab object A", null, prefabPart);
-        Create("Prefab object B", null, prefabPart);
+        Create("Prefab object A", "Prefab object A", null, prefabPart);
+        Create("Prefab object B", "Prefab object B", null, prefabPart);
         
-        Create("instance-script.py", null, scriptPart);
-        Create("instance-script.py", null, scriptPart);
-        Create("instance-script.py", null, scriptPart);
+        Create("instance-script.py", "instance-script.py", null, scriptPart);
+        Create("instance-script.py", "instance-script.py", null, scriptPart);
+        Create("instance-script.py", "instance-script.py", null, scriptPart);
         
-        Create("Pixel 1", null, pixelPart);
-        var groups = Create("Group 1", null, pixelPart);
-        Create("Pixel 2", null, groups);
-        Create("Pixel 3", null, groups);
+        Create("Pixel 1", "Pixel 1", null, pixelPart);
+        var groups = Create("Group 1", "Group 1", null, pixelPart);
+        Create("Pixel 2", "Pixel 2", null, groups);
+        Create("Pixel 3", "Pixel 3", null, groups);
 
         prefabPart.Collapse();
         scriptPart.Collapse();
@@ -76,12 +76,12 @@ public class HierarchyManager : MonoBehaviour
         StartCoroutine(DetectHierarchyItemEntered());
     }
 
-    public HierarchyItem Create(string name, GameObject reference = null, HierarchyItem parent = null)
+    public HierarchyItem Create(string name, string label, GameObject reference = null, HierarchyItem parent = null)
     {
         var itemFromResource = Resources.Load<HierarchyItem>(Constants.HIERARCHY_ITEM_PREFAB);
         var instanceItem = Instantiate<HierarchyItem>(itemFromResource, Vector3.zero, Quaternion.identity);
         var textItem = instanceItem.text;
-        textItem.text = name;
+        textItem.text = label;
         instanceItem.name = name;
         instanceItem.reference = reference;
         if (parent.IsNotNull())
@@ -127,19 +127,22 @@ public class HierarchyManager : MonoBehaviour
     public void Order()
     {
         var workingItems = _items;
-        var total = workingItems.Count;
         var index = -1;
-        System.Action<HierarchyItem> ordering =(root) => {
+        System.Action<HierarchyItem> ordering = (root) => {
             root.transform.SetSiblingIndex(++index);
             var children = GetChildren(root.GetID());
             foreach(var item in children)
             {
                 item.transform.SetSiblingIndex(++index);
             }
+            children = null;
         };
         ordering(prefabPart);
         ordering(scriptPart);
         ordering(pixelPart);
+
+        ordering = null;
+        workingItems = null;
     }
 
     HierarchyItem GetHierarchyItemEntered()
@@ -163,14 +166,14 @@ public class HierarchyManager : MonoBehaviour
     }
 
     void CreatePrefabPart(){
-        prefabPart = Create("Prefabs");
+        prefabPart = Create(Constants.HIERARCHY_PREFAB_PART, Constants.HIERARCHY_PREFAB_PART_LABEL);
     }
 
     void CreateScriptPart(){
-        scriptPart = Create("Scripts");
+        scriptPart = Create(Constants.HIERARCHY_SCRIPT_PART, Constants.HIERARCHY_SCRIPT_PART_LABEL);
     }
 
     void CreatePixelPart(){
-        pixelPart = Create("Pixels");
+        pixelPart = Create(Constants.HIERARCHY_PIXEL_PART, Constants.HIERARCHY_PIXEL_PART_LABEL);
     }
 }

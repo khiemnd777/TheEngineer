@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-public class HierarchyItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+public class HierarchyItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerUpHandler
 {
     [System.NonSerialized]
     public HierarchyItem parent;
@@ -50,8 +50,10 @@ public class HierarchyItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         pointerEntered = false;
     }
 
-    public void OnPointerClick(PointerEventData eventData)
+    public void OnPointerUp(PointerEventData eventData)
     {
+        if(!Input.GetMouseButtonUp(0))
+            return;
         if (HierarchyManager.instance.AnyChild(this.GetID()))
         {
             if (!expanded)

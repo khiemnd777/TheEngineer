@@ -45,7 +45,8 @@ public class ContextMenu : MonoBehaviour
             HideOnMouseUp();
         };
 
-        SelectObjectManager.instance.onMultipleSelecting += () => {
+        SelectObjectManager.instance.onMultipleSelecting += () =>
+        {
             Hide();
         };
     }
@@ -54,29 +55,39 @@ public class ContextMenu : MonoBehaviour
     {
         if (Input.GetMouseButtonUp(1))
         {
-            if (EventSystem.current.IsPointerOverGameObject())
-                return;
             if (EventObserver.instance.happeningEvent == Events.ShowContextMenu)
             {
                 EventObserver.instance.happeningEvent = Events.HideContextMenu;
             }
-            var hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
-            if (hit.collider != null)
+            ContextMenuRegistrar registrar = null;
+            if (EventSystem.current.IsPointerOverGameObject())
             {
-                var registrar = hit.collider.GetComponent<ContextMenuRegistrar>();
-                if (registrar.IsNotNull())
+                var pointer = new PointerEventData(EventSystem.current);
+                pointer.position = Input.mousePosition;
+                var raycastResults = new List<RaycastResult>();
+                EventSystem.current.RaycastAll(pointer, raycastResults);
+                foreach(var hit in raycastResults)
                 {
-                    if (target.IsNotNull() && target.transform.GetInstanceID() == hit.collider.transform.GetInstanceID())
-                    {
-                        registrar = null;
-                        return;
+                    var contextMenuRegistrar = hit.gameObject.GetComponent<ContextMenuRegistrar>();
+                    if(contextMenuRegistrar.IsNotNull()){
+                        registrar = contextMenuRegistrar;
+                        contextMenuRegistrar = null;
+                        break;
                     }
-                    else
-                    {
-                        Hide();
-                    }
-                    target = registrar;
-                    Show();
+                }
+            }
+            else
+            {
+                var hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+                if (hit.collider != null)
+                {
+                    registrar = hit.collider.GetComponent<ContextMenuRegistrar>();
+                }
+            }
+            if (registrar.IsNotNull())
+            {
+                if (target.IsNotNull() && target.GetID() == registrar.GetID())
+                {
                     registrar = null;
                     return;
                 }
@@ -84,6 +95,14 @@ public class ContextMenu : MonoBehaviour
                 {
                     Hide();
                 }
+                target = registrar;
+                Show();
+                registrar = null;
+                return;
+            }
+            else
+            {
+                Hide();
             }
             Hide();
         }
@@ -94,13 +113,13 @@ public class ContextMenu : MonoBehaviour
         }
         if (Input.GetAxis("Mouse ScrollWheel") < 0)
         {
-            if(EventObserver.instance.happeningEvent == Events.ShowContextMenu)
+            if (EventObserver.instance.happeningEvent == Events.ShowContextMenu)
                 EventObserver.instance.happeningEvent = Events.HideContextMenu;
             Hide();
         }
         if (Input.GetAxis("Mouse ScrollWheel") > 0)
         {
-            if(EventObserver.instance.happeningEvent == Events.ShowContextMenu)
+            if (EventObserver.instance.happeningEvent == Events.ShowContextMenu)
                 EventObserver.instance.happeningEvent = Events.HideContextMenu;
             Hide();
         }
@@ -156,9 +175,10 @@ public class ContextMenu : MonoBehaviour
             var action = (System.Action)ExpandoObjectUtility.GetVariable(eo, "action");
             var text = item.GetComponentInChildren<Text>();
             item.onClick.RemoveAllListeners();
-            item.onClick.AddListener(() => {
+            item.onClick.AddListener(() =>
+            {
                 action.Invoke();
-                if(EventObserver.instance.happeningEvent == Events.ShowContextMenu)
+                if (EventObserver.instance.happeningEvent == Events.ShowContextMenu)
                     EventObserver.instance.happeningEvent = Events.HideContextMenu;
                 Hide();
             });

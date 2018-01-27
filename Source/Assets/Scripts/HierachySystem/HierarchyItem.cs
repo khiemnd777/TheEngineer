@@ -24,6 +24,8 @@ public class HierarchyItem : MonoBehaviour
     [System.NonSerialized]
     public bool draggable;
 
+    public OnDragEvent onDragEndEvent;
+
     bool dragging;
 
     HierarchyItem draggedInstance;
@@ -49,6 +51,14 @@ public class HierarchyItem : MonoBehaviour
         get
         {
             return arrow.GetComponent<Image>();
+        }
+    }
+
+    public RectTransform rectTransform
+    {
+        get
+        {
+            return GetComponent<RectTransform>();
         }
     }
 
@@ -115,7 +125,11 @@ public class HierarchyItem : MonoBehaviour
             return;
         if(draggedInstance.IsNotNull())
         {
-            draggedInstance.transform.position = eventData.position;
+            var mousePosition = Input.mousePosition;
+            var instanceSizeDelta = draggedInstance.rectTransform.sizeDelta;
+            var instancePosition = draggedInstance.transform.position;
+            var draggedPosition = new Vector3(mousePosition.x + instanceSizeDelta.x / 2f, mousePosition.y - instanceSizeDelta.y, instancePosition.z);
+            draggedInstance.transform.position = draggedPosition;
         }
     }
 
@@ -125,6 +139,10 @@ public class HierarchyItem : MonoBehaviour
             return;
         if(draggedInstance.IsNotNull())
         {
+            if(onDragEndEvent.IsNotNull())
+            {
+                onDragEndEvent.Invoke(this, eventData.position);
+            }
             Destroy(draggedInstance.gameObject);
         }
         dragging = false;

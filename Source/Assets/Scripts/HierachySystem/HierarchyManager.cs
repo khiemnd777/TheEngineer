@@ -75,7 +75,8 @@ public class HierarchyManager : MonoBehaviour
 
         Order();
 
-        StartCoroutine(DetectHierarchyItemEntered());
+        // It seems to be non-necessary
+        // StartCoroutine(DetectHierarchyItemEntered());
         StartCoroutine(DetectHierarchyItemShowArrow());
     }
 
@@ -95,6 +96,7 @@ public class HierarchyManager : MonoBehaviour
         // item contains into container
         instanceItem.transform.SetParent(container.transform);
         instanceItem.transform.localScale = Vector3.one;
+        instanceItem.onDragEndEvent += (sender, dragEndPosition) => OnHierarchyItemDragEnd(sender, dragEndPosition);
         items.Add(instanceItem);
         // release memory
         textItem = null;
@@ -148,6 +150,33 @@ public class HierarchyManager : MonoBehaviour
         ordering = null;
     }
 
+    void OnHierarchyItemDragEnd(object sender, Vector3 dragEndPosition)
+    {
+        var itemEntered = GetHierarchyItemEntered();
+        if (itemEntered.IsNull())
+            return;
+        var draggedItem = sender as HierarchyItem;
+        DragItemIntoItem(draggedItem, itemEntered);
+        draggedItem = null;
+        itemEntered = null;
+    }
+
+    void DragItemIntoItem(HierarchyItem source, HierarchyItem destination)
+    {
+        if (destination.GetID() == prefabPart.GetID())
+        {
+            
+        }
+        else if (destination.GetID() == scriptPart.GetID())
+        {
+
+        }
+        else if (destination.GetID() == pixelPart.GetID())
+        {
+
+        }
+    }
+
     HierarchyItem GetHierarchyItemEntered()
     {
         var itemEntered = _items.FirstOrDefault(x => x.pointerEntered);
@@ -161,7 +190,7 @@ public class HierarchyManager : MonoBehaviour
             var itemEntered = GetHierarchyItemEntered();
             if (itemEntered.IsNotNull())
             {
-                //  do any stuff here...
+                // do any stuff here...
                 itemEntered = null;
             }
             yield return null;
@@ -172,7 +201,8 @@ public class HierarchyManager : MonoBehaviour
     {
         while (gameObject.IsNotNull())
         {
-            foreach(var item in items){
+            foreach (var item in items)
+            {
                 item.arrowImage.enabled = AnyChild(item.GetID());
             }
             yield return null;

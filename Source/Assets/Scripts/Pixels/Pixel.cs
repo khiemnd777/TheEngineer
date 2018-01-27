@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using IronPython;
 
-public delegate void OnDragEvent(Vector2 position);
+public delegate void OnDragEvent(object sender, Vector2 position);
 
 public class Pixel : MonoBehaviour
 {
@@ -122,7 +122,7 @@ public class Pixel : MonoBehaviour
         draggedHold = true && !SelectObjectManager.instance.multipleChoice;
         if (onDragStart.IsNotNull())
         {
-            onDragStart.Invoke(transform.position);
+            onDragStart.Invoke(this, transform.position);
         }
         pixels = null;
     }
@@ -161,7 +161,7 @@ public class Pixel : MonoBehaviour
 
                 if (onDrag.IsNotNull())
                 {
-                    onDrag.Invoke(realPosition);
+                    onDrag.Invoke(this, realPosition);
                 }
             }
         }
@@ -189,7 +189,7 @@ public class Pixel : MonoBehaviour
         }
         if (onDrop.IsNotNull())
         {
-            onDrop.Invoke(transform.position);
+            onDrop.Invoke(this, transform.position);
         }
     }
 

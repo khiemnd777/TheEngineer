@@ -92,6 +92,7 @@ public class HierarchyManager : MonoBehaviour
         if (parent.IsNotNull())
         {
             instanceItem.SetParent(parent);
+            instanceItem.gameObject.SetActive(parent.expanded);
         }
         // item contains into container
         instanceItem.transform.SetParent(container.transform);
@@ -133,21 +134,20 @@ public class HierarchyManager : MonoBehaviour
     public void Order()
     {
         var index = -1;
-        System.Action<HierarchyItem> ordering = (root) =>
-        {
-            root.transform.SetSiblingIndex(++index);
-            var children = GetChildren(root.GetID());
-            foreach (var item in children)
-            {
-                item.transform.SetSiblingIndex(++index);
-            }
-            children = null;
-        };
-        ordering(prefabPart);
-        ordering(scriptPart);
-        ordering(pixelPart);
+        OrderSibling(prefabPart, ref index);
+        OrderSibling(scriptPart, ref index);
+        OrderSibling(pixelPart, ref index);
+    }
 
-        ordering = null;
+    void OrderSibling(HierarchyItem item, ref int index)
+    {
+        item.transform.SetSiblingIndex(++index);
+        var children = GetChildren(item.GetID());
+        foreach (var child in children)
+        {
+            OrderSibling(child, ref index);
+        }
+        children = null;
     }
 
     void OnHierarchyItemDragEnd(object sender, Vector3 dragEndPosition)

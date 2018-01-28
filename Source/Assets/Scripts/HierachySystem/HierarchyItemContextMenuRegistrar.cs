@@ -6,7 +6,10 @@ using UnityEngine.EventSystems;
 
 public class HierarchyItemContextMenuRegistrar : ContextMenuRegistrar
 {
+    public Button takeOffPrefab;
+
     HierarchyItem item;
+
     protected override void Start()
     {
         item = GetComponent<HierarchyItem>();
@@ -26,6 +29,9 @@ public class HierarchyItemContextMenuRegistrar : ContextMenuRegistrar
             || Constants.HIERARCHY_SCRIPT_PART.Equals(item.name))){
             RegisterItem("rename", "Rename", () => {
                 Debug.Log("rename.");
+            });
+            RegisterItem("delete", "Delete", takeOffPrefab, () => {
+                Debug.Log("delete.");
             });
         }
     }

@@ -170,7 +170,7 @@ public class HierarchyManager : MonoBehaviour
         var destId = destination.GetID();
         if (destId == prefabPart.GetID())
         {
-            // Prefab part
+            // destination is Prefab part
             // source must be a pixel type
             var sourceRefGo = sourceRef.gameObject;
             var prefabricated = PrefabManager.instance.GetPrefabricated(sourceRefGo);
@@ -187,12 +187,12 @@ public class HierarchyManager : MonoBehaviour
         }
         else if (destId == scriptPart.GetID())
         {
-            // Script part
+            // destination is Script part
             // have no idea
         }
         else if (destId == pixelPart.GetID())
         {
-            // Pixel part
+            // destination Pixel part
             // duplicate of any prefab type
             var sourceRefGo = sourceRef.gameObject;
             var prefabricated = PrefabManager.instance.GetPrefabricated(sourceRefGo);

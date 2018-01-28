@@ -17,6 +17,7 @@ public enum Events
     , ShowContextMenu
     , HideContextMenu
     , RemovePixel
+    , DragHierarchyItem
 }
 
 public class EventObserver : MonoBehaviour

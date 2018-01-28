@@ -77,7 +77,8 @@ public class SelectObjectManager : MonoBehaviour
         if (!_dragToSelect)
             return;
         if (EventObserver.instance.happeningEvent == Events.DragPivotStart
-            || EventObserver.instance.happeningEvent == Events.DragPivot)
+            || EventObserver.instance.happeningEvent == Events.DragPivot
+            || EventObserver.instance.happeningEvent == Events.DragHierarchyItem)
             return;
         if (Input.GetMouseButtonDown(0))
         {
@@ -271,6 +272,10 @@ public class SelectObjectManager : MonoBehaviour
             if (EventObserver.instance.happeningEvent == Events.DragMultiplePixels)
             {
                 EventObserver.instance.happeningEvent = Events.OutFocusMultipleSelect;
+            }
+            if (EventObserver.instance.happeningEvent == Events.DragHierarchyItem)
+            {
+                EventObserver.instance.happeningEvent = Events.None;
             }
             var pixels = FindObjectsOfType<Pixel>();
             if (multipleChoice)

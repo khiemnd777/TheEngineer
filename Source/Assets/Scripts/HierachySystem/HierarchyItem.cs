@@ -130,6 +130,7 @@ public class HierarchyItem : MonoBehaviour
             var instancePosition = draggedInstance.transform.position;
             var draggedPosition = new Vector3(mousePosition.x + instanceSizeDelta.x / 2f, mousePosition.y - instanceSizeDelta.y, instancePosition.z);
             draggedInstance.transform.position = draggedPosition;
+            EventObserver.instance.happeningEvent = Events.DragHierarchyItem;
         }
     }
 

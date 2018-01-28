@@ -24,4 +24,14 @@ public static class ObjectExtensions
     {
         return target.GetComponent<RectTransform>().IsNotNull();
     }
+
+    public static bool IsAssignedFor(this object target, System.Type assignedForType)
+    {
+        return assignedForType.IsAssignableFrom(target.GetType());
+    }
+
+    public static bool IsAssignedFor<T>(this object target)
+    {
+        return IsAssignedFor(target, typeof(T));
+    }
 }

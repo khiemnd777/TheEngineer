@@ -63,8 +63,8 @@ public class HierarchyManager : MonoBehaviour
         Create("instance-script.py", "instance-script.py", true, null, scriptPart);
         Create("instance-script.py", "instance-script.py", true, null, scriptPart);
         Create("instance-script.py", "instance-script.py", true, null, scriptPart);
-
-        Create("Pixel 1", "Pixel 1", true, null, pixelPart);
+        var pixel = FindObjectOfType<Pixel>();
+        Create("Pixel 1", "Pixel 1", true, pixel.gameObject, pixelPart);
         var groups = Create("Group 1", "Group 1", true, null, pixelPart);
         Create("Pixel 2", "Pixel 2", true, null, groups);
         Create("Pixel 3", "Pixel 3", true, null, groups);
@@ -163,18 +163,52 @@ public class HierarchyManager : MonoBehaviour
 
     void DragItemIntoItem(HierarchyItem source, HierarchyItem destination)
     {
-        if (destination.GetID() == prefabPart.GetID())
-        {
-            
-        }
-        else if (destination.GetID() == scriptPart.GetID())
-        {
+        var sourceRef = source.reference;
+        if(sourceRef.IsNull())
+            return;
 
-        }
-        else if (destination.GetID() == pixelPart.GetID())
+        var destId = destination.GetID();
+        if (destId == prefabPart.GetID())
         {
-
+            // Prefab part
+            // source must be a pixel type
+            var sourceRefGo = sourceRef.gameObject;
+            var prefabricated = PrefabManager.instance.GetPrefabricated(sourceRefGo);
+            if(prefabricated.isPrefab){
+                prefabricated = null;
+                sourceRefGo = null;
+                return;
+            }
+            var prefabRef = PrefabManager.instance.Create(sourceRefGo);
+            var prefabName = prefabRef.name;
+            Create(prefabName, prefabName, true, prefabRef, destination);
+            Order();
+            prefabRef = null;
         }
+        else if (destId == scriptPart.GetID())
+        {
+            // Script part
+            // have no idea
+        }
+        else if (destId == pixelPart.GetID())
+        {
+            // Pixel part
+            // duplicate of any prefab type
+            var sourceRefGo = sourceRef.gameObject;
+            var prefabricated = PrefabManager.instance.GetPrefabricated(sourceRefGo);
+            if(!prefabricated.isPrefab){
+                prefabricated = null;
+                sourceRefGo = null;
+                return;
+            }
+            var unprefabGoRef = PrefabManager.instance.Unprefab(sourceRefGo);
+            var unprefabName = unprefabGoRef.name;
+            Create(unprefabName, unprefabName, true, unprefabGoRef, destination);
+            Order();
+            unprefabGoRef = null;
+            // or sorting maybe
+        }
+        sourceRef = null;
     }
 
     HierarchyItem GetHierarchyItemEntered()

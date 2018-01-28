@@ -92,9 +92,9 @@ public class HierarchyItem : MonoBehaviour
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        if(dragging)
+        if (dragging)
             return;
-        if(!Input.GetMouseButtonUp(0))
+        if (!Input.GetMouseButtonUp(0))
             return;
         if (HierarchyManager.instance.AnyChild(this.GetID()))
         {
@@ -111,9 +111,9 @@ public class HierarchyItem : MonoBehaviour
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if(draggedInstance.IsNotNull())
+        if (draggedInstance.IsNotNull())
             Destroy(draggedInstance.gameObject);
-        if(!draggable)
+        if (!draggable)
             return;
         draggedInstance = Instantiate<HierarchyItem>(this, eventData.position, Quaternion.identity, canvas.transform);
         dragging = true;
@@ -121,9 +121,9 @@ public class HierarchyItem : MonoBehaviour
 
     public void OnDrag(PointerEventData eventData)
     {
-        if(!draggable)
+        if (!draggable)
             return;
-        if(draggedInstance.IsNotNull())
+        if (draggedInstance.IsNotNull())
         {
             var mousePosition = Input.mousePosition;
             var instanceSizeDelta = draggedInstance.rectTransform.sizeDelta;
@@ -135,11 +135,11 @@ public class HierarchyItem : MonoBehaviour
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if(!draggable)
+        if (!draggable)
             return;
-        if(draggedInstance.IsNotNull())
+        if (draggedInstance.IsNotNull())
         {
-            if(onDragEndEvent.IsNotNull())
+            if (onDragEndEvent.IsNotNull())
             {
                 onDragEndEvent.Invoke(this, eventData.position);
             }
@@ -152,7 +152,7 @@ public class HierarchyItem : MonoBehaviour
     {
         expanded = false;
         var children = HierarchyManager.instance.GetChildren(this.GetID());
-        children.ForEach(x => 
+        children.ForEach(x =>
         {
             x.Collapse();
             x.gameObject.SetActive(false);
@@ -165,7 +165,7 @@ public class HierarchyItem : MonoBehaviour
     {
         expanded = true;
         var children = HierarchyManager.instance.GetChildren(this.GetID());
-        children.ForEach(x => 
+        children.ForEach(x =>
         {
             x.gameObject.SetActive(true);
         });

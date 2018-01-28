@@ -28,10 +28,10 @@ public class Scriptable : MonoBehaviour
         instanceOfScript.variableName = name.ToVariableName();
 
         // contains into script container
-        var scriptContainer = GameObject.Find("/Scripts");
+        var scriptContainer = GameObject.Find("/" + Constants.SCRIPT_CONTAINER);
         if (scriptContainer.IsNull())
         {
-            scriptContainer = new GameObject("Scripts");
+            scriptContainer = new GameObject(Constants.SCRIPT_CONTAINER);
         }
         instanceOfScript.transform.SetParent(scriptContainer.transform);
         // release memory

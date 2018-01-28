@@ -9,9 +9,8 @@ using IronPython;
 
 public delegate void OnDragEvent(object sender, Vector2 position);
 
-public class Pixel : MonoBehaviour
+public class Pixel : MonoBehaviour, IPrefabricated
 {
-    public int id;
     public TextMesh text;
     public bool selecting;
     public bool tempSelecting;
@@ -29,22 +28,14 @@ public class Pixel : MonoBehaviour
 
     public ExpandoObject pythonPixel;
 
+    public bool isPrefab { get; set; }
+
     Vector2 _anchorMovePoint;
 
     List<Scriptable> scriptableList;
 
-    static int _currentID;
-
-    public static int GetUniqueID()
-    {
-        return ++_currentID;
-    }
-
     void Start()
     {
-        // id
-        id = GetUniqueID();
-        name = "Pixel " + id;
         text.text = name;
         // instance python's scriptable object
         pythonPixel = new ExpandoObject();
@@ -246,7 +237,7 @@ public class Pixel : MonoBehaviour
     {
         selecting = false;
         VisibleSelection(false);
-        if(EventObserver.instance.happeningEvent != Events.DragPivotStart)
+        if (EventObserver.instance.happeningEvent != Events.DragPivotStart)
             pivot.gameObject.SetActive(false);
     }
 

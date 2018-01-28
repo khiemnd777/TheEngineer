@@ -16,4 +16,6 @@ public class Constants{
     public const string HIERARCHY_PREFAB_PART_LABEL = "Prefabs";
     public const string HIERARCHY_SCRIPT_PART_LABEL = "Scripts";
     public const string HIERARCHY_PIXEL_PART_LABEL = "Pixels";
+    public const string SCRIPT_CONTAINER = "Scripts";
+    public const string PREFAB_CONTAINER = "Prefabs";
 }

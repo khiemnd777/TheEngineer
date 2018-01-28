@@ -26,13 +26,54 @@ public class PrefabManager : MonoBehaviour
     }
     #endregion
 
-    public void Create(GameObject patternObject)
+    public GameObject Create(GameObject patternObject)
     {
-        var scriptContainer = GameObject.Find("/Scripts");
+        if(patternObject.IsNull())
+            return null;
+        var prefabComp = GetPrefabricated(patternObject);
+        if (prefabComp.IsNull())
+            return null;
+        var scriptContainer = GameObject.Find("/" + Constants.PREFAB_CONTAINER);
         if (scriptContainer.IsNull())
         {
-            scriptContainer = new GameObject("Scripts");
+            scriptContainer = new GameObject(Constants.PREFAB_CONTAINER);
         }
-        Instantiate(patternObject, Vector3.zero, Quaternion.identity, scriptContainer);
+        var prefabGo = Instantiate(patternObject, Vector3.zero, Quaternion.identity, scriptContainer.transform);
+        prefabGo.name = patternObject.name;
+        prefabComp = GetPrefabricated(prefabGo);
+        prefabComp.isPrefab = true;
+
+        prefabGo.SetActive(false);
+
+        scriptContainer = null;
+        prefabComp = null;
+        
+        return prefabGo;
+    }
+
+    public GameObject Unprefab(GameObject patternObject)
+    {
+        if(patternObject.IsNull())
+            return null;
+        var prefabComp = GetPrefabricated(patternObject);
+        if(prefabComp.IsNull())
+            return null;
+        var unprefabGo = Instantiate(patternObject, Vector3.zero, Quaternion.identity);
+        unprefabGo.name = patternObject.name;
+        prefabComp = GetPrefabricated(unprefabGo);
+        prefabComp.isPrefab = false;
+
+        unprefabGo.SetActive(true);
+
+        prefabComp = null;
+        return unprefabGo;
+    }
+
+    public IPrefabricated GetPrefabricated(GameObject target)
+    {
+        if(target.IsNull())
+            return null;
+        var prefabComp = target.GetComponent(typeof(IPrefabricated)) as IPrefabricated;
+        return prefabComp;
     }
 }

@@ -21,5 +21,12 @@ public class HierarchyItemContextMenuRegistrar : ContextMenuRegistrar
                 Debug.Log("Script created.");
             });
         }
+        if(!(Constants.HIERARCHY_PIXEL_PART.Equals(item.name)
+            || Constants.HIERARCHY_PREFAB_PART.Equals(item.name)
+            || Constants.HIERARCHY_SCRIPT_PART.Equals(item.name))){
+            RegisterItem("rename", "Rename", () => {
+                Debug.Log("rename.");
+            });
+        }
     }
 }

@@ -172,7 +172,7 @@ public class Group : MonoBehaviour
     public static void DeselectAnotherPixelsByPixel(Pixel pixel){
         var pixels = FindObjectsOfType<Pixel>();
         var pixelsHasSelectedPixel = GetPixelsInGroupByPixel(pixel);
-        var selectedPixels = pixels.Where(x => x.selecting && !pixelsHasSelectedPixel.Any(y => y.id == x.id)).ToList();
+        var selectedPixels = pixels.Where(x => x.selecting && !pixelsHasSelectedPixel.Any(y => y.GetID() == x.GetID())).ToList();
         foreach(var selectedPixel in selectedPixels){
             selectedPixel.Deselect();
         }
@@ -188,7 +188,7 @@ public class Group : MonoBehaviour
         var pixelsHasGroupButWithoutSelected = new List<Pixel>();
         foreach (var pixel in pixelsHasGroup)
         {
-            if (pixelsHasGroupButWithoutSelected.Any(x => x.id == pixel.id))
+            if (pixelsHasGroupButWithoutSelected.Any(x => x.GetID() == pixel.GetID()))
                 continue;
             if (!pixel.selecting)
             {

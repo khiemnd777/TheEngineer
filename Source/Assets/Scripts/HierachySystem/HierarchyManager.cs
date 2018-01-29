@@ -42,6 +42,7 @@ public class HierarchyManager : MonoBehaviour
     public HierarchyItem pixelPart;
 
     List<HierarchyItem> _items;
+    PrefabManager prefabManager;
 
     public List<HierarchyItem> items
     {
@@ -53,6 +54,8 @@ public class HierarchyManager : MonoBehaviour
 
     void Start()
     {
+        prefabManager = PrefabManager.instance;
+
         CreatePrefabPart();
         CreateScriptPart();
         CreatePixelPart();
@@ -153,10 +156,27 @@ public class HierarchyManager : MonoBehaviour
     void OnHierarchyItemDragEnd(object sender, Vector3 dragEndPosition)
     {
         var itemEntered = GetHierarchyItemEntered();
-        if (itemEntered.IsNull())
-            return;
         var draggedItem = sender as HierarchyItem;
-        DragItemIntoItem(draggedItem, itemEntered);
+        if (itemEntered.IsNull())
+        {
+            var draggedItemRef = draggedItem.reference;
+            var prefabricated = prefabManager.GetPrefabricated(draggedItemRef.gameObject);
+            if (prefabricated.IsNotNull())
+            {
+                if (prefabricated.isPrefab)
+                {
+                    var worldMousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                    var worldMousePosition2D = worldMousePosition.ToVector2();
+                    prefabManager.Unprefab(draggedItemRef, worldMousePosition2D);
+                }
+            }
+            prefabricated = null;
+            draggedItemRef = null;
+        }
+        else
+        {
+            DragItemIntoItem(draggedItem, itemEntered);
+        }
         draggedItem = null;
         itemEntered = null;
     }
@@ -164,7 +184,7 @@ public class HierarchyManager : MonoBehaviour
     void DragItemIntoItem(HierarchyItem source, HierarchyItem destination)
     {
         var sourceRef = source.reference;
-        if(sourceRef.IsNull())
+        if (sourceRef.IsNull())
             return;
 
         var destId = destination.GetID();
@@ -172,43 +192,64 @@ public class HierarchyManager : MonoBehaviour
         {
             // destination is Prefab part
             // source must be a pixel type
-            var sourceRefGo = sourceRef.gameObject;
-            var prefabricated = PrefabManager.instance.GetPrefabricated(sourceRefGo);
-            if(prefabricated.isPrefab){
-                prefabricated = null;
-                sourceRefGo = null;
-                return;
-            }
-            var prefabRef = PrefabManager.instance.Create(sourceRefGo);
-            var prefabName = prefabRef.name;
-            Create(prefabName, prefabName, true, prefabRef, destination);
-            Order();
-            prefabRef = null;
+            CreatePrefabPixelThroughPixel(source, destination);
         }
         else if (destId == scriptPart.GetID())
         {
             // destination is Script part
             // have no idea
+
         }
         else if (destId == pixelPart.GetID())
         {
             // destination Pixel part
             // duplicate of any prefab type
-            var sourceRefGo = sourceRef.gameObject;
-            var prefabricated = PrefabManager.instance.GetPrefabricated(sourceRefGo);
-            if(!prefabricated.isPrefab){
-                prefabricated = null;
-                sourceRefGo = null;
-                return;
-            }
-            var unprefabGoRef = PrefabManager.instance.Unprefab(sourceRefGo);
-            var unprefabName = unprefabGoRef.name;
-            Create(unprefabName, unprefabName, true, unprefabGoRef, destination);
-            Order();
-            unprefabGoRef = null;
+            CreatePixelThroughPrefab(source, destination);
             // or sorting maybe
         }
         sourceRef = null;
+    }
+
+    void CreatePrefabPixelThroughPixel(HierarchyItem source, HierarchyItem destination)
+    {
+        var sourceRef = source.reference;
+        if (sourceRef.IsNull())
+            return;
+        var sourceRefGo = sourceRef.gameObject;
+        var prefabricated = prefabManager.GetPrefabricated(sourceRefGo);
+        if (prefabricated.isPrefab)
+        {
+            prefabricated = null;
+            sourceRefGo = null;
+            return;
+        }
+        var prefabRef = prefabManager.Create(sourceRefGo);
+        var prefabName = prefabRef.name;
+        Create(prefabName, prefabName, true, prefabRef, destination);
+        Order();
+        prefabRef = null;
+        sourceRefGo = null;
+    }
+
+    void CreatePixelThroughPrefab(HierarchyItem source, HierarchyItem destination)
+    {
+        var sourceRef = source.reference;
+        if (sourceRef.IsNull())
+            return;
+        var sourceRefGo = sourceRef.gameObject;
+        var prefabricated = prefabManager.GetPrefabricated(sourceRefGo);
+        if (!prefabricated.isPrefab)
+        {
+            prefabricated = null;
+            sourceRefGo = null;
+            return;
+        }
+        var unprefabGoRef = prefabManager.Unprefab(sourceRefGo);
+        var unprefabName = unprefabGoRef.name;
+        Create(unprefabName, unprefabName, true, unprefabGoRef, destination);
+        Order();
+        unprefabGoRef = null;
+        sourceRefGo = null;
     }
 
     HierarchyItem GetHierarchyItemEntered()

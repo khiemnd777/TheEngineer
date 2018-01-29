@@ -56,15 +56,16 @@ public class Group : MonoBehaviour
             var lastGroup = GetLastGroup(pixel);
             var parentGroupsOfLastGroup = lastGroup.GetComponentsInParent<Group>();
             var nearestParentGroupOfLastGroup = parentGroupsOfLastGroup[parentGroupsOfLastGroup.Length - 1];
-            if(nearestParentGroupOfLastGroup.transform.GetInstanceID() == firstGroup.transform.GetInstanceID())
+            if(nearestParentGroupOfLastGroup.GetID() == firstGroup.GetID())
             {
-                if(parentGroupsOfLastGroup.Length > 1){
+                if(parentGroupsOfLastGroup.Length > 1)
+                {
                     nearestParentGroupOfLastGroup = parentGroupsOfLastGroup[parentGroupsOfLastGroup.Length - 2];
                     nearestParentGroupOfLastGroup.transform.parent = null;
                 }
             }
-            
-            if(firstGroup.transform.GetInstanceID() == lastGroup.transform.GetInstanceID()){
+            if(firstGroup.GetID() == lastGroup.GetID())
+            {
                 pixel.transform.parent = null;
             }
             lastGroup = null;

@@ -69,6 +69,15 @@ public class PrefabManager : MonoBehaviour
         return unprefabGo;
     }
 
+    public GameObject Unprefab(GameObject patternObject, Vector3 unprefabPosition)
+    {
+        if(patternObject.IsNull())
+            return null;
+        var unprefabGo = Unprefab(patternObject);
+        unprefabGo.transform.position = unprefabPosition;
+        return unprefabGo;
+    }
+
     public IPrefabricated GetPrefabricated(GameObject target)
     {
         if(target.IsNull())

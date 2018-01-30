@@ -6,6 +6,12 @@ using System.Collections.Generic;
 public class Group : MonoBehaviour
 {
     public Pivot pivot;
+    public int id;
+
+    void Start()
+    {
+        id = this.GetID();        
+    }
 
     public static void Create()
     {
@@ -75,7 +81,7 @@ public class Group : MonoBehaviour
         }
         selectedPixels = null;
         pixels = null;
-        Destroy(firstGroup.gameObject);
+        DestroyImmediate(firstGroup.gameObject);
     }
 
     public static void Ungroup()
@@ -101,7 +107,7 @@ public class Group : MonoBehaviour
             {
                 pixelsInGroup[0].transform.parent = null;
             }
-            Destroy(groupOfPixel.gameObject);
+            DestroyImmediate(groupOfPixel.gameObject);
         }
         groupOfPixel = null;
         pixelsInGroup = null;

@@ -20,6 +20,11 @@ public static class ObjectExtensions
         return target.transform.GetInstanceID();
     }
 
+    public static int GetID(this GameObject target)
+    {
+        return target.transform.GetInstanceID();
+    }
+
     public static bool HasRectTransform(this Component target)
     {
         return target.GetComponent<RectTransform>().IsNotNull();

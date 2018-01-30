@@ -293,29 +293,56 @@ public class HierarchyManager : MonoBehaviour
     {
         ClearPixelPart();
         var groups = FindObjectsOfType<Group>();
+        var hierarchyitems = _items.Where(x => x.reference.IsNotNull());
+        // create group items
         foreach (var group in groups)
         {
             var groupName = group.name;
-            var groupItem = Create(groupName, groupName, true, group.gameObject, pixelPart, pixelPart);
+            Create(groupName, groupName, true, group.gameObject, pixelPart, pixelPart);
+            groupName = null;
+        }
+        // nested groups
+        var groupHasParent = groups.Where(x => x.transform.parent.IsNotNull()).ToArray();
+        foreach(var group in groupHasParent)
+        {
+            var parentGroupItem = hierarchyitems.FirstOrDefault(x => x.reference.GetID() == group.transform.parent.GetID());
+            if(parentGroupItem.IsNull())
+                continue;
+            var groupItem = hierarchyitems.FirstOrDefault(x => x.reference.GetID() == group.id);
+            groupItem.SetParent(parentGroupItem);
+            parentGroupItem = null;
+            groupItem = null;
+        }
+        // pixels in each group
+        foreach (var group in groups)
+        {
             var groupId = group.GetID();
+            var parentGroupItem = hierarchyitems.FirstOrDefault(x => x.reference.GetID() == groupId);
+            if(parentGroupItem.IsNull())
+                continue;
             var belongPixels = group.GetComponentsInChildren<Pixel>();
             belongPixels = belongPixels.Where(x => x.parent.GetID() == groupId).ToArray();
             foreach (var pixel in belongPixels)
             {
                 var pixelName = pixel.name;
-                Create(pixelName, pixelName, true, pixel.gameObject, groupItem, pixelPart);
+                Create(pixelName, pixelName, true, pixel.gameObject, parentGroupItem, pixelPart);
                 pixelName = null;
             }
             belongPixels = null;
         }
+        // pixels without group
         var pixels = FindObjectsOfType<Pixel>();
         var nonGroupPixels = pixels.Where(x => !Group.HasGroup(x)).ToArray();
-        foreach(var pixel in nonGroupPixels){
+        foreach(var pixel in nonGroupPixels)
+        {
             var pixelName = pixel.name;
             Create(pixelName, pixelName, true, pixel.gameObject, pixelPart, pixelPart);
             pixelName = null;
         }
         groups = null;
+        hierarchyitems = null;
+
+        Order();
     }
 
     void CreatePrefabPart()
@@ -336,10 +363,10 @@ public class HierarchyManager : MonoBehaviour
     void ClearPixelPart()
     {
         var pixelPartItems = _items.Where(x => x.originalParentId != 0 && x.originalParentId == pixelPart.id).ToArray();
-        _items.RemoveAll(x => pixelPartItems.Contains(x));
+        _items.RemoveAll(x => pixelPartItems.Any(x1 => x1.id == x.id));
         foreach(var pixelItem in pixelPartItems)
         {
-            Destroy(pixelItem.gameObject);
+            DestroyImmediate(pixelItem.gameObject);
         }
         pixelPartItems = null;
     }

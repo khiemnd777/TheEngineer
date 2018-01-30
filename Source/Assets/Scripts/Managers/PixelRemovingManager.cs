@@ -26,6 +26,13 @@ public class PixelRemovingManager : MonoBehaviour
     }
     #endregion
 
+    HierarchyManager hierarchyManager;
+
+    void Start()
+    {
+        hierarchyManager = HierarchyManager.instance;
+    }
+
     void Update()
     {
         if (
@@ -51,8 +58,9 @@ public class PixelRemovingManager : MonoBehaviour
             {
                 Group.UngroupSingle(pixel);
             }
-            Destroy(pixel.gameObject);
+            DestroyImmediate(pixel.gameObject);
         }
         EventObserver.instance.happeningEvent = Events.RemovePixel;
+        hierarchyManager.UpdatePixelPart();
     }
 }

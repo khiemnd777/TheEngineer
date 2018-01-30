@@ -12,9 +12,12 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
 
     Pixel pixel;
 
+    HierarchyManager hierarchyManager;
+
     protected override void Start()
     {
         base.Start();
+        hierarchyManager = HierarchyManager.instance;
         pixel = GetComponent<Pixel>();
     }
 
@@ -33,30 +36,35 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
         {
             Debug.Log("Group");
             Group.Create();
+            hierarchyManager.UpdatePixelPart();
         });
 
         RegisterItem("ungroup-one-by-one", "Ungroup", () =>
         {
             Debug.Log("Ungroup One-by-one");
             Group.UngroupOneByOne();
+            hierarchyManager.UpdatePixelPart();
         });
 
         RegisterItem("ungroup-single", "Ungroup", () =>
         {
             Debug.Log("Ungroup Single");
             Group.UngroupSingle(pixel);
+            hierarchyManager.UpdatePixelPart();
         });
 
         RegisterItem("ungroup-all", "Ungroup All", () =>
         {
             Debug.Log("Ungroup All");
             Group.Ungroup();
+            hierarchyManager.UpdatePixelPart();
         });
 
         RegisterItem("take-off", "Take Off", takeOffPrefab, () =>
         {
             Debug.Log("Take Off");
             PixelRemovingManager.instance.Remove();
+            hierarchyManager.UpdatePixelPart();
         });
     }
 

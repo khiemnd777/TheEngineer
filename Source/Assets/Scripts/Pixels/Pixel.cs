@@ -34,8 +34,24 @@ public class Pixel : MonoBehaviour, IPrefabricated
 
     List<Scriptable> scriptableList;
 
+    int _id;
+
+    public Transform parent
+    {
+        get 
+        {
+            return transform.parent;
+        }
+    }
+
+    public int id
+    {
+        get { return _id; }
+    }
+
     void Start()
     {
+        _id = this.GetID();
         text.text = name;
         // instance python's scriptable object
         pythonPixel = new ExpandoObject();

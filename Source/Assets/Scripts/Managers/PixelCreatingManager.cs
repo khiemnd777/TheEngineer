@@ -3,8 +3,11 @@ using UnityEngine.EventSystems;
 
 public class PixelCreatingManager : MonoBehaviour
 {
+    HierarchyManager hierarchyManager;
+
     void Start()
     {
+        hierarchyManager = HierarchyManager.instance;
         MouseEventDetector.instance.onSingleMouseUp += (position) =>
         {
             CreatePixel(position);
@@ -52,5 +55,7 @@ public class PixelCreatingManager : MonoBehaviour
         }
         pixelPrefab = null;
         instancePixel = null;
+
+        hierarchyManager.UpdatePixelPart();
     }
 }

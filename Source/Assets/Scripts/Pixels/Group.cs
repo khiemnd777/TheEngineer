@@ -49,22 +49,23 @@ public class Group : MonoBehaviour
     {
         var pixels = FindObjectsOfType<Pixel>();
         var selectedPixels = pixels.Where(x => x.selecting && HasGroup(x));
-        if(!selectedPixels.Any())
+        if (!selectedPixels.Any())
             return;
         var firstGroup = GetFirstGroup(selectedPixels.LastOrDefault());
-        foreach(var pixel in selectedPixels){
+        foreach (var pixel in selectedPixels)
+        {
             var lastGroup = GetLastGroup(pixel);
             var parentGroupsOfLastGroup = lastGroup.GetComponentsInParent<Group>();
             var nearestParentGroupOfLastGroup = parentGroupsOfLastGroup[parentGroupsOfLastGroup.Length - 1];
-            if(nearestParentGroupOfLastGroup.GetID() == firstGroup.GetID())
+            if (nearestParentGroupOfLastGroup.GetID() == firstGroup.GetID())
             {
-                if(parentGroupsOfLastGroup.Length > 1)
+                if (parentGroupsOfLastGroup.Length > 1)
                 {
                     nearestParentGroupOfLastGroup = parentGroupsOfLastGroup[parentGroupsOfLastGroup.Length - 2];
                     nearestParentGroupOfLastGroup.transform.parent = null;
                 }
             }
-            if(firstGroup.GetID() == lastGroup.GetID())
+            if (firstGroup.GetID() == lastGroup.GetID())
             {
                 pixel.transform.parent = null;
             }
@@ -96,7 +97,8 @@ public class Group : MonoBehaviour
         var pixelsInGroup = groupOfPixel.GetComponentsInChildren<Pixel>();
         if (pixelsInGroup.Length <= 1)
         {
-            if(pixelsInGroup.Length == 1){
+            if (pixelsInGroup.Length == 1)
+            {
                 pixelsInGroup[0].transform.parent = null;
             }
             Destroy(groupOfPixel.gameObject);
@@ -124,7 +126,7 @@ public class Group : MonoBehaviour
     public static Group GetGroupAtIndex(Pixel pixel, int index)
     {
         var groupsOfPixel = GetGroups(pixel);
-        if(!groupsOfPixel.Any())
+        if (!groupsOfPixel.Any())
             return null;
         return groupsOfPixel[groupsOfPixel.Length - 1 - index];
     }
@@ -170,11 +172,13 @@ public class Group : MonoBehaviour
         return pixelsInGroup;
     }
 
-    public static void DeselectAnotherPixelsByPixel(Pixel pixel){
+    public static void DeselectAnotherPixelsByPixel(Pixel pixel)
+    {
         var pixels = FindObjectsOfType<Pixel>();
         var pixelsHasSelectedPixel = GetPixelsInGroupByPixel(pixel);
         var selectedPixels = pixels.Where(x => x.selecting && !pixelsHasSelectedPixel.Any(y => y.GetID() == x.GetID())).ToList();
-        foreach(var selectedPixel in selectedPixels){
+        foreach (var selectedPixel in selectedPixels)
+        {
             selectedPixel.Deselect();
         }
         selectedPixels = null;
@@ -206,18 +210,19 @@ public class Group : MonoBehaviour
         }
         // active the pivot of group
         var manySelectedGroups = GetManyGroups(pixelsHasGroup);
-        foreach(var group in manySelectedGroups){
+        foreach (var group in manySelectedGroups)
+        {
             var pivot = group.GetComponentInChildren<GroupPivot>();
-            if(pivot.IsNull())
+            if (pivot.IsNull())
                 continue;
             var pixel = group.GetComponentInChildren<Pixel>();
-            if(pixel.IsNotNull())
+            if (pixel.IsNotNull())
             {
                 pivot.GetComponent<MeshRenderer>().enabled = pixel.selecting;
                 pixel = null;
             }
             pivot = null;
-            
+
         }
         manySelectedGroups = null;
         pixelsHasGroup = null;

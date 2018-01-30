@@ -66,11 +66,13 @@ public class HierarchyManager : MonoBehaviour
         Create("instance-script.py", "instance-script.py", true, null, scriptPart);
         Create("instance-script.py", "instance-script.py", true, null, scriptPart);
         Create("instance-script.py", "instance-script.py", true, null, scriptPart);
-        var pixel = FindObjectOfType<Pixel>();
-        Create("Pixel 1", "Pixel 1", true, pixel.gameObject, pixelPart);
-        var groups = Create("Group 1", "Group 1", true, null, pixelPart);
-        Create("Pixel 2", "Pixel 2", true, null, groups);
-        Create("Pixel 3", "Pixel 3", true, null, groups);
+        // var pixel = FindObjectOfType<Pixel>();
+        // Create("Pixel 1", "Pixel 1", true, pixel.gameObject, pixelPart, pixelPart);
+        // var groups = Create("Group 1", "Group 1", true, null, pixelPart, pixelPart);
+        // Create("Pixel 2", "Pixel 2", true, null, groups, pixelPart);
+        // Create("Pixel 3", "Pixel 3", true, null, groups, pixelPart);
+
+        UpdatePixelPart();
 
         prefabPart.Collapse();
         scriptPart.Collapse();
@@ -83,7 +85,7 @@ public class HierarchyManager : MonoBehaviour
         StartCoroutine(DetectHierarchyItemShowArrow());
     }
 
-    public HierarchyItem Create(string name, string label, bool draggable = true, GameObject reference = null, HierarchyItem parent = null)
+    public HierarchyItem Create(string name, string label, bool draggable = true, GameObject reference = null, HierarchyItem parent = null, HierarchyItem originalParent = null)
     {
         var itemFromResource = Resources.Load<HierarchyItem>(Constants.HIERARCHY_ITEM_PREFAB);
         var instanceItem = Instantiate<HierarchyItem>(itemFromResource, Vector3.zero, Quaternion.identity);
@@ -96,6 +98,9 @@ public class HierarchyManager : MonoBehaviour
         {
             instanceItem.SetParent(parent);
             instanceItem.gameObject.SetActive(parent.expanded);
+        }
+        if(originalParent.IsNotNull()){
+            instanceItem.originalParentId = originalParent.GetID();
         }
         // item contains into container
         instanceItem.transform.SetParent(container.transform);
@@ -284,6 +289,35 @@ public class HierarchyManager : MonoBehaviour
         }
     }
 
+    public void UpdatePixelPart()
+    {
+        ClearPixelPart();
+        var groups = FindObjectsOfType<Group>();
+        foreach (var group in groups)
+        {
+            var groupName = group.name;
+            var groupItem = Create(groupName, groupName, true, group.gameObject, pixelPart, pixelPart);
+            var groupId = group.GetID();
+            var belongPixels = group.GetComponentsInChildren<Pixel>();
+            belongPixels = belongPixels.Where(x => x.parent.GetID() == groupId).ToArray();
+            foreach (var pixel in belongPixels)
+            {
+                var pixelName = pixel.name;
+                Create(pixelName, pixelName, true, pixel.gameObject, groupItem, pixelPart);
+                pixelName = null;
+            }
+            belongPixels = null;
+        }
+        var pixels = FindObjectsOfType<Pixel>();
+        var nonGroupPixels = pixels.Where(x => !Group.HasGroup(x)).ToArray();
+        foreach(var pixel in nonGroupPixels){
+            var pixelName = pixel.name;
+            Create(pixelName, pixelName, true, pixel.gameObject, pixelPart, pixelPart);
+            pixelName = null;
+        }
+        groups = null;
+    }
+
     void CreatePrefabPart()
     {
         prefabPart = Create(Constants.HIERARCHY_PREFAB_PART, Constants.HIERARCHY_PREFAB_PART_LABEL, false);
@@ -297,5 +331,16 @@ public class HierarchyManager : MonoBehaviour
     void CreatePixelPart()
     {
         pixelPart = Create(Constants.HIERARCHY_PIXEL_PART, Constants.HIERARCHY_PIXEL_PART_LABEL, false);
+    }
+
+    void ClearPixelPart()
+    {
+        var pixelPartItems = _items.Where(x => x.originalParentId != 0 && x.originalParentId == pixelPart.id).ToArray();
+        _items.RemoveAll(x => pixelPartItems.Contains(x));
+        foreach(var pixelItem in pixelPartItems)
+        {
+            Destroy(pixelItem.gameObject);
+        }
+        pixelPartItems = null;
     }
 }

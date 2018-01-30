@@ -16,6 +16,10 @@ public class HierarchyItem : MonoBehaviour
     [System.NonSerialized]
     public HierarchyItem parent;
     [System.NonSerialized]
+    public HierarchyItem originalParent;
+    [System.NonSerialized]
+    public int originalParentId;
+    [System.NonSerialized]
     public GameObject reference;
     [System.NonSerialized]
     public bool pointerEntered;
@@ -29,6 +33,16 @@ public class HierarchyItem : MonoBehaviour
     bool dragging;
 
     HierarchyItem draggedInstance;
+
+    int _id;
+
+    public int id
+    {
+        get
+        {
+            return _id;
+        }
+    }
 
     public Text text
     {
@@ -68,6 +82,11 @@ public class HierarchyItem : MonoBehaviour
         {
             return GetComponentInParent<Canvas>();
         }
+    }
+
+    void Start()
+    {
+        _id = this.GetID();
     }
 
     public void SetParent(HierarchyItem parent)

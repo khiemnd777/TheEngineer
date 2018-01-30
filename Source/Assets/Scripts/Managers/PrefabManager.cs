@@ -74,7 +74,7 @@ public class PrefabManager : MonoBehaviour
         if(patternObject.IsNull())
             return null;
         var unprefabGo = Unprefab(patternObject);
-        unprefabGo.transform.position = unprefabPosition;
+        unprefabGo.transform.position = unprefabPosition.ToVector2().Snap2();
         return unprefabGo;
     }
 

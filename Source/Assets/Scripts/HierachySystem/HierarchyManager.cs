@@ -310,6 +310,8 @@ public class HierarchyManager : MonoBehaviour
             if(parentGroupItem.IsNull())
                 continue;
             var groupItem = hierarchyitems.FirstOrDefault(x => x.reference.GetID() == group.id);
+            if(groupItem.IsNull())
+                continue;
             groupItem.SetParent(parentGroupItem);
             parentGroupItem = null;
             groupItem = null;

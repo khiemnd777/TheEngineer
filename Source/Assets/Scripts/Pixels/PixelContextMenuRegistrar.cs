@@ -13,6 +13,7 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
     Pixel pixel;
 
     HierarchyManager hierarchyManager;
+    List<Pixel> _pixels;
 
     protected override void Start()
     {
@@ -60,6 +61,42 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
             hierarchyManager.UpdatePixelPart();
         });
 
+        RegisterItem("create-prefab", "Create Prefab", () =>
+        {
+            Debug.Log("Create Prefab");
+            var pixels = FindObjectsOfType<Pixel>();
+            var selectedPixels = pixels.Where(x => x.selecting);
+            if(selectedPixels.Any())
+            {
+                var groupsAlreadyInPrefab = new List<Group>();
+                foreach(var pixel in selectedPixels)
+                {
+                    var group = Group.GetFirstGroup(pixel);
+                    if(group.IsNotNull())
+                    {
+                        if(groupsAlreadyInPrefab.Any(x => x.id == group.id))
+                            continue;
+                        groupsAlreadyInPrefab.Add(group);
+                        hierarchyManager.CreatePrefab(group.gameObject);
+                        continue;
+                    }
+                    hierarchyManager.CreatePrefab(pixel.gameObject);
+                }
+                groupsAlreadyInPrefab.Clear();
+                groupsAlreadyInPrefab = null;
+            }
+            else
+            {
+                var group = Group.GetFirstGroup(pixel);
+                if(group.IsNotNull())
+                {
+                    hierarchyManager.CreatePrefab(group.gameObject);
+                    return;
+                }
+                hierarchyManager.CreatePrefab(pixel.gameObject);
+            }
+        });
+
         RegisterItem("take-off", "Take Off", takeOffPrefab, () =>
         {
             Debug.Log("Take Off");
@@ -81,6 +118,7 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
                 // || Group.HasGroup(pixel) && x.Key == "add-script"
                 !Group.HasGroup(pixel) && numberOfPixelWithoutGroup == 1 && x.Key == "add-script"
                 || Group.HasGroup(pixel) && x.Key == "add-script"
+                || x.Key == "create-prefab"
                 || numberOfPixelWithoutGroup > 1 && x.Key == "group" 
                 || numberOfSelectedGroup.Count > 1 && x.Key == "group" 
                 || numberOfSelectedGroup.Count >= 1 && numberOfPixelWithoutGroup >= 1 && x.Key == "group" 
@@ -93,6 +131,7 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
         {
             shownItems = menuItems.Where(x => 
                 !Group.HasGroup(pixel) && x.Key == "add-script" 
+                || x.Key == "create-prefab"
                 || Group.HasGroup(pixel) && x.Key == "ungroup-single"
                 || x.Key == "take-off")
             .ToDictionary(x => x.Key, x => x.Value);

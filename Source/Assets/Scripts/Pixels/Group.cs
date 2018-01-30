@@ -8,7 +8,7 @@ public class Group : MonoBehaviour, IPrefabricated
     public Pivot pivot;
     public int id;
 
-    public bool isPrefab{get;set;}
+    public bool isPrefab { get; set; }
 
     void Start()
     {

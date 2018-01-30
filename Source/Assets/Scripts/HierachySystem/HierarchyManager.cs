@@ -147,6 +147,26 @@ public class HierarchyManager : MonoBehaviour
         OrderSibling(pixelPart, ref index);
     }
 
+    public void CreatePrefab(GameObject target)
+    {
+        var sourceRefGo = target;
+        if (sourceRefGo.IsNull())
+            return;
+        var prefabricated = prefabManager.GetPrefabricated(sourceRefGo);
+        if (prefabricated.isPrefab)
+        {
+            prefabricated = null;
+            sourceRefGo = null;
+            return;
+        }
+        var prefabRef = prefabManager.Create(sourceRefGo);
+        var prefabName = prefabRef.name;
+        Create(prefabName, prefabName, true, prefabRef, prefabPart, prefabPart);
+        Order();
+        prefabRef = null;
+        sourceRefGo = null;
+    }
+
     void OrderSibling(HierarchyItem item, ref int index)
     {
         item.transform.SetSiblingIndex(++index);
@@ -193,20 +213,20 @@ public class HierarchyManager : MonoBehaviour
         if (sourceRef.IsNull())
             return;
 
-        var destId = destination.GetID();
-        if (destId == prefabPart.GetID())
+        var destId = destination.id;
+        if (destId == prefabPart.id)
         {
             // destination is Prefab part
             // source must be a pixel type
-            CreatePrefabPixelThroughPixel(source, destination);
+            CreatePrefab(source.reference);
         }
-        else if (destId == scriptPart.GetID())
+        else if (destId == scriptPart.id)
         {
             // destination is Script part
             // have no idea
 
         }
-        else if (destId == pixelPart.GetID())
+        else if (destId == pixelPart.id)
         {
             // destination Pixel part
             // duplicate of any prefab type
@@ -215,27 +235,6 @@ public class HierarchyManager : MonoBehaviour
             // or sorting maybe
         }
         sourceRef = null;
-    }
-
-    void CreatePrefabPixelThroughPixel(HierarchyItem source, HierarchyItem destination)
-    {
-        var sourceRef = source.reference;
-        if (sourceRef.IsNull())
-            return;
-        var sourceRefGo = sourceRef.gameObject;
-        var prefabricated = prefabManager.GetPrefabricated(sourceRefGo);
-        if (prefabricated.isPrefab)
-        {
-            prefabricated = null;
-            sourceRefGo = null;
-            return;
-        }
-        var prefabRef = prefabManager.Create(sourceRefGo);
-        var prefabName = prefabRef.name;
-        Create(prefabName, prefabName, true, prefabRef, destination);
-        Order();
-        prefabRef = null;
-        sourceRefGo = null;
     }
 
     void CreatePixelThroughPrefab(HierarchyItem source, HierarchyItem destination)
@@ -372,5 +371,32 @@ public class HierarchyManager : MonoBehaviour
             DestroyImmediate(pixelItem.gameObject);
         }
         pixelPartItems = null;
+    }
+
+    public void ClearPixelPart(int itemId)
+    {
+        var removedItem = _items.FirstOrDefault(x => x.originalParentId != 0 && x.originalParentId == pixelPart.id && x.id == itemId);
+        _items.RemoveAll(x => x.id == removedItem.id);
+        DestroyImmediate(removedItem.gameObject);
+        removedItem = null;
+    }
+
+    void ClearPrefabPart()
+    {
+        var pixelPartItems = _items.Where(x => x.originalParentId != 0 && x.originalParentId == prefabPart.id).ToArray();
+        _items.RemoveAll(x => pixelPartItems.Any(x1 => x1.id == x.id));
+        foreach(var pixelItem in pixelPartItems)
+        {
+            DestroyImmediate(pixelItem.gameObject);
+        }
+        pixelPartItems = null;
+    }
+
+    public void ClearPrefabPart(int itemId)
+    {
+        var removedItem = _items.FirstOrDefault(x => x.originalParentId != 0 && x.originalParentId == prefabPart.id && x.id == itemId);
+        _items.RemoveAll(x => x.id == removedItem.id);
+        DestroyImmediate(removedItem.gameObject);
+        removedItem = null;
     }
 }

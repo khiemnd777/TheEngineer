@@ -173,6 +173,7 @@ public class HierarchyManager : MonoBehaviour
                     var worldMousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                     var worldMousePosition2D = worldMousePosition.ToVector2();
                     prefabManager.Unprefab(draggedItemRef, worldMousePosition2D);
+                    UpdatePixelPart();
                 }
             }
             prefabricated = null;
@@ -210,6 +211,7 @@ public class HierarchyManager : MonoBehaviour
             // destination Pixel part
             // duplicate of any prefab type
             CreatePixelThroughPrefab(source, destination);
+            UpdatePixelPart();
             // or sorting maybe
         }
         sourceRef = null;
@@ -251,8 +253,7 @@ public class HierarchyManager : MonoBehaviour
         }
         var unprefabGoRef = prefabManager.Unprefab(sourceRefGo);
         var unprefabName = unprefabGoRef.name;
-        Create(unprefabName, unprefabName, true, unprefabGoRef, destination);
-        Order();
+        UpdatePixelPart();
         unprefabGoRef = null;
         sourceRefGo = null;
     }

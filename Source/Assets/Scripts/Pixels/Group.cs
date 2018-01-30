@@ -3,10 +3,12 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
-public class Group : MonoBehaviour
+public class Group : MonoBehaviour, IPrefabricated
 {
     public Pivot pivot;
     public int id;
+
+    public bool isPrefab{get;set;}
 
     void Start()
     {

@@ -41,10 +41,11 @@ public class Scriptable : MonoBehaviour
         return instanceOfScript;
     }
 
-    public static void CreateInstanceAndAssignTo(ScriptableHost host)
+    public static Scriptable CreateInstanceAndAssignTo(ScriptableHost host)
     {
         var instanceOfScript = CreateInstance();
         host.AddScript(instanceOfScript);
+        return instanceOfScript;
         // Destroy(instanceOfScript.gameObject);
     }
 
@@ -174,6 +175,16 @@ public class Scriptable : MonoBehaviour
     public void SetScript(string script)
     {
         this.script = script;
+    }
+
+    public void Remove()
+    {
+        foreach(var host in _hosts)
+        {
+            host.RemoveScript(this);
+        }
+        _hosts.Clear();
+        DestroyImmediate(gameObject);
     }
 
     public void ExecuteScript()

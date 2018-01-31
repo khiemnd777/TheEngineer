@@ -25,6 +25,8 @@ public class HierarchyItemContextMenuRegistrar : ContextMenuRegistrar
             RegisterItem("create-script", "Create script", () =>
             {
                 Debug.Log("Script created.");
+                var scriptable = Scriptable.CreateInstance();
+                hierarchyManager.CreateScript(scriptable.gameObject);
             });
         }
         if (!(Constants.HIERARCHY_PIXEL_PART.Equals(item.name)
@@ -67,6 +69,18 @@ public class HierarchyItemContextMenuRegistrar : ContextMenuRegistrar
                         }
                         hierarchyManager.ClearPixelPart(item.id);
                         hierarchyManager.UpdatePixelPart();
+                    }
+                }
+                else if(item.originalParentId == hierarchyManager.scriptPart.id)
+                {
+                    var itemRef = item.reference;
+                    if (itemRef.IsNotNull())
+                    {
+                        var itemRefIsScriptable = itemRef.GetComponent<Scriptable>();
+                        if(itemRefIsScriptable.IsNotNull()){
+                            itemRefIsScriptable.Remove();
+                            hierarchyManager.ClearScriptPart(item.id);
+                        }
                     }
                 }
             });

@@ -167,6 +167,17 @@ public class HierarchyManager : MonoBehaviour
         sourceRefGo = null;
     }
 
+    public void CreateScript(GameObject target)
+    {
+        var sourceRefGo = target;
+        if(sourceRefGo.IsNull())
+            return;
+        var scriptName = target.name;
+        Create(scriptName, scriptName, true, target, scriptPart, scriptPart);
+        Order();
+        sourceRefGo = null;
+    }
+
     void OrderSibling(HierarchyItem item, ref int index)
     {
         item.transform.SetSiblingIndex(++index);
@@ -180,8 +191,10 @@ public class HierarchyManager : MonoBehaviour
 
     void OnHierarchyItemDragEnd(object sender, Vector3 dragEndPosition)
     {
-        var itemEntered = GetHierarchyItemEntered();
         var draggedItem = sender as HierarchyItem;
+        if(draggedItem.reference.IsNull())
+            return;
+        var itemEntered = GetHierarchyItemEntered();
         if (itemEntered.IsNull())
         {
             var draggedItemRef = draggedItem.reference;
@@ -194,6 +207,30 @@ public class HierarchyManager : MonoBehaviour
                     var worldMousePosition2D = worldMousePosition.ToVector2();
                     prefabManager.Unprefab(draggedItemRef, worldMousePosition2D);
                     UpdatePixelPart();
+                }
+            }
+            else
+            {
+                if (draggedItem.originalParentId == scriptPart.id)
+                {
+                    var hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+                    if (hit.collider != null)
+                    {
+                        // just get pixel object
+                        var pixel = hit.transform.GetComponent<Pixel>();
+                        if (pixel.IsNotNull())
+                        {
+                            var group = Group.GetFirstGroup(pixel);
+                            if(group.IsNotNull())
+                            {
+                                AssignScriptIntoPixel(draggedItemRef, group.gameObject);
+                            }
+                            else
+                            {
+                                AssignScriptIntoPixel(draggedItemRef, pixel.gameObject);
+                            }
+                        }
+                    }
                 }
             }
             prefabricated = null;
@@ -224,7 +261,7 @@ public class HierarchyManager : MonoBehaviour
         {
             // destination is Script part
             // have no idea
-
+            
         }
         else if (destId == pixelPart.id)
         {
@@ -234,7 +271,31 @@ public class HierarchyManager : MonoBehaviour
             UpdatePixelPart();
             // or sorting maybe
         }
+        else
+        {
+            var parentDestId = destination.originalParentId;
+            if(parentDestId == pixelPart.id)
+            {
+                AssignScriptIntoPixel(source.reference, destination.reference);
+            }
+        }
         sourceRef = null;
+    }
+
+    void AssignScriptIntoPixel(GameObject sourceRef, GameObject destRef)
+    {
+        if (sourceRef.IsNull() || destRef.IsNull())
+            return;
+        var scriptable = sourceRef.GetComponent<Scriptable>();
+        var host = destRef.GetComponent<ScriptableHost>();
+        if (scriptable.IsNull() || host.IsNull()){
+            sourceRef = null;
+            destRef = null;
+            return;
+        }
+        host.AddScript(scriptable);
+        scriptable = null;
+        host = null;
     }
 
     void CreatePixelThroughPrefab(HierarchyItem source, HierarchyItem destination)
@@ -395,6 +456,14 @@ public class HierarchyManager : MonoBehaviour
     public void ClearPrefabPart(int itemId)
     {
         var removedItem = _items.FirstOrDefault(x => x.originalParentId != 0 && x.originalParentId == prefabPart.id && x.id == itemId);
+        _items.RemoveAll(x => x.id == removedItem.id);
+        DestroyImmediate(removedItem.gameObject);
+        removedItem = null;
+    }
+
+    public void ClearScriptPart(int itemId)
+    {
+        var removedItem = _items.FirstOrDefault(x => x.originalParentId != 0 && x.originalParentId == scriptPart.id && x.id == itemId);
         _items.RemoveAll(x => x.id == removedItem.id);
         DestroyImmediate(removedItem.gameObject);
         removedItem = null;

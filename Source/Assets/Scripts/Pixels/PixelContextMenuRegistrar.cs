@@ -30,7 +30,8 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
             var host = !Group.HasGroup(pixel) 
                 ? GetComponent<ScriptableHost>()
                 : Group.GetFirstGroup(pixel).GetComponent<ScriptableHost>();
-            Scriptable.CreateInstanceAndAssignTo(host);
+            var scriptable = Scriptable.CreateInstanceAndAssignTo(host);
+            hierarchyManager.CreateScript(scriptable.gameObject);
         });
 
         RegisterItem("group", "Group", () =>

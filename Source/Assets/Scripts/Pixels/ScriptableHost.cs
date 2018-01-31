@@ -23,7 +23,6 @@ public class ScriptableHost : MonoBehaviour
     public void RemoveScript(Scriptable script)
     {
         _scripts.Remove(script);
-        script.RemoveHost(this);
     }
 
     public IEnumerable<Scriptable> GetAllScripts()

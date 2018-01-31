@@ -44,6 +44,7 @@ public class PixelRemovingManager : MonoBehaviour
             )
         {
             Remove();
+            hierarchyManager.UpdatePixelPart();
         }
     }
 
@@ -54,13 +55,16 @@ public class PixelRemovingManager : MonoBehaviour
         {
             if (!pixel.selecting)
                 continue;
-            if (Group.HasGroup(pixel))
-            {
-                Group.UngroupSingle(pixel);
-            }
-            DestroyImmediate(pixel.gameObject);
+            Remove(pixel);
         }
         EventObserver.instance.happeningEvent = Events.RemovePixel;
-        hierarchyManager.UpdatePixelPart();
+    }
+
+    public void Remove(Pixel pixel){
+        if (Group.HasGroup(pixel))
+        {
+            Group.UngroupSingle(pixel);
+        }
+        DestroyImmediate(pixel.gameObject);
     }
 }

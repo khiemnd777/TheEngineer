@@ -37,7 +37,9 @@ public class HierarchyItemContextMenuRegistrar : ContextMenuRegistrar
             });
             RegisterItem("delete", "Delete", takeOffPrefab, () =>
             {
-                if (item.originalParentId != 0 && item.originalParentId == hierarchyManager.prefabPart.id)
+                if(item.originalParentId == 0)
+                    return;
+                if (item.originalParentId == hierarchyManager.prefabPart.id)
                 {
                     var itemRef = item.reference;
                     if (itemRef.IsNotNull())
@@ -46,14 +48,26 @@ public class HierarchyItemContextMenuRegistrar : ContextMenuRegistrar
                     }
                     hierarchyManager.ClearPrefabPart(item.id);
                 }
-                else if (item.originalParentId != 0 && item.originalParentId == hierarchyManager.pixelPart.id)
+                else if (item.originalParentId == hierarchyManager.pixelPart.id)
                 {
                     var itemRef = item.reference;
                     if (itemRef.IsNotNull())
                     {
-                        DestroyImmediate(itemRef.gameObject);
+                        var itemRefIsPixel = itemRef.GetComponent<Pixel>();
+                        if(itemRefIsPixel.IsNotNull())
+                        {
+                            PixelRemovingManager.instance.Remove(itemRefIsPixel);
+                        }
+                        else
+                        {
+                            var itemRefIsGroup = itemRef.GetComponent<Group>();
+                            if(itemRefIsGroup.IsNotNull()){
+                                DestroyImmediate(itemRef.gameObject);
+                            }
+                        }
+                        hierarchyManager.ClearPixelPart(item.id);
+                        hierarchyManager.UpdatePixelPart();
                     }
-                    hierarchyManager.ClearPixelPart(item.id);
                 }
             });
         }

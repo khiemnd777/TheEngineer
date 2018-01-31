@@ -102,16 +102,21 @@ public class Group : MonoBehaviour, IPrefabricated
     {
         var groupOfPixel = GetFirstGroup(pixel);
         pixel.transform.parent = null;
-        var pixelsInGroup = groupOfPixel.GetComponentsInChildren<Pixel>();
+        UngroupIfHasOnePixel(groupOfPixel);
+        groupOfPixel = null;
+    }
+
+    public static void UngroupIfHasOnePixel(Group group)
+    {
+        var pixelsInGroup = group.GetComponentsInChildren<Pixel>();
         if (pixelsInGroup.Length <= 1)
         {
             if (pixelsInGroup.Length == 1)
             {
                 pixelsInGroup[0].transform.parent = null;
             }
-            DestroyImmediate(groupOfPixel.gameObject);
+            DestroyImmediate(group.gameObject);
         }
-        groupOfPixel = null;
         pixelsInGroup = null;
     }
 

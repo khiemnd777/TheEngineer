@@ -61,10 +61,6 @@ public class PixelRemovingManager : MonoBehaviour
     }
 
     public void Remove(Pixel pixel){
-        if (Group.HasGroup(pixel))
-        {
-            Group.UngroupSingle(pixel);
-        }
-        DestroyImmediate(pixel.gameObject);
+        pixel.Remove();
     }
 }

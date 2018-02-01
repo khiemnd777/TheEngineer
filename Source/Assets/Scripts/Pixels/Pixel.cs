@@ -289,6 +289,22 @@ public class Pixel : MonoBehaviour, IPrefabricated
         return group.IsNotNull();
     }
 
+    public void Remove()
+    {
+        var pixel = this;
+        if (Group.HasGroup(pixel))
+        {
+            Group.UngroupSingle(pixel);
+        }
+        var scriptHostOfPixel = GetComponent<ScriptableHost>();
+        if(scriptHostOfPixel.IsNotNull())
+        {
+            scriptHostOfPixel.RemoveAllScript();
+        }
+        DestroyImmediate(gameObject);
+        pixel = null;
+    }
+
     IEnumerator SetPythonPixelPosition()
     {
         while (!gameObject.IsNull())

@@ -179,11 +179,13 @@ public class Scriptable : MonoBehaviour
 
     public void Remove()
     {
-        foreach(var host in _hosts)
+        var hosts = _hosts.ToArray();
+        foreach(var host in hosts)
         {
             host.RemoveScript(this);
         }
         _hosts.Clear();
+        hosts = null;
         DestroyImmediate(gameObject);
     }
 

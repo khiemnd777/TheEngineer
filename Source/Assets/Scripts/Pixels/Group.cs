@@ -65,7 +65,7 @@ public class Group : MonoBehaviour, IPrefabricated
             var lastGroup = GetLastGroup(pixel);
             var parentGroupsOfLastGroup = lastGroup.GetComponentsInParent<Group>();
             var nearestParentGroupOfLastGroup = parentGroupsOfLastGroup[parentGroupsOfLastGroup.Length - 1];
-            if (nearestParentGroupOfLastGroup.GetID() == firstGroup.GetID())
+            if (nearestParentGroupOfLastGroup.id == firstGroup.id)
             {
                 if (parentGroupsOfLastGroup.Length > 1)
                 {
@@ -73,7 +73,7 @@ public class Group : MonoBehaviour, IPrefabricated
                     nearestParentGroupOfLastGroup.transform.parent = null;
                 }
             }
-            if (firstGroup.GetID() == lastGroup.GetID())
+            if (firstGroup.id == lastGroup.id)
             {
                 pixel.transform.parent = null;
             }
@@ -83,7 +83,7 @@ public class Group : MonoBehaviour, IPrefabricated
         }
         selectedPixels = null;
         pixels = null;
-        DestroyImmediate(firstGroup.gameObject);
+        firstGroup.Remove();
     }
 
     public static void Ungroup()
@@ -115,7 +115,7 @@ public class Group : MonoBehaviour, IPrefabricated
             {
                 pixelsInGroup[0].transform.parent = null;
             }
-            DestroyImmediate(group.gameObject);
+            group.Remove();
         }
         pixelsInGroup = null;
     }
@@ -241,5 +241,27 @@ public class Group : MonoBehaviour, IPrefabricated
         pixelsHasGroup = null;
         pixelsHasGroupButWithoutSelected = null;
         pixels = null;
+    }
+
+    public void Remove()
+    {
+        var pixels = GetComponentsInChildren<Pixel>();
+        foreach(var pixel in pixels)
+        {
+            var scriptHost = pixel.GetComponent<ScriptableHost>();
+            scriptHost.RemoveAllScript();
+        }
+        var groups = GetComponentsInChildren<Group>();
+        foreach(var group in groups)
+        {
+            var scriptHost = group.GetComponent<ScriptableHost>();
+            scriptHost.RemoveAllScript();
+        }
+        var scriptHostOfGroup = GetComponent<ScriptableHost>();
+        if(scriptHostOfGroup.IsNotNull())
+        {
+            scriptHostOfGroup.RemoveAllScript();
+        }
+        DestroyImmediate(gameObject);
     }
 }

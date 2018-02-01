@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Linq;
 
 public class PrefabManager : MonoBehaviour
 {
@@ -45,6 +46,16 @@ public class PrefabManager : MonoBehaviour
 
         prefabGo.SetActive(false);
 
+        // If having ScriptableHost
+        var patternScriptHost = patternObject.GetComponent<ScriptableHost>();
+        var prefabScriptHost = prefabGo.GetComponent<ScriptableHost>();
+        if(patternScriptHost.IsNotNull() && prefabScriptHost.IsNotNull())
+        {
+            var patternScripts = patternScriptHost.GetAllScripts();
+            prefabScriptHost.ReassignScripts(patternScripts);
+            patternScripts = null;
+        }
+
         scriptContainer = null;
         prefabComp = null;
         
@@ -64,6 +75,19 @@ public class PrefabManager : MonoBehaviour
         prefabComp.isPrefab = false;
 
         unprefabGo.SetActive(true);
+
+        // If having ScriptableHost
+        var patternScriptHost = patternObject.GetComponent<ScriptableHost>();
+        var prefabScriptHost = unprefabGo.GetComponent<ScriptableHost>();
+        if(patternScriptHost.IsNotNull() && prefabScriptHost.IsNotNull())
+        {
+            var patternScripts = patternScriptHost.GetAllScripts().ToArray();
+            foreach(var script in patternScripts)
+            {
+                prefabScriptHost.AddScript(script);
+            }
+            patternScripts = null;
+        }
 
         prefabComp = null;
         return unprefabGo;

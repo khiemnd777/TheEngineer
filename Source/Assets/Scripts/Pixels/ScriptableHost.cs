@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -9,24 +10,43 @@ public class ScriptableHost : MonoBehaviour
 
     List<Scriptable> _scripts;
 
-    void Start()
+    public List<Scriptable> scripts
     {
-        _scripts = new List<Scriptable>();
+        get
+        {
+            return _scripts ?? (_scripts = new List<Scriptable>());
+        }
     }
 
     public void AddScript(Scriptable script)
     {
         script.AddHost(this);
-        _scripts.Add(script);
+        scripts.Add(script);
     }
 
     public void RemoveScript(Scriptable script)
     {
-        _scripts.Remove(script);
+        scripts.Remove(script);
+        script.RemoveHost(this);
+    }
+
+    public void RemoveAllScript(){
+        var scripts = GetAllScripts().ToArray();
+        foreach(var script in scripts)
+        {
+            RemoveScript(script);
+        }
+        scripts = null;
     }
 
     public IEnumerable<Scriptable> GetAllScripts()
     {
+        _scripts = scripts.Where(x => x.IsNotNull()).ToList();
         return _scripts;
+    }
+
+    public void ReassignScripts(IEnumerable<Scriptable> scripts)
+    {
+        _scripts = scripts.ToList();
     }
 }

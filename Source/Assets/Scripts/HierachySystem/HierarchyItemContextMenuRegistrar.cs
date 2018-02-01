@@ -45,7 +45,7 @@ public class HierarchyItemContextMenuRegistrar : ContextMenuRegistrar
                 {
                     var itemRef = item.reference;
                     if (itemRef.IsNotNull())
-                    {
+                {
                         DestroyImmediate(itemRef.gameObject);
                     }
                     hierarchyManager.ClearPrefabPart(item.id);
@@ -58,14 +58,13 @@ public class HierarchyItemContextMenuRegistrar : ContextMenuRegistrar
                         var itemRefIsPixel = itemRef.GetComponent<Pixel>();
                         if(itemRefIsPixel.IsNotNull())
                         {
-                            PixelRemovingManager.instance.Remove(itemRefIsPixel);
+                            itemRefIsPixel.Remove();
                         }
                         else
                         {
                             var itemRefIsGroup = itemRef.GetComponent<Group>();
-                            if(itemRefIsGroup.IsNotNull()){
-                                DestroyImmediate(itemRef.gameObject);
-                            }
+                            if(itemRefIsGroup.IsNotNull())
+                                itemRefIsGroup.Remove();
                         }
                         hierarchyManager.ClearPixelPart(item.id);
                         hierarchyManager.UpdatePixelPart();

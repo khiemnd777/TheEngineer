@@ -40,14 +40,9 @@ public class SelectObjectManager : MonoBehaviour
     bool _dragToSelect = true;
     Vector2 _anchorSelectRectPoint;
 
-    void Update()
+    void Start()
     {
-        // OutFocusAll();
-        MultipleChoice();
-        // select pixel objects
-        SelectPixels();
-        // draw select rect
-        DrawSelectRect();
+        StartCoroutine(Visualizing());
     }
 
     void MultipleChoice()
@@ -59,13 +54,28 @@ public class SelectObjectManager : MonoBehaviour
             || Input.GetKey(KeyCode.RightControl);
     }
 
+    IEnumerator Visualizing()
+    {
+        while(true)
+        {
+            // OutFocusAll();
+            MultipleChoice();
+            // select pixel objects
+            SelectPixels();
+            // draw select rect
+            DrawSelectRect();
+            yield return null;
+        }
+    }
+
     void OutFocusAll()
     {
         if (Input.GetMouseButtonUp(1))
         {
             EventObserver.instance.happeningEvent = Events.None;
-            var pixels = FindObjectsOfType<Pixel>();
-            foreach (var pixel in pixels)
+            // var pixels = FindObjectsOfType<Pixel>();
+            var selectedPixels = PixelManager.instance.GetPixels(x => x.selecting).ToArray();
+            foreach (var pixel in selectedPixels)
             {
                 pixel.Deselect();
             }
@@ -123,49 +133,71 @@ public class SelectObjectManager : MonoBehaviour
             {
                 onMultipleSelecting.Invoke();
             }
-
-            var pixels = FindObjectsOfType<Pixel>();
-            foreach (var pixel in pixels)
+            var mainCamera = Camera.main;
+            var pixelsInRect = PixelManager.instance.GetPixels(x => 
             {
-                var screenPoint = Camera.main.WorldToScreenPoint(pixel.transform.position);
-                if (RectTransformUtility.RectangleContainsScreenPoint(selectRect, screenPoint))
+                if(!x.gameObject.activeInHierarchy)
+                    return false;
+                var screenPoint = mainCamera.WorldToScreenPoint(x.transform.position);
+                return RectTransformUtility.RectangleContainsScreenPoint(selectRect, screenPoint);
+            });
+            var pixelInRectToArray = pixelsInRect.ToList();
+            pixelInRectToArray.ForEach(pixel => 
+            {
+                if (!multipleChoice)
                 {
-                    if (!multipleChoice)
-                    {
-                        if (!pixel.selecting || !pixel.tempSelecting)
-                            pixel.SelectTemp();
-                    }
-                    else
-                    {
-                        if (!pixel.selecting)
-                            pixel.SelectTemp();
-                        else
-                            pixel.DeselectTemp();
-                    }
-
+                    if (!pixel.selecting || !pixel.tempSelecting)
+                        pixel.SelectTemp();
                 }
                 else
                 {
-                    if (!multipleChoice)
-                    {
-                        if (pixel.selecting || pixel.tempSelecting)
-                            pixel.DeselectTemp();
-                    }
+                    if (!pixel.selecting)
+                        pixel.SelectTemp();
                     else
-                    {
-                        if (pixel.tempSelecting)
-                            pixel.DeselectTemp();
-                        if (pixel.selecting)
-                        {
-                            if (!pixel.tempSelecting)
-                                pixel.SelectTemp();
-                            else
-                                pixel.DeselectTemp();
-                        }
-                    }
+                        pixel.DeselectTemp();
                 }
-            }
+            });
+            // var pixels = FindObjectsOfType<Pixel>();
+            // foreach (var pixel in pixels)
+            // {
+            //     var screenPoint = Camera.main.WorldToScreenPoint(pixel.transform.position);
+            //     if (RectTransformUtility.RectangleContainsScreenPoint(selectRect, screenPoint))
+            //     {
+            //         if (!multipleChoice)
+            //         {
+            //             if (!pixel.selecting || !pixel.tempSelecting)
+            //                 pixel.SelectTemp();
+            //         }
+            //         else
+            //         {
+            //             if (!pixel.selecting)
+            //                 pixel.SelectTemp();
+            //             else
+            //                 pixel.DeselectTemp();
+            //         }
 
+            //     }
+            //     else
+            //     {
+            //         if (!multipleChoice)
+            //         {
+            //             if (pixel.selecting || pixel.tempSelecting)
+            //                 pixel.DeselectTemp();
+            //         }
+            //         else
+            //         {
+            //             if (pixel.tempSelecting)
+            //                 pixel.DeselectTemp();
+            //             if (pixel.selecting)
+            //             {
+            //                 if (!pixel.tempSelecting)
+            //                     pixel.SelectTemp();
+            //                 else
+            //                     pixel.DeselectTemp();
+            //             }
+            //         }
+            //     }
+            // }
         }
         if (Input.GetMouseButtonUp(0))
         {
@@ -174,7 +206,7 @@ public class SelectObjectManager : MonoBehaviour
             // }
             if (EventObserver.instance.happeningEvent == Events.DragMultiplePixels)
             {
-                Group.SelectPixelsInGroupFollowSelectedPixel();
+                // Group.SelectPixelsInGroupFollowSelectedPixel();
                 return;
             }
             // reset SelectRect position
@@ -183,22 +215,30 @@ public class SelectObjectManager : MonoBehaviour
             selectRect.sizeDelta = Vector2.zero;
             // find any pixel has state is tempSelecting then selecting it.
             var selectNumber = 0;
-            var pixels = FindObjectsOfType<Pixel>();
-            foreach (var pixel in pixels)
+            var selectingPixels = PixelManager.instance.GetPixels(x => x.tempSelecting);
+            var selectingPixelsToList= selectingPixels.ToList();
+            selectNumber = selectingPixels.Count();
+            selectingPixelsToList.ForEach(pixel =>
             {
-                if (pixel.tempSelecting)
-                {
-                    ++selectNumber;
-                    pixel.DeselectTemp();
-                    pixel.Select();
-                }
-                else
-                {
-                    pixel.Deselect();
-                }
-            }
+                pixel.DeselectTemp();
+                pixel.Select();
+            });
+            // var pixels = FindObjectsOfType<Pixel>();
+            // foreach (var pixel in pixels)
+            // {
+            //     if (pixel.tempSelecting)
+            //     {
+            //         ++selectNumber;
+            //         pixel.DeselectTemp();
+            //         pixel.Select();
+            //     }
+            //     else
+            //     {
+            //         pixel.Deselect();
+            //     }
+            // }
             // select a group follows selected pixel
-            Group.SelectPixelsInGroupFollowSelectedPixel();
+            // Group.SelectPixelsInGroupFollowSelectedPixel();
             // if happeningEvent was occuring DragToMultipleSelect, then assign to None.
             if (EventObserver.instance.happeningEvent == Events.DragToMultipleSelect)
             {
@@ -228,15 +268,17 @@ public class SelectObjectManager : MonoBehaviour
                     {
                         return;
                     }
-                    var pixels = FindObjectsOfType<Pixel>();
-                    foreach (var anotherPixel in pixels)
-                    {
-                        if (anotherPixel == pixel || multipleChoice)
-                            continue;
-                        // deselect another pixel object if a pixel selected
-                        // if multipleChoice actived, then, ignore below
-                        anotherPixel.DeselectTemp();
-                    }
+                    var pixels = PixelManager.instance.GetPixels(x => x.id != pixel.id && !multipleChoice).ToList();
+                    pixels.ForEach(x => x.DeselectTemp());
+                    // var pixels = FindObjectsOfType<Pixel>();
+                    // foreach (var anotherPixel in pixels)
+                    // {
+                    //     if (anotherPixel == pixel || multipleChoice)
+                    //         continue;
+                    //     // deselect another pixel object if a pixel selected
+                    //     // if multipleChoice actived, then, ignore below
+                    //     anotherPixel.DeselectTemp();
+                    // }
                     // pixel selected
                     // if multipleChoice actived, then selects any pixels without selected
                     if (multipleChoice)
@@ -277,18 +319,11 @@ public class SelectObjectManager : MonoBehaviour
             {
                 EventObserver.instance.happeningEvent = Events.None;
             }
-            var pixels = FindObjectsOfType<Pixel>();
             if (multipleChoice)
             {
-                var selectNumber = 0;
-                foreach (var anotherPixel in pixels)
-                {
-                    if (anotherPixel.selecting)
-                    {
-                        ++selectNumber;
-                        anotherPixel.SelectTemp();
-                    }
-                }
+                var selectedPixels = PixelManager.instance.GetPixels(x => x.selecting);
+                var selectedPixelsIt = selectedPixels.ToList();
+                selectedPixelsIt.ForEach(x => x.SelectTemp());
                 return;
             }
             Pixel hittingPixel = null;
@@ -317,10 +352,8 @@ public class SelectObjectManager : MonoBehaviour
             {
                 EventObserver.instance.happeningEvent = Events.OutFocusSelect;
             }
-            foreach (var anotherPixel in pixels)
-            {
-                anotherPixel.Deselect();
-            }
+            var listOfselectedPixels = PixelManager.instance.GetPixels(x => x.selecting).ToList();
+            listOfselectedPixels.ForEach(x => x.Deselect());
         }
     }
 }

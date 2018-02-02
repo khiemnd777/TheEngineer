@@ -44,6 +44,13 @@ public class Pixel : MonoBehaviour, IPrefabricated
         }
     }
 
+    Group _group;
+
+    public Group group
+    {
+        get { return _group; }
+    }
+
     public int id
     {
         get { return _id; }
@@ -61,14 +68,19 @@ public class Pixel : MonoBehaviour, IPrefabricated
             x = transform.position.x,
             y = transform.position.y
         });
-        StartCoroutine(SetPythonPixelPosition());
+        // StartCoroutine(SetPythonPixelPosition());
+        StartCoroutine(Dragging());
     }
 
-    void Update()
+    IEnumerator Dragging()
     {
-        if (Input.GetMouseButton(0))
+        while(true)
         {
-            Drag();
+            if (Input.GetMouseButton(0))
+            {
+                Drag();
+            }
+            yield return null;
         }
     }
 
@@ -84,24 +96,26 @@ public class Pixel : MonoBehaviour, IPrefabricated
                 return;
             }
         }
-        var pixels = FindObjectsOfType<Pixel>();
         // if this pixel is non-selecting, then deselecting all another one
         if (!selecting && !SelectObjectManager.instance.multipleChoice)
         {
-            var pixelsWithoutThis = pixels.Where(x => x.GetID() != this.GetID() && x.selecting);
+            var pixelsWithoutThis = PixelManager.instance.GetPixels(x => x.id != this.id && x.selecting);
             if (pixelsWithoutThis.Any())
             {
-                foreach (var p in pixelsWithoutThis.ToArray())
+                var pixelsWithoutThisToArray = pixelsWithoutThis.ToArray();
+                foreach (var p in pixelsWithoutThisToArray)
                 {
                     p.Deselect();
                 }
+                pixelsWithoutThisToArray = null;
             }
         }
-        var selectedPixels = pixels.Where(x => x.selecting).ToList();
+        var selectedPixels = PixelManager.instance.GetPixels(x => x.selecting);
+        var countOfSelectedPixels = selectedPixels.Count();
         var realPosition = transform.localPosition;
         var mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         // if multipleChoice was actived, then denying dragging start of group
-        if (selectedPixels.Count > 1 && !SelectObjectManager.instance.multipleChoice)
+        if (countOfSelectedPixels > 1 && !SelectObjectManager.instance.multipleChoice)
         {
             Group.Create();
             var group = Group.GetFirstGroup(this);
@@ -131,7 +145,7 @@ public class Pixel : MonoBehaviour, IPrefabricated
         {
             onDragStart.Invoke(this, transform.position);
         }
-        pixels = null;
+        selectedPixels = null;
     }
 
     void Drag()
@@ -144,7 +158,7 @@ public class Pixel : MonoBehaviour, IPrefabricated
                     EventObserver.instance.happeningEvent = Events.DragPixel;
                 if (EventObserver.instance.happeningEvent == Events.DragMultiplePixelsStart)
                     EventObserver.instance.happeningEvent = Events.DragMultiplePixels;
-
+                
                 // move if mouse has any movement
                 var mousePosition = Input.mousePosition;
                 var worldMousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
@@ -231,7 +245,8 @@ public class Pixel : MonoBehaviour, IPrefabricated
 
     public Pixel GetClosestPixel()
     {
-        var bestPotential = TransformUtility.FindClosestObjectsOfType<Pixel>(transform.position, Constants.CLOSEST_PIXEL_DISTANCE, x => x != this);
+        // var bestPotential = TransformUtility.FindClosestObjectsOfType<Pixel>(transform.position, Constants.CLOSEST_PIXEL_DISTANCE, x => x != this);
+        var bestPotential = PixelManager.instance.FindClosestPixel(transform.position, Constants.CLOSEST_PIXEL_DISTANCE, x => x != this);
         return bestPotential;
     }
 
@@ -239,6 +254,18 @@ public class Pixel : MonoBehaviour, IPrefabricated
     {
         var bestPotential = TransformUtility.FindClosestObjectsBySpecific<Transform>(transform.position, Constants.CLOSEST_ANCHOR_DISTANCE, pixel.anchors);
         return bestPotential;
+    }
+
+    public void AddToGroup(Group group)
+    {
+        _group = group;
+        transform.SetParent(group.transform);
+    }
+
+    public void RemoveGroup()
+    {
+        _group = null;
+        transform.parent = null;
     }
 
     public void Select()
@@ -292,7 +319,7 @@ public class Pixel : MonoBehaviour, IPrefabricated
     public void Remove()
     {
         var pixel = this;
-        if (Group.HasGroup(pixel))
+        if (pixel.group.IsNotNull())
         {
             Group.UngroupSingle(pixel);
         }
@@ -301,6 +328,7 @@ public class Pixel : MonoBehaviour, IPrefabricated
         {
             scriptHostOfPixel.RemoveAllScript();
         }
+        PixelManager.instance.RemovePixel(pixel.id);
         DestroyImmediate(gameObject);
         pixel = null;
     }

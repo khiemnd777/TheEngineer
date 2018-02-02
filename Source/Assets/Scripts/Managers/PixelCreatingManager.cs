@@ -40,22 +40,24 @@ public class PixelCreatingManager : MonoBehaviour
         // create an instance of pixel
         var instancePixel = Instantiate<Pixel>(pixelPrefab, pixelPosition, Quaternion.identity);
         // find out a closest pixel excepts instance pixel
-        var closestPixel = TransformUtility.FindClosestObjectsOfType<Pixel>(instancePixel.transform.position, Constants.CLOSEST_PIXEL_DISTANCE, x => x != instancePixel);
+        // var closestPixel = TransformUtility.FindClosestObjectsOfType<Pixel>(instancePixel.transform.position, Constants.CLOSEST_PIXEL_DISTANCE, x => x != instancePixel);
+        var instancePixelTransform = instancePixel.transform;
+        var closestPixel = PixelManager.instance.FindClosestPixel(instancePixelTransform.position, Constants.CLOSEST_PIXEL_DISTANCE, x => x != instancePixel);
         if (closestPixel.IsNotNull())
         {
             // find out a closest anchor of closest pixel
-            var closestAnchor = TransformUtility.FindClosestObjectsBySpecific<Transform>(instancePixel.transform.position, Constants.CLOSEST_ANCHOR_DISTANCE, closestPixel.anchors);
+            var closestAnchor = TransformUtility.FindClosestObjectsBySpecific<Transform>(instancePixelTransform.position, Constants.CLOSEST_ANCHOR_DISTANCE, closestPixel.anchors);
             if (closestAnchor.IsNotNull())
             {
                 // assign position of closest anchor to instance of pixel
-                instancePixel.transform.position = closestAnchor.transform.position;
+                instancePixelTransform.position = closestAnchor.transform.position;
                 closestAnchor = null;
             }
             closestPixel = null;
         }
         pixelPrefab = null;
-        instancePixel = null;
 
+        PixelManager.instance.AddPixel(instancePixel);
         hierarchyManager.UpdatePixelPart();
     }
 }

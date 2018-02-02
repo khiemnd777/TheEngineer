@@ -1,4 +1,7 @@
 using UnityEngine;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
 
 public class PixelRemovingManager : MonoBehaviour
 {
@@ -50,17 +53,18 @@ public class PixelRemovingManager : MonoBehaviour
 
     public void Remove()
     {
-        var pixels = FindObjectsOfType<Pixel>();
-        foreach (var pixel in pixels)
+        // var pixels = FindObjectsOfType<Pixel>();
+        var selectPixels = PixelManager.instance.GetPixels(x => x.selecting).ToArray();
+        foreach (var pixel in selectPixels)
         {
-            if (!pixel.selecting)
-                continue;
             Remove(pixel);
         }
+        selectPixels = null;
         EventObserver.instance.happeningEvent = Events.RemovePixel;
     }
 
-    public void Remove(Pixel pixel){
+    public void Remove(Pixel pixel)
+    {
         pixel.Remove();
     }
 }

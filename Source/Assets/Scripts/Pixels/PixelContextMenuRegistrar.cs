@@ -27,7 +27,7 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
         RegisterItem("add-script", "Add Script", scriptItPrefab, () =>
         {
             Debug.Log("Script added");
-            var host = !Group.HasGroup(pixel) 
+            var host = !pixel.group.IsNotNull()
                 ? GetComponent<ScriptableHost>()
                 : Group.GetFirstGroup(pixel).GetComponent<ScriptableHost>();
             var scriptable = Scriptable.CreateInstanceAndAssignTo(host);
@@ -65,17 +65,19 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
         RegisterItem("create-prefab", "Create Prefab", () =>
         {
             Debug.Log("Create Prefab");
-            var pixels = FindObjectsOfType<Pixel>();
-            var selectedPixels = pixels.Where(x => x.selecting);
-            if(selectedPixels.Any())
+            // var pixels = FindObjectsOfType<Pixel>();
+            // var selectedPixels = pixels.Where(x => x.selecting);
+            var selectedPixels = PixelManager.instance.GetPixels(x => x.selecting);
+            if (selectedPixels.Any())
             {
                 var groupsAlreadyInPrefab = new List<Group>();
-                foreach(var pixel in selectedPixels)
+                var selectedPixelsToArray = selectedPixels.ToArray();
+                foreach (var pixel in selectedPixelsToArray)
                 {
                     var group = Group.GetFirstGroup(pixel);
-                    if(group.IsNotNull())
+                    if (group.IsNotNull())
                     {
-                        if(groupsAlreadyInPrefab.Any(x => x.id == group.id))
+                        if (groupsAlreadyInPrefab.Any(x => x.id == group.id))
                             continue;
                         groupsAlreadyInPrefab.Add(group);
                         hierarchyManager.CreatePrefab(group.gameObject);
@@ -85,11 +87,13 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
                 }
                 groupsAlreadyInPrefab.Clear();
                 groupsAlreadyInPrefab = null;
+                selectedPixelsToArray = null;
+                selectedPixels = null;
             }
             else
             {
                 var group = Group.GetFirstGroup(pixel);
-                if(group.IsNotNull())
+                if (group.IsNotNull())
                 {
                     hierarchyManager.CreatePrefab(group.gameObject);
                     return;
@@ -109,35 +113,35 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
     public override void OnBeforeShow()
     {
         base.OnBeforeShow();
-        var pixels = FindObjectsOfType<Pixel>();
-        var selectedPixels = pixels.Where(x => x.selecting);
+        // var pixels = FindObjectsOfType<Pixel>();
+        // var selectedPixels = pixels.Where(x => x.selecting);
+        var selectedPixels = PixelManager.instance.GetPixels(x => x.selecting);
         if (selectedPixels.Any())
         {
             var numberOfSelectedGroup = Group.GetManyGroups(selectedPixels);
-            var numberOfPixelWithoutGroup = selectedPixels.Count(x => !Group.HasGroup(x));
-            shownItems = menuItems.Where(x => 
-                // || Group.HasGroup(pixel) && x.Key == "add-script"
-                !Group.HasGroup(pixel) && numberOfPixelWithoutGroup == 1 && x.Key == "add-script"
-                || Group.HasGroup(pixel) && x.Key == "add-script"
+            var numberOfPixelWithoutGroup = selectedPixels.Count(x => !x.group.IsNotNull());
+            shownItems = menuItems.Where(x =>
+                // || pixel.group.IsNotNull() && x.Key == "add-script"
+                !pixel.group.IsNotNull() && numberOfPixelWithoutGroup == 1 && x.Key == "add-script"
+                || pixel.group.IsNotNull() && x.Key == "add-script"
                 || x.Key == "create-prefab"
-                || numberOfPixelWithoutGroup > 1 && x.Key == "group" 
-                || numberOfSelectedGroup.Count > 1 && x.Key == "group" 
-                || numberOfSelectedGroup.Count >= 1 && numberOfPixelWithoutGroup >= 1 && x.Key == "group" 
-                || Group.HasGroup(pixel) && numberOfSelectedGroup.Count == 1 && x.Key == "ungroup-one-by-one"
-                || Group.HasGroup(pixel) && numberOfSelectedGroup.Count == 1 && x.Key == "ungroup-all"
-                || x.Key == "take-off")
-            .ToDictionary(x => x.Key, x => x.Value); 
-        }
-        else
-        {
-            shownItems = menuItems.Where(x => 
-                !Group.HasGroup(pixel) && x.Key == "add-script" 
-                || x.Key == "create-prefab"
-                || Group.HasGroup(pixel) && x.Key == "ungroup-single"
+                || numberOfPixelWithoutGroup > 1 && x.Key == "group"
+                || numberOfSelectedGroup.Count > 1 && x.Key == "group"
+                || numberOfSelectedGroup.Count >= 1 && numberOfPixelWithoutGroup >= 1 && x.Key == "group"
+                || pixel.group.IsNotNull() && numberOfSelectedGroup.Count == 1 && x.Key == "ungroup-one-by-one"
+                || pixel.group.IsNotNull() && numberOfSelectedGroup.Count == 1 && x.Key == "ungroup-all"
                 || x.Key == "take-off")
             .ToDictionary(x => x.Key, x => x.Value);
         }
-        pixels = null;
+        else
+        {
+            shownItems = menuItems.Where(x =>
+                !pixel.group.IsNotNull() && x.Key == "add-script"
+                || x.Key == "create-prefab"
+                || pixel.group.IsNotNull() && x.Key == "ungroup-single"
+                || x.Key == "take-off")
+            .ToDictionary(x => x.Key, x => x.Value);
+        }
         selectedPixels = null;
     }
 }

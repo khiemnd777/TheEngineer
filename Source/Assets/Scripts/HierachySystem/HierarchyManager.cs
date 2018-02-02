@@ -58,7 +58,7 @@ public class HierarchyManager : MonoBehaviour
 
         CreatePrefabPart();
         CreateScriptPart();
-        CreatePixelPart();
+        // CreatePixelPart();
 
         Create("Prefab object A", "Prefab object A", true, null, prefabPart);
         Create("Prefab object B", "Prefab object B", true, null, prefabPart);
@@ -72,11 +72,11 @@ public class HierarchyManager : MonoBehaviour
         // Create("Pixel 2", "Pixel 2", true, null, groups, pixelPart);
         // Create("Pixel 3", "Pixel 3", true, null, groups, pixelPart);
 
-        UpdatePixelPart();
+        // UpdatePixelPart();
 
         prefabPart.Collapse();
         scriptPart.Collapse();
-        pixelPart.Collapse();
+        // pixelPart.Collapse();
 
         Order();
 
@@ -180,6 +180,8 @@ public class HierarchyManager : MonoBehaviour
 
     void OrderSibling(HierarchyItem item, ref int index)
     {
+        if(item.IsNull())
+            return;
         item.transform.SetSiblingIndex(++index);
         var children = GetChildren(item.GetID());
         foreach (var child in children)
@@ -352,60 +354,60 @@ public class HierarchyManager : MonoBehaviour
 
     public void UpdatePixelPart()
     {
-        ClearPixelPart();
-        var groups = FindObjectsOfType<Group>();
-        var hierarchyitems = _items.Where(x => x.reference.IsNotNull());
-        // create group items
-        foreach (var group in groups)
-        {
-            var groupName = group.name;
-            Create(groupName, groupName, true, group.gameObject, pixelPart, pixelPart);
-            groupName = null;
-        }
-        // nested groups
-        var groupHasParent = groups.Where(x => x.transform.parent.IsNotNull()).ToArray();
-        foreach(var group in groupHasParent)
-        {
-            var parentGroupItem = hierarchyitems.FirstOrDefault(x => x.reference.GetID() == group.transform.parent.GetID());
-            if(parentGroupItem.IsNull())
-                continue;
-            var groupItem = hierarchyitems.FirstOrDefault(x => x.reference.GetID() == group.id);
-            if(groupItem.IsNull())
-                continue;
-            groupItem.SetParent(parentGroupItem);
-            parentGroupItem = null;
-            groupItem = null;
-        }
-        // pixels in each group
-        foreach (var group in groups)
-        {
-            var groupId = group.GetID();
-            var parentGroupItem = hierarchyitems.FirstOrDefault(x => x.reference.GetID() == groupId);
-            if(parentGroupItem.IsNull())
-                continue;
-            var belongPixels = group.GetComponentsInChildren<Pixel>();
-            belongPixels = belongPixels.Where(x => x.parent.GetID() == groupId).ToArray();
-            foreach (var pixel in belongPixels)
-            {
-                var pixelName = pixel.name;
-                Create(pixelName, pixelName, true, pixel.gameObject, parentGroupItem, pixelPart);
-                pixelName = null;
-            }
-            belongPixels = null;
-        }
-        // pixels without group
-        var pixels = FindObjectsOfType<Pixel>();
-        var nonGroupPixels = pixels.Where(x => !Group.HasGroup(x)).ToArray();
-        foreach(var pixel in nonGroupPixels)
-        {
-            var pixelName = pixel.name;
-            Create(pixelName, pixelName, true, pixel.gameObject, pixelPart, pixelPart);
-            pixelName = null;
-        }
-        groups = null;
-        hierarchyitems = null;
+        // ClearPixelPart();
+        // var groups = FindObjectsOfType<Group>();
+        // var hierarchyitems = _items.Where(x => x.reference.IsNotNull());
+        // // create group items
+        // foreach (var group in groups)
+        // {
+        //     var groupName = group.name;
+        //     Create(groupName, groupName, true, group.gameObject, pixelPart, pixelPart);
+        //     groupName = null;
+        // }
+        // // nested groups
+        // var groupHasParent = groups.Where(x => x.transform.parent.IsNotNull()).ToArray();
+        // foreach(var group in groupHasParent)
+        // {
+        //     var parentGroupItem = hierarchyitems.FirstOrDefault(x => x.reference.GetID() == group.transform.parent.GetID());
+        //     if(parentGroupItem.IsNull())
+        //         continue;
+        //     var groupItem = hierarchyitems.FirstOrDefault(x => x.reference.GetID() == group.id);
+        //     if(groupItem.IsNull())
+        //         continue;
+        //     groupItem.SetParent(parentGroupItem);
+        //     parentGroupItem = null;
+        //     groupItem = null;
+        // }
+        // // pixels in each group
+        // foreach (var group in groups)
+        // {
+        //     var groupId = group.GetID();
+        //     var parentGroupItem = hierarchyitems.FirstOrDefault(x => x.reference.GetID() == groupId);
+        //     if(parentGroupItem.IsNull())
+        //         continue;
+        //     var belongPixels = group.GetComponentsInChildren<Pixel>();
+        //     belongPixels = belongPixels.Where(x => x.parent.GetID() == groupId).ToArray();
+        //     foreach (var pixel in belongPixels)
+        //     {
+        //         var pixelName = pixel.name;
+        //         Create(pixelName, pixelName, true, pixel.gameObject, parentGroupItem, pixelPart);
+        //         pixelName = null;
+        //     }
+        //     belongPixels = null;
+        // }
+        // // pixels without group
+        // var pixels = FindObjectsOfType<Pixel>();
+        // var nonGroupPixels = pixels.Where(x => !Group.x.group.IsNotNull()).ToArray();
+        // foreach(var pixel in nonGroupPixels)
+        // {
+        //     var pixelName = pixel.name;
+        //     Create(pixelName, pixelName, true, pixel.gameObject, pixelPart, pixelPart);
+        //     pixelName = null;
+        // }
+        // groups = null;
+        // hierarchyitems = null;
 
-        Order();
+        // Order();
     }
 
     void CreatePrefabPart()

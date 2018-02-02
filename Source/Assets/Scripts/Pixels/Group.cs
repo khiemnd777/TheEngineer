@@ -10,89 +10,150 @@ public class Group : MonoBehaviour, IPrefabricated
 
     public bool isPrefab { get; set; }
 
+    List<Pixel> _pixels;
+
+    public ICollection<Pixel> pixels
+    {
+        get 
+        {
+            return _pixels ?? (_pixels = new List<Pixel>());
+        }
+    }
+
+    List<Group> _groupChildren;
+
+    public ICollection<Group> groupChildren
+    {
+        get 
+        {
+            return _groupChildren ?? (_groupChildren = new List<Group>());
+        }
+    }
+
+    Group _parentalGroup;
+
+    public Group parentalGroup
+    {
+        get { return _parentalGroup; }
+    }
+
     void Start()
     {
         id = this.GetID();        
     }
 
+    public void AddPixel(Pixel pixel)
+    {
+        pixels.Add(pixel);
+        pixel.AddToGroup(this);
+    }
+
+    public void AddChildGroup(Group group)
+    {
+        group.AssignParentGroup(this);
+        groupChildren.Add(group);
+    }
+
+    public void AssignParentGroup(Group group)
+    {
+        _parentalGroup = group;
+        transform.SetParent(group.transform);
+    }
+
+    public void UnassignParentalGroup()
+    {
+        _parentalGroup = null;
+        transform.parent = null;
+    }
+
     public static void Create()
     {
-        var pixels = FindObjectsOfType<Pixel>();
-        // var selectedPixels = pixels.Where(x => x.selecting && !x.grouping);
-        var selectedPixels = pixels.Where(x => x.selecting);
+        // var pixels = FindObjectsOfType<Pixel>();
+        // var selectedPixels = pixels.Where(x => x.selecting);
+        var selectedPixels = PixelManager.instance.GetPixels(x => x.selecting);
         if (selectedPixels.Any())
         {
-            var selectedPoints = selectedPixels.Select(x => x.transform.position).ToArray();
-            var centerPoint = TransformUtility.ComputeCenterPoint(selectedPoints);
-            var groupPosition = centerPoint.ToVector2().Snap2();
-            var groupPrefab = Resources.Load<Group>(Constants.GROUP_PREFAB);
-            var group = Instantiate<Group>(groupPrefab, groupPosition, Quaternion.identity);
-            var pivot = group.GetComponentInChildren<GroupPivot>();
-            pivot.transform.position = new Vector3(centerPoint.x, centerPoint.y, pivot.transform.position.z);
-            // set parent for each selected pixel those are without any group
-            var selectedPixelsWithoutGroup = selectedPixels.Where(x => !HasGroup(x)).ToList();
-            foreach (var pixel in selectedPixelsWithoutGroup)
-            {
-                // pixel.grouping = true;
-                pixel.transform.SetParent(group.transform);
-            }
-            // set parent for each group what has any selected pixel
-            var selectedGroups = GetManyGroups(selectedPixels);
-            foreach (var selectedGroup in selectedGroups)
-            {
-                // disabling pivot of selected group before set parent for it
-                var pivotOfSelectedGroup = selectedGroup.GetComponentInChildren<GroupPivot>();
-                pivotOfSelectedGroup.GetComponent<MeshRenderer>().enabled = false;
-                selectedGroup.transform.SetParent(group.transform);
-            }
-
-            selectedGroups = null;
-            selectedPoints = null;
-            group = null;
-            groupPrefab = null;
+            Create(selectedPixels);
         }
+    }
+
+    public static Group Create(IEnumerable<Pixel> pixels)
+    {
+        var selectedPoints = pixels.Select(x => x.transform.position).ToArray();
+        var centerPoint = TransformUtility.ComputeCenterPoint(selectedPoints);
+        var groupPosition = centerPoint.ToVector2().Snap2();
+        var groupPrefab = Resources.Load<Group>(Constants.GROUP_PREFAB);
+        var group = Instantiate<Group>(groupPrefab, groupPosition, Quaternion.identity);
+        var pivot = group.GetComponentInChildren<GroupPivot>();
+        pivot.transform.position = new Vector3(centerPoint.x, centerPoint.y, pivot.transform.position.z);
+        // set parent for each selected pixel those are without any group
+        var selectedPixelsWithoutGroup = pixels.Where(x => x.group.IsNull()).ToList();
+        foreach (var pixel in selectedPixelsWithoutGroup)
+        {
+            group.AddPixel(pixel);
+        }
+        // set parent for each group what has any selected pixel
+        var selectedGroups = GetManyGroups(pixels);
+        foreach (var selectedGroup in selectedGroups)
+        {
+            if(selectedGroup.id == group.id)
+                continue;
+            // disabling pivot of selected group before set parent for it
+            var pivotOfSelectedGroup = selectedGroup.GetComponentInChildren<GroupPivot>();
+            pivotOfSelectedGroup.GetComponent<MeshRenderer>().enabled = false;
+            group.AddChildGroup(selectedGroup);
+        }
+
+        selectedGroups = null;
+        selectedPoints = null;
+        groupPrefab = null;
+        return group;
     }
 
     public static void UngroupOneByOne()
     {
-        var pixels = FindObjectsOfType<Pixel>();
-        var selectedPixels = pixels.Where(x => x.selecting && HasGroup(x));
+        // var pixels = FindObjectsOfType<Pixel>();
+        // var selectedPixels = pixels.Where(x => x.selecting && x.group.IsNotNull());
+        var selectedPixels = PixelManager.instance.GetPixels(x => x.selecting && x.group.IsNotNull());
         if (!selectedPixels.Any())
             return;
-        var firstGroup = GetFirstGroup(selectedPixels.LastOrDefault());
-        foreach (var pixel in selectedPixels)
+        var firstGroup = GetFirstGroup(selectedPixels.Last());
+        var selectPixelsToArray = selectedPixels.ToArray();
+        foreach (var pixel in selectPixelsToArray)
         {
-            var lastGroup = GetLastGroup(pixel);
-            var parentGroupsOfLastGroup = lastGroup.GetComponentsInParent<Group>();
-            var nearestParentGroupOfLastGroup = parentGroupsOfLastGroup[parentGroupsOfLastGroup.Length - 1];
+            // var parentGroupsOfLastGroup = lastGroup.GetComponentsInParent<Group>();
+            var parentGroups = GetGroups(pixel);
+            var nearestParentGroupOfLastGroup = parentGroups.Last();
             if (nearestParentGroupOfLastGroup.id == firstGroup.id)
             {
-                if (parentGroupsOfLastGroup.Length > 1)
+                var countOfParentGroups = parentGroups.Count();
+                if (countOfParentGroups > 1)
                 {
-                    nearestParentGroupOfLastGroup = parentGroupsOfLastGroup[parentGroupsOfLastGroup.Length - 2];
-                    nearestParentGroupOfLastGroup.transform.parent = null;
+                    nearestParentGroupOfLastGroup = parentGroups.ElementAt(countOfParentGroups - 2);
+                    nearestParentGroupOfLastGroup.UnassignParentalGroup();
                 }
             }
-            if (firstGroup.id == lastGroup.id)
+            var lastGroup = parentGroups.First();
+            if (lastGroup.IsNotNull() && firstGroup.id == lastGroup.id)
             {
-                pixel.transform.parent = null;
+                pixel.RemoveGroup();
             }
-            lastGroup = null;
-            parentGroupsOfLastGroup = null;
             nearestParentGroupOfLastGroup = null;
         }
         selectedPixels = null;
-        pixels = null;
+        selectPixelsToArray = null;
         firstGroup.Remove();
     }
 
     public static void Ungroup()
     {
-        var pixels = FindObjectsOfType<Pixel>();
-        var selectedPixels = pixels.Where(x => x.selecting && HasGroup(x));
+        // var pixels = FindObjectsOfType<Pixel>();
+        // var selectedPixels = pixels.Where(x => x.selecting && x.group.IsNotNull());
+        var selectedPixels = PixelManager.instance.GetPixels(x=>x.selecting && x.group.IsNotNull());
         if (!selectedPixels.Any())
             return;
-        foreach (var pixel in selectedPixels)
+        var selectedPixelsToArray = selectedPixels.ToArray();
+        foreach (var pixel in selectedPixelsToArray)
         {
             UngroupSingle(pixel);
         }
@@ -101,19 +162,24 @@ public class Group : MonoBehaviour, IPrefabricated
     public static void UngroupSingle(Pixel pixel)
     {
         var groupOfPixel = GetFirstGroup(pixel);
-        pixel.transform.parent = null;
+        pixel.RemoveGroup();
         UngroupIfHasOnePixel(groupOfPixel);
         groupOfPixel = null;
     }
 
     public static void UngroupIfHasOnePixel(Group group)
     {
-        var pixelsInGroup = group.GetComponentsInChildren<Pixel>();
-        if (pixelsInGroup.Length <= 1)
+        var pixelsInGroup = group.pixels;
+        var countOfPixels = pixelsInGroup.Count;
+        if (countOfPixels <= 1)
         {
-            if (pixelsInGroup.Length == 1)
+            if (countOfPixels == 1)
             {
-                pixelsInGroup[0].transform.parent = null;
+                var firstPixelInGroup = pixelsInGroup.First();
+                if(firstPixelInGroup.IsNotNull())
+                {
+                    firstPixelInGroup.RemoveGroup();
+                }
             }
             group.Remove();
         }
@@ -125,7 +191,7 @@ public class Group : MonoBehaviour, IPrefabricated
         var groupsOfPixel = GetGroups(pixel);
         if (!groupsOfPixel.Any())
             return null;
-        return groupsOfPixel[groupsOfPixel.Length - 1];
+        return groupsOfPixel.Last();
     }
 
     public static Group GetLastGroup(Pixel pixel)
@@ -133,7 +199,7 @@ public class Group : MonoBehaviour, IPrefabricated
         var groupsOfPixel = GetGroups(pixel);
         if (!groupsOfPixel.Any())
             return null;
-        return groupsOfPixel[0];
+        return groupsOfPixel.First();
     }
 
     public static Group GetGroupAtIndex(Pixel pixel, int index)
@@ -141,13 +207,27 @@ public class Group : MonoBehaviour, IPrefabricated
         var groupsOfPixel = GetGroups(pixel);
         if (!groupsOfPixel.Any())
             return null;
-        return groupsOfPixel[groupsOfPixel.Length - 1 - index];
+        return groupsOfPixel.ElementAt(groupsOfPixel.Count() - 1 - index);
     }
 
-    public static Group[] GetGroups(Pixel pixel)
+    public static IEnumerable<Group> GetGroups(Pixel pixel)
     {
-        var groupsOfPixel = pixel.GetComponentsInParent<Group>();
-        return groupsOfPixel;
+        var groupOfPixel = pixel.group;
+        var parentalGroups = new List<Group>();
+        if(groupOfPixel.IsNull())
+            return parentalGroups;
+        parentalGroups.Add(groupOfPixel);
+        GetParentalGroups(groupOfPixel, ref parentalGroups);
+        return parentalGroups;
+    }
+
+    public static void GetParentalGroups(Group group, ref List<Group> parentalGroups){
+        var outsideGroup = group.parentalGroup;
+        if(outsideGroup.IsNotNull())
+        {
+            parentalGroups.Add(outsideGroup);
+            GetParentalGroups(outsideGroup, ref parentalGroups);
+        }
     }
 
     public static List<Group> GetManyGroups(IEnumerable<Pixel> pixels)
@@ -155,10 +235,10 @@ public class Group : MonoBehaviour, IPrefabricated
         var groups = new List<Group>();
         foreach (var pixel in pixels)
         {
-            if (!HasGroup(pixel))
+            if (pixel.group.IsNull())
                 continue;
             var group = GetFirstGroup(pixel);
-            if (groups.Count > 0 && groups.Any(x => x.transform.GetInstanceID() == group.transform.GetInstanceID()))
+            if (groups.Count > 0 && groups.Any(x => x.id == group.id))
             {
                 group = null;
                 continue;
@@ -177,44 +257,44 @@ public class Group : MonoBehaviour, IPrefabricated
         return result;
     }
 
-    public static Pixel[] GetPixelsInGroupByPixel(Pixel pixel)
+    public static IEnumerable<Pixel> GetPixelsInGroupByPixel(Pixel pixel)
     {
         var groupOfPixel = GetFirstGroup(pixel);
-        var pixelsInGroup = groupOfPixel.GetComponentsInChildren<Pixel>();
-        groupOfPixel = null;
+        var pixelsInGroup = groupOfPixel.GetPixelsInChildren();
         return pixelsInGroup;
     }
 
     public static void DeselectAnotherPixelsByPixel(Pixel pixel)
     {
-        var pixels = FindObjectsOfType<Pixel>();
         var pixelsHasSelectedPixel = GetPixelsInGroupByPixel(pixel);
-        var selectedPixels = pixels.Where(x => x.selecting && !pixelsHasSelectedPixel.Any(y => y.GetID() == x.GetID())).ToList();
+        // var pixels = FindObjectsOfType<Pixel>();
+        // var selectedPixels = pixels.Where(x => x.selecting && !pixelsHasSelectedPixel.Any(y => y.GetID() == x.GetID())).ToList();
+        var selectedPixels = PixelManager.instance.GetPixels(x => x.selecting && !pixelsHasSelectedPixel.Any(y => y.id == x.id)).ToArray();
         foreach (var selectedPixel in selectedPixels)
         {
             selectedPixel.Deselect();
         }
         selectedPixels = null;
         pixelsHasSelectedPixel = null;
-        pixels = null;
     }
 
     public static void SelectPixelsInGroupFollowSelectedPixel()
     {
-        var pixels = FindObjectsOfType<Pixel>();
-        var pixelsHasGroup = pixels.Where(x => HasGroup(x)).ToList();
+        // var pixels = FindObjectsOfType<Pixel>();
+        // var pixelsHasGroup = pixels.Where(x => x.group.IsNotNull()).ToList();
+        var pixelsHasGroup = PixelManager.instance.GetPixels(x => x.group.IsNotNull()).ToArray();
         var pixelsHasGroupButWithoutSelected = new List<Pixel>();
         foreach (var pixel in pixelsHasGroup)
         {
-            if (pixelsHasGroupButWithoutSelected.Any(x => x.GetID() == pixel.GetID()))
+            if (pixelsHasGroupButWithoutSelected.Any(x => x.id == pixel.id))
                 continue;
             if (!pixel.selecting)
             {
                 pixelsHasGroupButWithoutSelected.Add(pixel);
                 continue;
             }
-            var pixelsInGroup = Group.GetPixelsInGroupByPixel(pixel);
-            pixelsInGroup = pixelsInGroup.Where(x => !x.selecting && HasGroup(x)).ToArray();
+            var pixelsInGroup = GetPixelsInGroupByPixel(pixel);
+            pixelsInGroup = pixelsInGroup.Where(x => !x.selecting && x.group.IsNotNull()).ToArray();
             foreach (var pixelInGroup in pixelsInGroup)
             {
                 pixelInGroup.Select();
@@ -228,7 +308,7 @@ public class Group : MonoBehaviour, IPrefabricated
             var pivot = group.GetComponentInChildren<GroupPivot>();
             if (pivot.IsNull())
                 continue;
-            var pixel = group.GetComponentInChildren<Pixel>();
+            var pixel = group.pixels.First();
             if (pixel.IsNotNull())
             {
                 pivot.GetComponent<MeshRenderer>().enabled = pixel.selecting;
@@ -240,19 +320,17 @@ public class Group : MonoBehaviour, IPrefabricated
         manySelectedGroups = null;
         pixelsHasGroup = null;
         pixelsHasGroupButWithoutSelected = null;
-        pixels = null;
     }
 
     public void Remove()
     {
-        var pixels = GetComponentsInChildren<Pixel>();
+        var pixels = GetPixelsInChildren();
         foreach(var pixel in pixels)
         {
             var scriptHost = pixel.GetComponent<ScriptableHost>();
             scriptHost.RemoveAllScript();
         }
-        var groups = GetComponentsInChildren<Group>();
-        foreach(var group in groups)
+        foreach(var group in groupChildren)
         {
             var scriptHost = group.GetComponent<ScriptableHost>();
             scriptHost.RemoveAllScript();
@@ -262,6 +340,19 @@ public class Group : MonoBehaviour, IPrefabricated
         {
             scriptHostOfGroup.RemoveAllScript();
         }
+        _pixels = null;
+        _groupChildren = null;
         DestroyImmediate(gameObject);
+    }
+
+    public IEnumerable<Pixel> GetPixelsInChildren()
+    {
+        var list = new List<Pixel>();
+        list.AddRange(pixels);
+        foreach(var group in groupChildren)
+        {
+            list.AddRange(group.pixels);
+        }
+        return list;
     }
 }

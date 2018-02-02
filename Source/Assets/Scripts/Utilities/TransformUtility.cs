@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
 
 public class TransformUtility
 {
@@ -10,6 +12,13 @@ public class TransformUtility
             objs = objs.Where(filter).ToArray();
         }
         var bestPotential = FindClosestObjectsBySpecific<T>(anchorPosition, closestDistance, objs);
+        objs = null;
+        return bestPotential;
+    }
+
+    public static T FindClosestObjectsOfType<T>(IEnumerable<T> objs, Vector3 anchorPosition, float closestDistance) where T : Component
+    {
+        var bestPotential = FindClosestObjectsBySpecific<T>(anchorPosition, closestDistance, objs.ToArray());
         objs = null;
         return bestPotential;
     }

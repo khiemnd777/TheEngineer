@@ -355,4 +355,55 @@ public class Group : MonoBehaviour, IPrefabricated
         }
         return list;
     }
+
+    public GameObject Prefabricate(GameObject patternObject, Transform prefabContainer)
+    {
+        var groupPrefab = Resources.Load<GameObject>(Constants.GROUP_PREFAB);
+        var prefabGo = Instantiate(groupPrefab, Vector3.zero, Quaternion.identity, prefabContainer);
+        var group = prefabGo.GetComponent<Group>();
+        if (group.IsNotNull())
+        {
+            var patternGroup = patternObject.GetComponent<Group>();
+            var groups = patternGroup.groupChildren;
+            var pixelsInGroup = patternGroup.pixels;
+            foreach (var pixel in pixelsInGroup)
+            {
+                // PixelManager.instance.AddPixel(pixel);
+                var pixelTransform = pixel.transform;
+                var instancePixel = Instantiate(pixel, pixelTransform.position, pixelTransform.rotation);
+                instancePixel.name = pixel.name;
+                group.AddPixel(instancePixel);
+            }
+            group.CloneGroup(groups);
+        }
+        return prefabGo;
+    }
+
+    public GameObject Unprefabricate(GameObject patternObject)
+    {
+        return null;
+    }
+
+    public void CloneGroup(IEnumerable<Group> cloneGroupChildren)
+    {
+        foreach(var childGroup in cloneGroupChildren)
+        {
+            var groupChildren = childGroup.groupChildren;
+            if(groupChildren.Any())
+            {
+                childGroup.CloneGroup(groupChildren);
+            }
+            var groupPrefab = Resources.Load<Group>(Constants.GROUP_PREFAB);
+            var prefabGo = Instantiate(groupPrefab, Vector3.zero, Quaternion.identity, transform);
+            var pixels = childGroup.pixels.Select(x => {
+                var xTransform = x.transform;
+                var instanceX = Instantiate(x, xTransform.position, xTransform.rotation);
+                instanceX.name = x.name;
+                return instanceX;
+            }).ToList();
+            pixels.ForEach(pixel => prefabGo.AddPixel(pixel));
+            AddChildGroup(prefabGo);
+            pixels.Clear();
+        }
+    }
 }

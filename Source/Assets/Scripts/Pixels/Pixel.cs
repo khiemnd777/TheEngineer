@@ -333,6 +333,16 @@ public class Pixel : MonoBehaviour, IPrefabricated
         pixel = null;
     }
 
+    public GameObject Prefabricate(GameObject patternObject, Transform prefabContainer)
+    {
+        return Instantiate(patternObject, Vector3.zero, Quaternion.identity, prefabContainer);
+    }
+
+    public GameObject Unprefabricate(GameObject patternObject)
+    {
+        return null;
+    }
+
     IEnumerator SetPythonPixelPosition()
     {
         while (!gameObject.IsNull())

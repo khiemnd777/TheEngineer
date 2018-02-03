@@ -41,31 +41,7 @@ public class PrefabManager : MonoBehaviour
         {
             prefabContainer = new GameObject(Constants.PREFAB_CONTAINER);
         }
-        GameObject prefabGo = null;
-        if (patternObject.GetComponent<Group>().IsNotNull())
-        {
-            var groupPrefab = Resources.Load<GameObject>(Constants.GROUP_PREFAB);
-            prefabGo = Instantiate(groupPrefab, Vector3.zero, Quaternion.identity, prefabContainer.transform);
-            var group = prefabGo.GetComponent<Group>();
-            if (group.IsNotNull())
-            {
-                var patternGroup = patternObject.GetComponent<Group>();
-                var groups = patternGroup.groupChildren;
-                var pixelsInGroup = patternGroup.pixels;
-                foreach (var pixel in pixelsInGroup)
-                {
-                    // PixelManager.instance.AddPixel(pixel);
-                    var pixelTransform = pixel.transform;
-                    var instancePixel = Instantiate(pixel, pixelTransform.position, pixelTransform.rotation);
-                    group.AddPixel(instancePixel);
-                }
-                CloneGroup(group, groups);
-            }
-        }
-        else
-        {
-            prefabGo = Instantiate(patternObject, Vector3.zero, Quaternion.identity, prefabContainer.transform);
-        }
+        var prefabGo = prefabComp.Prefabricate(patternObject, prefabContainer.transform);
 
         prefabGo.name = patternObject.name;
         prefabComp = GetPrefabricated(prefabGo);
@@ -89,21 +65,6 @@ public class PrefabManager : MonoBehaviour
         return prefabGo;
     }
 
-    void CloneGroup(Group group, IEnumerable<Group> groups)
-    {
-        foreach(var childGroup in groups)
-        {
-            var groupChildren = childGroup.groupChildren;
-            if(groupChildren.Any())
-            {
-                CloneGroup(childGroup, groupChildren);
-            }
-            var pixels = childGroup.pixels.Select(x => Instantiate(x, x.transform.position, x.transform.rotation));
-            var instanceGroup = Group.Create(pixels);
-            group.AddChildGroup(instanceGroup);
-        }
-    }
-
     public GameObject Unprefab(GameObject patternObject)
     {
         if(patternObject.IsNull())
@@ -111,7 +72,8 @@ public class PrefabManager : MonoBehaviour
         var prefabComp = GetPrefabricated(patternObject);
         if(prefabComp.IsNull())
             return null;
-        var unprefabGo = Instantiate(patternObject, Vector3.zero, Quaternion.identity);
+        // var unprefabGo = Instantiate(patternObject, Vector3.zero, Quaternion.identity);
+        var unprefabGo = prefabComp.Unprefabricate(patternObject);
         unprefabGo.name = patternObject.name;
         prefabComp = GetPrefabricated(unprefabGo);
         prefabComp.isPrefab = false;

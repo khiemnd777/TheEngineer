@@ -48,6 +48,11 @@ public class Group : MonoBehaviour, IPrefabricated
         pixel.AddToGroup(this);
     }
 
+    public void RemovePixel(Pixel pixel)
+    {
+        pixels.Remove(pixel);
+    }
+
     public void AddChildGroup(Group group)
     {
         group.AssignParentGroup(this);
@@ -308,7 +313,10 @@ public class Group : MonoBehaviour, IPrefabricated
             var pivot = group.GetComponentInChildren<GroupPivot>();
             if (pivot.IsNull())
                 continue;
-            var pixel = group.pixels.First();
+            var pixelsInGroup = group.pixels;
+            if(!pixelsInGroup.Any())
+                continue;
+            var pixel = pixelsInGroup.First();
             if (pixel.IsNotNull())
             {
                 pivot.GetComponent<MeshRenderer>().enabled = pixel.selecting;
@@ -328,17 +336,22 @@ public class Group : MonoBehaviour, IPrefabricated
         foreach(var pixel in pixels)
         {
             var scriptHost = pixel.GetComponent<ScriptableHost>();
+            if(scriptHost.IsNull())
+                continue;
             scriptHost.RemoveAllScript();
         }
         foreach(var group in groupChildren)
         {
             var scriptHost = group.GetComponent<ScriptableHost>();
+            if(scriptHost.IsNull())
+                continue;
             scriptHost.RemoveAllScript();
         }
         var scriptHostOfGroup = GetComponent<ScriptableHost>();
         if(scriptHostOfGroup.IsNotNull())
         {
-            scriptHostOfGroup.RemoveAllScript();
+            if(scriptHostOfGroup.IsNotNull())
+                scriptHostOfGroup.RemoveAllScript();
         }
         _pixels = null;
         _groupChildren = null;
@@ -370,7 +383,7 @@ public class Group : MonoBehaviour, IPrefabricated
             {
                 // PixelManager.instance.AddPixel(pixel);
                 var pixelTransform = pixel.transform;
-                var instancePixel = Instantiate(pixel, pixelTransform.position, pixelTransform.rotation);
+                var instancePixel = Instantiate(pixel, pixelTransform.localPosition, pixelTransform.rotation);
                 instancePixel.name = pixel.name;
                 group.AddPixel(instancePixel);
             }
@@ -388,17 +401,24 @@ public class Group : MonoBehaviour, IPrefabricated
         {
             var patternGroup = patternObject.GetComponent<Group>();
             var groups = patternGroup.groupChildren;
-            var pixelsInGroup = patternGroup.pixels;
-            foreach (var pixel in pixelsInGroup)
+            var pixelsInPatternGroup = patternGroup.pixels;
+            foreach (var pixel in pixelsInPatternGroup)
             {
                 // PixelManager.instance.AddPixel(pixel);
                 var pixelTransform = pixel.transform;
-                var instancePixel = Instantiate(pixel, pixelTransform.position, pixelTransform.rotation);
+                var instancePixel = Instantiate(pixel, pixelTransform.localPosition, pixelTransform.rotation);
                 instancePixel.name = pixel.name;
                 group.AddPixel(instancePixel);
                 PixelManager.instance.AddPixel(instancePixel);
             }
             group.CloneGroup(groups);
+            // Compute pivot of group
+            var pixelsInGroup = group.GetPixelsInChildren();
+            var selectedPoints = pixelsInGroup.Select(x => x.transform.position).ToArray();
+            var centerPoint = TransformUtility.ComputeCenterPoint(selectedPoints);
+            var groupPosition = centerPoint.ToVector2().Snap2();
+            var pivot = group.GetComponentInChildren<GroupPivot>();
+            pivot.transform.position = new Vector3(centerPoint.x, centerPoint.y, pivot.transform.position.z);
         }
         return prefabGo;
     }
@@ -416,12 +436,15 @@ public class Group : MonoBehaviour, IPrefabricated
             var prefabGo = Instantiate(groupPrefab, Vector3.zero, Quaternion.identity, transform);
             var pixels = childGroup.pixels.Select(x => {
                 var xTransform = x.transform;
-                var instanceX = Instantiate(x, xTransform.position, xTransform.rotation);
-                PixelManager.instance.AddPixel(instanceX);
+                var instanceX = Instantiate(x, xTransform.localPosition, xTransform.rotation);
                 instanceX.name = x.name;
                 return instanceX;
             }).ToList();
-            pixels.ForEach(pixel => prefabGo.AddPixel(pixel));
+            pixels.ForEach(pixel => 
+                {
+                    prefabGo.AddPixel(pixel);
+                    PixelManager.instance.AddPixel(pixel);
+                });
             AddChildGroup(prefabGo);
             pixels.Clear();
         }

@@ -50,6 +50,8 @@ public class PixelManager
         var pixels = this.pixels;
         var it = pixels
             .Where(x => {
+                if(x.IsNull())
+                    return false;
                 var directionToTarget = x.transform.position - currentPosition;
                 var dSqrToTarget = directionToTarget.sqrMagnitude;
                 return dSqrToTarget < closestDistanceSqr;

@@ -105,7 +105,17 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
         RegisterItem("take-off", "Take Off", takeOffPrefab, () =>
         {
             Debug.Log("Take Off");
-            PixelRemovingManager.instance.Remove();
+            // PixelRemovingManager.instance.Remove();
+            var selectedPixels = PixelManager.instance.GetPixels(x => x.selecting);
+            if(selectedPixels.Any())
+            {
+                var it = selectedPixels.ToList();
+                it.ForEach(x => x.Remove());
+            }
+            else
+            {
+                pixel.Remove();
+            }
             hierarchyManager.UpdatePixelPart();
         });
     }

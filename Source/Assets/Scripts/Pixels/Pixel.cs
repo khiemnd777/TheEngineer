@@ -30,6 +30,8 @@ public class Pixel : MonoBehaviour, IPrefabricated
 
     public bool isPrefab { get; set; }
 
+    PixelManager pixelManager;
+
     Vector2 _anchorMovePoint;
 
     List<Scriptable> scriptableList;
@@ -54,6 +56,11 @@ public class Pixel : MonoBehaviour, IPrefabricated
     public int id
     {
         get { return _id; }
+    }
+
+    void Awake()
+    {
+        pixelManager = PixelManager.instance;
     }
 
     void Start()
@@ -99,7 +106,7 @@ public class Pixel : MonoBehaviour, IPrefabricated
         // if this pixel is non-selecting, then deselecting all another one
         if (!selecting && !SelectObjectManager.instance.multipleChoice)
         {
-            var pixelsWithoutThis = PixelManager.instance.GetPixels(x => x.id != this.id && x.selecting);
+            var pixelsWithoutThis = pixelManager.GetPixels(x => x.id != this.id && x.selecting);
             if (pixelsWithoutThis.Any())
             {
                 var pixelsWithoutThisToArray = pixelsWithoutThis.ToArray();
@@ -110,7 +117,7 @@ public class Pixel : MonoBehaviour, IPrefabricated
                 pixelsWithoutThisToArray = null;
             }
         }
-        var selectedPixels = PixelManager.instance.GetPixels(x => x.selecting);
+        var selectedPixels = pixelManager.GetPixels(x => x.selecting);
         var countOfSelectedPixels = selectedPixels.Count();
         var realPosition = transform.localPosition;
         var mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -246,7 +253,7 @@ public class Pixel : MonoBehaviour, IPrefabricated
     public Pixel GetClosestPixel()
     {
         // var bestPotential = TransformUtility.FindClosestObjectsOfType<Pixel>(transform.position, Constants.CLOSEST_PIXEL_DISTANCE, x => x != this);
-        var bestPotential = PixelManager.instance.FindClosestPixel(transform.position, Constants.CLOSEST_PIXEL_DISTANCE, x => x != this);
+        var bestPotential = pixelManager.FindClosestPixel(transform.position, Constants.CLOSEST_PIXEL_DISTANCE, x => x != this);
         return bestPotential;
     }
 
@@ -264,6 +271,9 @@ public class Pixel : MonoBehaviour, IPrefabricated
 
     public void RemoveGroup()
     {
+        if(_group.IsNull())
+            return;
+        _group.RemovePixel(this);
         _group = null;
         transform.parent = null;
     }
@@ -328,7 +338,7 @@ public class Pixel : MonoBehaviour, IPrefabricated
         {
             scriptHostOfPixel.RemoveAllScript();
         }
-        PixelManager.instance.RemovePixel(pixel.id);
+        pixelManager.RemovePixel(pixel.id);
         DestroyImmediate(gameObject);
         pixel = null;
     }
@@ -342,7 +352,7 @@ public class Pixel : MonoBehaviour, IPrefabricated
     {
         var instanceGo = Instantiate(patternObject, Vector3.zero, Quaternion.identity);
         var singlePixel = instanceGo.GetComponent<Pixel>();
-        PixelManager.instance.AddPixel(singlePixel);
+        pixelManager.AddPixel(singlePixel);
         return instanceGo;
     }
 

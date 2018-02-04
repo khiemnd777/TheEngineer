@@ -280,15 +280,15 @@ public class Pixel : MonoBehaviour, IPrefabricated
         selecting = true;
         VisibleSelection(true);
         VisibleHoverable(false);
-        pivot.gameObject.SetActive(!Group.HasGroup(this));
+        // pivot.gameObject.SetActive(!Group.HasGroup(this));
     }
 
     public void Deselect()
     {
         selecting = false;
         VisibleSelection(false);
-        if (EventObserver.instance.happeningEvent != Events.DragPivotStart)
-            pivot.gameObject.SetActive(false);
+        // if (EventObserver.instance.happeningEvent != Events.DragPivotStart)
+        //     pivot.gameObject.SetActive(false);
     }
 
     public void SelectTemp()

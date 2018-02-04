@@ -39,9 +39,13 @@ public class SelectObjectManager : MonoBehaviour
 
     bool _dragToSelect = true;
     Vector2 _anchorSelectRectPoint;
+    List<int> _lastPixelIdsInRect;
+    PixelManager pixelManager;
 
     void Start()
     {
+        _lastPixelIdsInRect = new List<int>();
+        pixelManager = PixelManager.instance;
         StartCoroutine(Visualizing());
     }
 
@@ -109,7 +113,6 @@ public class SelectObjectManager : MonoBehaviour
             }
 
             // selectRect.anchoredPosition = _anchorSelectRectPoint;
-
             var position = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
             var diff = position - _anchorSelectRectPoint;
             if (diff == Vector2.zero)
@@ -134,15 +137,15 @@ public class SelectObjectManager : MonoBehaviour
                 onMultipleSelecting.Invoke();
             }
             var mainCamera = Camera.main;
-            var pixelsInRect = PixelManager.instance.GetPixels(x => 
+            var pixelsInRect = pixelManager.GetPixels(x => 
             {
                 if(!x.gameObject.activeInHierarchy)
                     return false;
                 var screenPoint = mainCamera.WorldToScreenPoint(x.transform.position);
                 return RectTransformUtility.RectangleContainsScreenPoint(selectRect, screenPoint);
             });
-            var pixelInRectToArray = pixelsInRect.ToList();
-            pixelInRectToArray.ForEach(pixel => 
+            var pixelInRectIt = pixelsInRect.ToList();
+            pixelInRectIt.ForEach(pixel => 
             {
                 if (!multipleChoice)
                 {
@@ -157,47 +160,41 @@ public class SelectObjectManager : MonoBehaviour
                         pixel.DeselectTemp();
                 }
             });
-            // var pixels = FindObjectsOfType<Pixel>();
-            // foreach (var pixel in pixels)
-            // {
-            //     var screenPoint = Camera.main.WorldToScreenPoint(pixel.transform.position);
-            //     if (RectTransformUtility.RectangleContainsScreenPoint(selectRect, screenPoint))
-            //     {
-            //         if (!multipleChoice)
-            //         {
-            //             if (!pixel.selecting || !pixel.tempSelecting)
-            //                 pixel.SelectTemp();
-            //         }
-            //         else
-            //         {
-            //             if (!pixel.selecting)
-            //                 pixel.SelectTemp();
-            //             else
-            //                 pixel.DeselectTemp();
-            //         }
-
-            //     }
-            //     else
-            //     {
-            //         if (!multipleChoice)
-            //         {
-            //             if (pixel.selecting || pixel.tempSelecting)
-            //                 pixel.DeselectTemp();
-            //         }
-            //         else
-            //         {
-            //             if (pixel.tempSelecting)
-            //                 pixel.DeselectTemp();
-            //             if (pixel.selecting)
-            //             {
-            //                 if (!pixel.tempSelecting)
-            //                     pixel.SelectTemp();
-            //                 else
-            //                     pixel.DeselectTemp();
-            //             }
-            //         }
-            //     }
-            // }
+            // deselect of pixels out of rect
+            var hasLastSelectedPixels = _lastPixelIdsInRect.Any();
+            var pixelInRectIds = pixelsInRect.Select(x => x.id).ToList();
+            if(hasLastSelectedPixels)
+            {
+                var pixelIdsOutOfRect = _lastPixelIdsInRect.Where(x=>!pixelInRectIds.Contains(x)).ToList();
+                var pixelOutOfRect = pixelManager.GetPixels(x => pixelIdsOutOfRect.Contains(x.id));
+                if(pixelOutOfRect.Any())
+                {
+                    var pixelOutOfRectIt = pixelOutOfRect.ToList();
+                    pixelOutOfRectIt.ForEach(pixel =>
+                    {
+                        if (!multipleChoice)
+                        {
+                            if (pixel.selecting || pixel.tempSelecting)
+                                pixel.DeselectTemp();
+                        }
+                        else
+                        {
+                            if (pixel.tempSelecting)
+                                pixel.DeselectTemp();
+                            if (pixel.selecting)
+                            {
+                                if (!pixel.tempSelecting)
+                                    pixel.SelectTemp();
+                                else
+                                    pixel.DeselectTemp();
+                            }
+                        }
+                    });
+                    pixelOutOfRectIt.Clear();
+                }
+            }
+            _lastPixelIdsInRect.Clear();
+            _lastPixelIdsInRect = pixelInRectIds;
         }
         if (Input.GetMouseButtonUp(0))
         {
@@ -214,29 +211,30 @@ public class SelectObjectManager : MonoBehaviour
             selectRect.anchoredPosition = Vector2.zero;
             selectRect.sizeDelta = Vector2.zero;
             // find any pixel has state is tempSelecting then selecting it.
-            var selectNumber = 0;
-            var selectingPixels = PixelManager.instance.GetPixels(x => x.tempSelecting);
-            var selectingPixelsToList= selectingPixels.ToList();
-            selectNumber = selectingPixels.Count();
-            selectingPixelsToList.ForEach(pixel =>
+            var selectingPixels = pixelManager.GetPixels(x => x.tempSelecting);
+            var selectingPixelsIt = selectingPixels.ToList();
+            var selectNumber = selectingPixels.Count();
+            if(_lastPixelIdsInRect.Any())
+            {
+                var pixelsInRect = pixelManager.GetPixels(x => _lastPixelIdsInRect.Contains(x.id));
+                if(pixelsInRect.Any())
+                {
+                    var pixelsInRectIt = pixelsInRect.ToList();
+                    pixelsInRectIt.ForEach(pixel => 
+                    {
+                        if(!pixel.tempSelecting)
+                            pixel.Deselect();
+                    });
+                    pixelsInRectIt.Clear();
+                    pixelsInRect = null;
+                }
+            }
+            selectingPixelsIt.ForEach(pixel =>
             {
                 pixel.DeselectTemp();
                 pixel.Select();
             });
-            // var pixels = FindObjectsOfType<Pixel>();
-            // foreach (var pixel in pixels)
-            // {
-            //     if (pixel.tempSelecting)
-            //     {
-            //         ++selectNumber;
-            //         pixel.DeselectTemp();
-            //         pixel.Select();
-            //     }
-            //     else
-            //     {
-            //         pixel.Deselect();
-            //     }
-            // }
+            selectingPixelsIt.Clear();
             // select a group follows selected pixel
             Group.SelectPixelsInGroupFollowSelectedPixel();
             // if happeningEvent was occuring DragToMultipleSelect, then assign to None.
@@ -270,15 +268,7 @@ public class SelectObjectManager : MonoBehaviour
                     }
                     var pixels = PixelManager.instance.GetPixels(x => x.id != pixel.id && !multipleChoice).ToList();
                     pixels.ForEach(x => x.DeselectTemp());
-                    // var pixels = FindObjectsOfType<Pixel>();
-                    // foreach (var anotherPixel in pixels)
-                    // {
-                    //     if (anotherPixel == pixel || multipleChoice)
-                    //         continue;
-                    //     // deselect another pixel object if a pixel selected
-                    //     // if multipleChoice actived, then, ignore below
-                    //     anotherPixel.DeselectTemp();
-                    // }
+                    pixels.Clear();
                     // pixel selected
                     // if multipleChoice actived, then selects any pixels without selected
                     if (multipleChoice)
@@ -323,7 +313,10 @@ public class SelectObjectManager : MonoBehaviour
             {
                 var selectedPixels = PixelManager.instance.GetPixels(x => x.selecting);
                 var selectedPixelsIt = selectedPixels.ToList();
-                selectedPixelsIt.ForEach(x => x.SelectTemp());
+                selectedPixelsIt.ForEach(x => 
+                {
+                    x.SelectTemp();
+                });
                 return;
             }
             Pixel hittingPixel = null;
@@ -344,6 +337,8 @@ public class SelectObjectManager : MonoBehaviour
                 if (hittingPixel.IsNotNull())
                     return;
             }
+            if(EventObserver.instance.happeningEvent == Events.DragPivotStart)
+                return;
             if (EventObserver.instance.happeningEvent == Events.DragToMultipleSelect)
             {
                 EventObserver.instance.happeningEvent = Events.OutFocusMultipleSelect;
@@ -353,7 +348,18 @@ public class SelectObjectManager : MonoBehaviour
                 EventObserver.instance.happeningEvent = Events.OutFocusSelect;
             }
             var listOfselectedPixels = PixelManager.instance.GetPixels(x => x.selecting).ToList();
-            listOfselectedPixels.ForEach(x => x.Deselect());
+            listOfselectedPixels.ForEach(x =>
+            {
+                // if (x.group.IsNotNull())
+                // {
+                //     var firstOuterGroup = Group.GetFirstGroup(x);
+                //     if (firstOuterGroup.IsNotNull())
+                //     {
+                //         firstOuterGroup.SetEnabledPivot(false);
+                //     }
+                // }
+                x.Deselect();
+            });
         }
     }
 }

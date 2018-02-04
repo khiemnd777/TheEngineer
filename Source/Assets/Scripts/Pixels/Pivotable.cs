@@ -57,7 +57,7 @@ public class Pivotable : MonoBehaviour
         if(EventObserver.instance.happeningEvent == Events.DragPivotStart
             || EventObserver.instance.happeningEvent == Events.DragPivot)
         {
-            
+            EventObserver.instance.happeningEvent = Events.DropPivot;
         }
     }
 }

@@ -9,6 +9,7 @@ public enum Events
     , DragMultiplePixelsStart
     , DragPixel
     , DragMultiplePixels
+    , DropPivot
     , CreatePixel
     , SelectPixel
     , DragToMultipleSelect

@@ -291,18 +291,11 @@ public class Group : MonoBehaviour, IPrefabricated
     {
         // var pixels = FindObjectsOfType<Pixel>();
         // var pixelsHasGroup = pixels.Where(x => x.group.IsNotNull()).ToList();
-        var pixelsHasGroup = PixelManager.instance.GetPixels(x => x.group.IsNotNull()).ToArray();
-        var pixelsHasGroupButWithoutSelected = new List<Pixel>();
+        var pixelsHasGroup = PixelManager.instance.GetPixels(x => x.selecting && x.group.IsNotNull());
         foreach (var pixel in pixelsHasGroup)
         {
-            if (pixelsHasGroupButWithoutSelected.Any(x => x.id == pixel.id))
-                continue;
-            if (!pixel.selecting)
-            {
-                pixelsHasGroupButWithoutSelected.Add(pixel);
-                continue;
-            }
-            var pixelsInGroup = GetPixelsInGroupByPixel(pixel);
+            var group = pixel.group;
+            var pixelsInGroup = group.GetPixelsInChildren();
             pixelsInGroup = pixelsInGroup.Where(x => !x.selecting && x.group.IsNotNull()).ToArray();
             foreach (var pixelInGroup in pixelsInGroup)
             {
@@ -331,7 +324,6 @@ public class Group : MonoBehaviour, IPrefabricated
         }
         manySelectedGroups = null;
         pixelsHasGroup = null;
-        pixelsHasGroupButWithoutSelected = null;
     }
 
     public void Remove()

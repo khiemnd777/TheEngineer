@@ -238,7 +238,7 @@ public class SelectObjectManager : MonoBehaviour
             //     }
             // }
             // select a group follows selected pixel
-            Group.SelectPixelsInGroupFollowSelectedPixel();
+            // Group.SelectPixelsInGroupFollowSelectedPixel();
             // if happeningEvent was occuring DragToMultipleSelect, then assign to None.
             if (EventObserver.instance.happeningEvent == Events.DragToMultipleSelect)
             {

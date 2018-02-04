@@ -10,6 +10,8 @@ public class Group : MonoBehaviour, IPrefabricated
 
     public bool isPrefab { get; set; }
 
+    PixelManager pixelManager;
+
     List<Pixel> _pixels;
 
     public ICollection<Pixel> pixels
@@ -37,9 +39,10 @@ public class Group : MonoBehaviour, IPrefabricated
         get { return _parentalGroup; }
     }
 
-    void Start()
+    void Awake()
     {
-        id = this.GetID();        
+        pixelManager = PixelManager.instance;
+        id = this.GetID();
     }
 
     public void AddPixel(Pixel pixel)
@@ -51,6 +54,7 @@ public class Group : MonoBehaviour, IPrefabricated
     public void RemovePixel(Pixel pixel)
     {
         pixels.Remove(pixel);
+        pixel.RemoveGroup();
     }
 
     public void AddChildGroup(Group group)
@@ -166,7 +170,7 @@ public class Group : MonoBehaviour, IPrefabricated
 
     public static void UngroupSingle(Pixel pixel)
     {
-        var groupOfPixel = GetFirstGroup(pixel);
+        var groupOfPixel = pixel.group; //GetFirstGroup(pixel);
         pixel.RemoveGroup();
         UngroupIfHasOnePixel(groupOfPixel);
         groupOfPixel = null;
@@ -332,29 +336,29 @@ public class Group : MonoBehaviour, IPrefabricated
 
     public void Remove()
     {
-        var pixels = GetPixelsInChildren();
-        foreach(var pixel in pixels)
-        {
-            var scriptHost = pixel.GetComponent<ScriptableHost>();
-            if(scriptHost.IsNull())
-                continue;
-            scriptHost.RemoveAllScript();
-        }
-        foreach(var group in groupChildren)
-        {
-            var scriptHost = group.GetComponent<ScriptableHost>();
-            if(scriptHost.IsNull())
-                continue;
-            scriptHost.RemoveAllScript();
-        }
+        // var pixels = GetPixelsInChildren();
+        // foreach(var pixel in pixels)
+        // {
+        //     var scriptHost = pixel.GetComponent<ScriptableHost>();
+        //     if(scriptHost.IsNull())
+        //         continue;
+        //     scriptHost.RemoveAllScript();
+        // }
+        // foreach(var group in groupChildren)
+        // {
+        //     var scriptHost = group.GetComponent<ScriptableHost>();
+        //     if(scriptHost.IsNull())
+        //         continue;
+        //     scriptHost.RemoveAllScript();
+        // }
         var scriptHostOfGroup = GetComponent<ScriptableHost>();
         if(scriptHostOfGroup.IsNotNull())
         {
             if(scriptHostOfGroup.IsNotNull())
                 scriptHostOfGroup.RemoveAllScript();
         }
-        _pixels = null;
-        _groupChildren = null;
+        // _pixels = null;
+        // _groupChildren = null;
         DestroyImmediate(gameObject);
     }
 
@@ -400,7 +404,6 @@ public class Group : MonoBehaviour, IPrefabricated
         if (group.IsNotNull())
         {
             var patternGroup = patternObject.GetComponent<Group>();
-            var groups = patternGroup.groupChildren;
             var pixelsInPatternGroup = patternGroup.pixels;
             foreach (var pixel in pixelsInPatternGroup)
             {
@@ -409,9 +412,10 @@ public class Group : MonoBehaviour, IPrefabricated
                 var instancePixel = Instantiate(pixel, pixelTransform.localPosition, pixelTransform.rotation);
                 instancePixel.name = pixel.name;
                 group.AddPixel(instancePixel);
-                PixelManager.instance.AddPixel(instancePixel);
+                pixelManager.AddPixel(instancePixel);
             }
-            group.CloneGroup(groups);
+            var groups = patternGroup.groupChildren;
+            group.CloneGroup(groups, true);
             // Compute pivot of group
             var pixelsInGroup = group.GetPixelsInChildren();
             var selectedPoints = pixelsInGroup.Select(x => x.transform.position).ToArray();
@@ -423,28 +427,31 @@ public class Group : MonoBehaviour, IPrefabricated
         return prefabGo;
     }
 
-    public void CloneGroup(IEnumerable<Group> cloneGroupChildren)
+    public void CloneGroup(IEnumerable<Group> cloneGroupChildren, bool addToListOfPixel = false)
     {
+        if(!cloneGroupChildren.Any())
+            return;
+        var groupPrefab = Resources.Load<Group>(Constants.GROUP_PREFAB);
         foreach(var childGroup in cloneGroupChildren)
         {
-            var groupChildren = childGroup.groupChildren;
-            if(groupChildren.Any())
-            {
-                childGroup.CloneGroup(groupChildren);
-            }
-            var groupPrefab = Resources.Load<Group>(Constants.GROUP_PREFAB);
-            var prefabGo = Instantiate(groupPrefab, Vector3.zero, Quaternion.identity, transform);
+            var prefabGo = Instantiate(groupPrefab, childGroup.transform.localPosition, Quaternion.identity, transform);
             var pixels = childGroup.pixels.Select(x => {
                 var xTransform = x.transform;
-                var instanceX = Instantiate(x, xTransform.localPosition, xTransform.rotation);
+                var instanceX = Instantiate(x, childGroup.transform.position - xTransform.position, xTransform.rotation);
                 instanceX.name = x.name;
                 return instanceX;
             }).ToList();
             pixels.ForEach(pixel => 
-                {
-                    prefabGo.AddPixel(pixel);
-                    PixelManager.instance.AddPixel(pixel);
-                });
+            {
+                prefabGo.AddPixel(pixel);
+                if(addToListOfPixel)
+                    pixelManager.AddPixel(pixel);
+            });
+            var groupChildren = childGroup.groupChildren;
+            if(groupChildren.Any())
+            {
+                prefabGo.CloneGroup(groupChildren, addToListOfPixel);
+            }
             AddChildGroup(prefabGo);
             pixels.Clear();
         }

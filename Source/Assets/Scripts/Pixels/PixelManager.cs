@@ -3,14 +3,26 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
-public class PixelManager
+public class PixelManager : MonoBehaviour
 {
     static PixelManager _instance;
     public static PixelManager instance
     {
         get
         {
-            return _instance ?? (_instance = new PixelManager());
+            if (!_instance)
+            {
+                _instance = FindObjectOfType<PixelManager>();
+                if (!_instance)
+                {
+                    Debug.LogError("There needs to be one active PixelManager script on a GameObject in your scene.");
+                }
+                else
+                {
+
+                }
+            }
+            return _instance;
         }
     }
 

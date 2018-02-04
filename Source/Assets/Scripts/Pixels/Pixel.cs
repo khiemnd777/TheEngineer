@@ -205,15 +205,15 @@ public class Pixel : MonoBehaviour, IPrefabricated
         }
         else
         {
-            var closestPixel = GetClosestPixel();
-            if (closestPixel.IsNotNull())
-            {
-                var closestAnchor = GetClosestAnchor(closestPixel);
-                if (closestAnchor.IsNotNull())
-                {
-                    transform.position = closestAnchor.transform.position;
-                }
-            }
+            // var closestPixel = GetClosestPixel();
+            // if (closestPixel.IsNotNull())
+            // {
+            //     var closestAnchor = GetClosestAnchor(closestPixel);
+            //     if (closestAnchor.IsNotNull())
+            //     {
+            //         transform.position = closestAnchor.transform.position;
+            //     }
+            // }
         }
         if (onDrop.IsNotNull())
         {
@@ -271,9 +271,6 @@ public class Pixel : MonoBehaviour, IPrefabricated
 
     public void RemoveGroup()
     {
-        if(_group.IsNull())
-            return;
-        _group.RemovePixel(this);
         _group = null;
         transform.parent = null;
     }
@@ -328,19 +325,25 @@ public class Pixel : MonoBehaviour, IPrefabricated
 
     public void Remove()
     {
-        var pixel = this;
-        if (pixel.group.IsNotNull())
-        {
-            Group.UngroupSingle(pixel);
-        }
         var scriptHostOfPixel = GetComponent<ScriptableHost>();
         if(scriptHostOfPixel.IsNotNull())
         {
             scriptHostOfPixel.RemoveAllScript();
         }
-        pixelManager.RemovePixel(pixel.id);
+        if (_group.IsNotNull())
+        {
+            // Group.UngroupSingle(pixel);
+            var cachedGroup = _group;
+            cachedGroup.RemovePixel(this);
+            if(cachedGroup.pixels.Count == 1)
+            {
+                var lastPixel = cachedGroup.pixels.First();
+                cachedGroup.RemovePixel(lastPixel);
+                cachedGroup.Remove();
+            }
+        }
+        pixelManager.RemovePixel(id);
         DestroyImmediate(gameObject);
-        pixel = null;
     }
 
     public GameObject Prefabricate(GameObject patternObject, Transform prefabContainer)

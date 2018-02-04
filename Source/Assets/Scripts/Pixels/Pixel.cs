@@ -340,7 +340,10 @@ public class Pixel : MonoBehaviour, IPrefabricated
 
     public GameObject Unprefabricate(GameObject patternObject)
     {
-        return null;
+        var instanceGo = Instantiate(patternObject, Vector3.zero, Quaternion.identity);
+        var singlePixel = instanceGo.GetComponent<Pixel>();
+        PixelManager.instance.AddPixel(singlePixel);
+        return instanceGo;
     }
 
     IEnumerator SetPythonPixelPosition()

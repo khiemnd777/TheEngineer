@@ -92,22 +92,6 @@ public class PrefabManager : MonoBehaviour
             }
             patternScripts = null;
         }
-        // If having Group
-        var group = unprefabGo.GetComponent<Group>();
-        if(group.IsNotNull())
-        {
-            var pixelsInGroup = group.GetComponentsInChildren<Pixel>();
-            foreach(var pixel in pixelsInGroup)
-            {
-                PixelManager.instance.AddPixel(pixel);
-            }
-        }
-        // if having Pixel
-        var singlePixel = unprefabGo.GetComponent<Pixel>();
-        if(singlePixel.IsNotNull())
-        {
-            PixelManager.instance.AddPixel(singlePixel);
-        }
 
         prefabComp = null;
         return unprefabGo;

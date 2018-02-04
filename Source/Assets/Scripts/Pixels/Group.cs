@@ -381,7 +381,26 @@ public class Group : MonoBehaviour, IPrefabricated
 
     public GameObject Unprefabricate(GameObject patternObject)
     {
-        return null;
+        var groupPrefab = Resources.Load<GameObject>(Constants.GROUP_PREFAB);
+        var prefabGo = Instantiate(groupPrefab, Vector3.zero, Quaternion.identity);
+        var group = prefabGo.GetComponent<Group>();
+        if (group.IsNotNull())
+        {
+            var patternGroup = patternObject.GetComponent<Group>();
+            var groups = patternGroup.groupChildren;
+            var pixelsInGroup = patternGroup.pixels;
+            foreach (var pixel in pixelsInGroup)
+            {
+                // PixelManager.instance.AddPixel(pixel);
+                var pixelTransform = pixel.transform;
+                var instancePixel = Instantiate(pixel, pixelTransform.position, pixelTransform.rotation);
+                instancePixel.name = pixel.name;
+                group.AddPixel(instancePixel);
+                PixelManager.instance.AddPixel(instancePixel);
+            }
+            group.CloneGroup(groups);
+        }
+        return prefabGo;
     }
 
     public void CloneGroup(IEnumerable<Group> cloneGroupChildren)
@@ -398,6 +417,7 @@ public class Group : MonoBehaviour, IPrefabricated
             var pixels = childGroup.pixels.Select(x => {
                 var xTransform = x.transform;
                 var instanceX = Instantiate(x, xTransform.position, xTransform.rotation);
+                PixelManager.instance.AddPixel(instanceX);
                 instanceX.name = x.name;
                 return instanceX;
             }).ToList();

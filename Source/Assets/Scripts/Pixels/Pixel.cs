@@ -251,6 +251,8 @@ public class Pixel : MonoBehaviour, IPrefabricated
             || EventObserver.instance.happeningEvent == Events.DragMultiplePixels)
         {
             // Group.UngroupOneByOne();
+            if(_cachedSelectedPixels.IsNotNull())
+                _cachedSelectedPixels.Clear();
         }
         else
         {

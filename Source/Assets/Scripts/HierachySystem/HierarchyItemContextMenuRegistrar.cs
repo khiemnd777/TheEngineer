@@ -36,6 +36,7 @@ public class HierarchyItemContextMenuRegistrar : ContextMenuRegistrar
             RegisterItem("rename", "Rename", () =>
             {
                 Debug.Log("rename.");
+                item.ToggleInputField();
             });
             RegisterItem("delete", "Delete", takeOffPrefab, () =>
             {
@@ -50,26 +51,26 @@ public class HierarchyItemContextMenuRegistrar : ContextMenuRegistrar
                     }
                     hierarchyManager.ClearPrefabPart(item.id);
                 }
-                else if (item.originalParentId == hierarchyManager.pixelPart.id)
-                {
-                    var itemRef = item.reference;
-                    if (itemRef.IsNotNull())
-                    {
-                        var itemRefIsPixel = itemRef.GetComponent<Pixel>();
-                        if(itemRefIsPixel.IsNotNull())
-                        {
-                            itemRefIsPixel.Remove();
-                        }
-                        else
-                        {
-                            var itemRefIsGroup = itemRef.GetComponent<Group>();
-                            if(itemRefIsGroup.IsNotNull())
-                                itemRefIsGroup.Remove();
-                        }
-                        hierarchyManager.ClearPixelPart(item.id);
-                        hierarchyManager.UpdatePixelPart();
-                    }
-                }
+                // else if (item.originalParentId == hierarchyManager.pixelPart.id)
+                // {
+                //     var itemRef = item.reference;
+                //     if (itemRef.IsNotNull())
+                //     {
+                //         var itemRefIsPixel = itemRef.GetComponent<Pixel>();
+                //         if(itemRefIsPixel.IsNotNull())
+                //         {
+                //             itemRefIsPixel.Remove();
+                //         }
+                //         else
+                //         {
+                //             var itemRefIsGroup = itemRef.GetComponent<Group>();
+                //             if(itemRefIsGroup.IsNotNull())
+                //                 itemRefIsGroup.Remove();
+                //         }
+                //         hierarchyManager.ClearPixelPart(item.id);
+                //         hierarchyManager.UpdatePixelPart();
+                //     }
+                // }
                 else if(item.originalParentId == hierarchyManager.scriptPart.id)
                 {
                     var itemRef = item.reference;

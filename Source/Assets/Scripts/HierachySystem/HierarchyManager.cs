@@ -60,12 +60,12 @@ public class HierarchyManager : MonoBehaviour
         CreateScriptPart();
         // CreatePixelPart();
 
-        Create("Prefab object A", "Prefab object A", true, null, prefabPart);
-        Create("Prefab object B", "Prefab object B", true, null, prefabPart);
+        // Create("Prefab object A", "Prefab object A", true, null, prefabPart);
+        // Create("Prefab object B", "Prefab object B", true, null, prefabPart);
 
-        Create("instance-script.py", "instance-script.py", true, null, scriptPart);
-        Create("instance-script.py", "instance-script.py", true, null, scriptPart);
-        Create("instance-script.py", "instance-script.py", true, null, scriptPart);
+        // Create("instance-script.py", "instance-script.py", true, null, scriptPart);
+        // Create("instance-script.py", "instance-script.py", true, null, scriptPart);
+        // Create("instance-script.py", "instance-script.py", true, null, scriptPart);
         // var pixel = FindObjectOfType<Pixel>();
         // Create("Pixel 1", "Pixel 1", true, pixel.gameObject, pixelPart, pixelPart);
         // var groups = Create("Group 1", "Group 1", true, null, pixelPart, pixelPart);
@@ -222,7 +222,7 @@ public class HierarchyManager : MonoBehaviour
                         var pixel = hit.transform.GetComponent<Pixel>();
                         if (pixel.IsNotNull())
                         {
-                            var group = Group.GetFirstGroup(pixel);
+                            var group = pixel.GetFirstGroup();
                             if(group.IsNotNull())
                             {
                                 AssignScriptIntoPixel(draggedItemRef, group.gameObject);
@@ -265,21 +265,21 @@ public class HierarchyManager : MonoBehaviour
             // have no idea
             
         }
-        else if (destId == pixelPart.id)
-        {
-            // destination Pixel part
-            // duplicate of any prefab type
-            CreatePixelThroughPrefab(source, destination);
-            UpdatePixelPart();
-            // or sorting maybe
-        }
+        // else if (destId == pixelPart.id)
+        // {
+        //     // destination Pixel part
+        //     // duplicate of any prefab type
+        //     CreatePixelThroughPrefab(source, destination);
+        //     UpdatePixelPart();
+        //     // or sorting maybe
+        // }
         else
         {
             var parentDestId = destination.originalParentId;
-            if(parentDestId == pixelPart.id)
-            {
-                AssignScriptIntoPixel(source.reference, destination.reference);
-            }
+            // if(parentDestId == pixelPart.id)
+            // {
+            //     AssignScriptIntoPixel(source.reference, destination.reference);
+            // }
         }
         sourceRef = null;
     }

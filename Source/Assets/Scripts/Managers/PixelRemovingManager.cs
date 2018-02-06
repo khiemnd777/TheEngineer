@@ -55,10 +55,16 @@ public class PixelRemovingManager : MonoBehaviour
     {
         // var pixels = FindObjectsOfType<Pixel>();
         var selectPixels = PixelManager.instance.GetPixels(x => x.selecting).ToArray();
+        var potentialDeletingGroups = Group.GetManyGroups(selectPixels);
+        Debug.Log(potentialDeletingGroups.Count);
         foreach (var pixel in selectPixels)
         {
             Remove(pixel);
         }
+        var potentialDeletingGroupsIt = potentialDeletingGroups.Where(x=>x.IsNotNull()).ToList();
+        Debug.Log(potentialDeletingGroupsIt.Count);
+        potentialDeletingGroupsIt.ForEach(group => group.Remove());
+        potentialDeletingGroupsIt.Clear();
         selectPixels = null;
         EventObserver.instance.happeningEvent = Events.RemovePixel;
     }

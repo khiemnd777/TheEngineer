@@ -114,7 +114,7 @@ public class Group : MonoBehaviour, IPrefabricated
             pivotOfSelectedGroup.GetComponent<MeshRenderer>().enabled = false;
             group.AddChildGroup(selectedGroup);
         }
-
+        group.SetEnabledPivot(false);
         selectedGroups = null;
         selectedPoints = null;
         groupPrefab = null;
@@ -128,12 +128,13 @@ public class Group : MonoBehaviour, IPrefabricated
         var selectedPixels = PixelManager.instance.GetPixels(x => x.selecting && x.group.IsNotNull());
         if (!selectedPixels.Any())
             return;
-        var firstGroup = GetFirstGroup(selectedPixels.Last());
+        var lastSelectedPixel = selectedPixels.Last();
+        var firstGroup = lastSelectedPixel.GetFirstGroup();
         var selectPixelsToArray = selectedPixels.ToArray();
         foreach (var pixel in selectPixelsToArray)
         {
             // var parentGroupsOfLastGroup = lastGroup.GetComponentsInParent<Group>();
-            var parentGroups = GetGroups(pixel);
+            var parentGroups = pixel.GetGroups();
             var nearestParentGroupOfLastGroup = parentGroups.Last();
             if (nearestParentGroupOfLastGroup.id == firstGroup.id)
             {
@@ -197,50 +198,6 @@ public class Group : MonoBehaviour, IPrefabricated
         pixelsInGroup = null;
     }
 
-    public static Group GetFirstGroup(Pixel pixel)
-    {
-        var groupsOfPixel = GetGroups(pixel);
-        if (!groupsOfPixel.Any())
-            return null;
-        return groupsOfPixel.Last();
-    }
-
-    public static Group GetLastGroup(Pixel pixel)
-    {
-        var groupsOfPixel = GetGroups(pixel);
-        if (!groupsOfPixel.Any())
-            return null;
-        return groupsOfPixel.First();
-    }
-
-    public static Group GetGroupAtIndex(Pixel pixel, int index)
-    {
-        var groupsOfPixel = GetGroups(pixel);
-        if (!groupsOfPixel.Any())
-            return null;
-        return groupsOfPixel.ElementAt(groupsOfPixel.Count() - 1 - index);
-    }
-
-    public static IEnumerable<Group> GetGroups(Pixel pixel)
-    {
-        var groupOfPixel = pixel.group;
-        var parentalGroups = new List<Group>();
-        if(groupOfPixel.IsNull())
-            return parentalGroups;
-        parentalGroups.Add(groupOfPixel);
-        GetParentalGroups(groupOfPixel, ref parentalGroups);
-        return parentalGroups;
-    }
-
-    public static void GetParentalGroups(Group group, ref List<Group> parentalGroups){
-        var outsideGroup = group.parentalGroup;
-        if(outsideGroup.IsNotNull())
-        {
-            parentalGroups.Add(outsideGroup);
-            GetParentalGroups(outsideGroup, ref parentalGroups);
-        }
-    }
-
     public static List<Group> GetManyGroups(IEnumerable<Pixel> pixels)
     {
         var groups = new List<Group>();
@@ -248,7 +205,7 @@ public class Group : MonoBehaviour, IPrefabricated
         {
             if (pixel.group.IsNull())
                 continue;
-            var group = GetFirstGroup(pixel);
+            var group = pixel.GetFirstGroup();
             if (groups.Count > 0 && groups.Any(x => x.id == group.id))
             {
                 group = null;
@@ -260,24 +217,9 @@ public class Group : MonoBehaviour, IPrefabricated
         return groups;
     }
 
-    public static bool HasGroup(Pixel pixel)
-    {
-        var groupOfPixel = GetFirstGroup(pixel);
-        var result = groupOfPixel.IsNotNull();
-        groupOfPixel = null;
-        return result;
-    }
-
-    public static IEnumerable<Pixel> GetPixelsInGroupByPixel(Pixel pixel)
-    {
-        var groupOfPixel = GetFirstGroup(pixel);
-        var pixelsInGroup = groupOfPixel.GetPixelsInChildren();
-        return pixelsInGroup;
-    }
-
     public static void DeselectAnotherPixelsByPixel(Pixel pixel)
     {
-        var pixelsHasSelectedPixel = GetPixelsInGroupByPixel(pixel);
+        var pixelsHasSelectedPixel = pixel.GetPixelsInGroup();
         // var pixels = FindObjectsOfType<Pixel>();
         // var selectedPixels = pixels.Where(x => x.selecting && !pixelsHasSelectedPixel.Any(y => y.GetID() == x.GetID())).ToList();
         var selectedPixels = PixelManager.instance.GetPixels(x => x.selecting && !pixelsHasSelectedPixel.Any(y => y.id == x.id)).ToArray();
@@ -294,11 +236,10 @@ public class Group : MonoBehaviour, IPrefabricated
         var pixelsHasGroup = PixelManager.instance.GetPixels(x => x.selecting && x.group.IsNotNull());
         if(!pixelsHasGroup.Any())
             return;
-        Debug.Log(1);
         var firstOuterGroupSelected = new List<int>();
         foreach (var pixel in pixelsHasGroup)
         {
-            var firstGroup = GetFirstGroup(pixel);
+            var firstGroup = pixel.GetFirstGroup();
             if(firstOuterGroupSelected.Contains(firstGroup.id))
                 continue;
             firstOuterGroupSelected.Add(firstGroup.id);
@@ -330,10 +271,25 @@ public class Group : MonoBehaviour, IPrefabricated
         pixelsHasGroup = null;
     }
 
+    public void GetParentalGroups(ref List<Group> parentalGroups){
+        var outsideGroup = parentalGroup;
+        if(outsideGroup.IsNotNull())
+        {
+            parentalGroups.Add(outsideGroup);
+            outsideGroup.GetParentalGroups(ref parentalGroups); 
+        }
+    }
+
     public void SetEnabledPivot(bool enabled)
     {
-        var meshRendererOfPivot = pivot.GetComponent<MeshRenderer>();
-        meshRendererOfPivot.enabled = enabled;
+        pivot.gameObject.SetActive(enabled);
+    }
+
+    public void TogglePivot()
+    {
+        var pivotGo = pivot.gameObject;
+        var activeSelf = pivotGo.activeSelf;
+        pivot.gameObject.SetActive(!activeSelf);
     }
 
     public void Remove()
@@ -359,6 +315,18 @@ public class Group : MonoBehaviour, IPrefabricated
             if(scriptHostOfGroup.IsNotNull())
                 scriptHostOfGroup.RemoveAllScript();
         }
+        // var cachedParentalGroup = parentalGroup;
+        // if(cachedParentalGroup.IsNotNull())
+        // {
+        //     UnassignParentalGroup();
+        //     var groupChildrenOfParental = cachedParentalGroup.groupChildren;
+        //     if(groupChildrenOfParental.Count(x => x.IsNotNull()) == 1)
+        //     {
+        //         DestroyImmediate(gameObject);
+        //         DestroyImmediate(cachedParentalGroup.gameObject);
+        //         return;
+        //     }
+        // }
         // _pixels = null;
         // _groupChildren = null;
         DestroyImmediate(gameObject);
@@ -386,7 +354,8 @@ public class Group : MonoBehaviour, IPrefabricated
     public GameObject Prefabricate(GameObject patternObject, Transform prefabContainer)
     {
         var groupPrefab = Resources.Load<GameObject>(Constants.GROUP_PREFAB);
-        var prefabGo = Instantiate(groupPrefab, Vector3.zero, Quaternion.identity, prefabContainer);
+        // var prefabGo = Instantiate(groupPrefab, Vector3.zero, Quaternion.identity, prefabContainer);
+        var prefabGo = Instantiate(groupPrefab, patternObject.transform.position, Quaternion.identity);
         var group = prefabGo.GetComponent<Group>();
         if (group.IsNotNull())
         {
@@ -397,12 +366,16 @@ public class Group : MonoBehaviour, IPrefabricated
             {
                 // PixelManager.instance.AddPixel(pixel);
                 var pixelTransform = pixel.transform;
-                var instancePixel = Instantiate(pixel, pixelTransform.localPosition, pixelTransform.rotation);
+                var instancePixel = Instantiate(pixel, pixelTransform.position, pixelTransform.rotation);
                 instancePixel.name = pixel.name;
                 group.AddPixel(instancePixel);
             }
             group.CloneGroup(groups);
         }
+        group.SetEnabledPivot(false);
+        var prefabGoTransform = prefabGo.transform;
+        prefabGoTransform.position = Vector3.zero;
+        prefabGoTransform.SetParent(prefabContainer);
         return prefabGo;
     }
 
@@ -434,6 +407,7 @@ public class Group : MonoBehaviour, IPrefabricated
             var pivot = group.GetComponentInChildren<GroupPivot>();
             pivot.transform.position = new Vector3(centerPoint.x, centerPoint.y, pivot.transform.position.z);
         }
+        group.SetEnabledPivot(false);
         return prefabGo;
     }
 
@@ -444,10 +418,11 @@ public class Group : MonoBehaviour, IPrefabricated
         var groupPrefab = Resources.Load<Group>(Constants.GROUP_PREFAB);
         foreach(var childGroup in cloneGroupChildren)
         {
-            var prefabGo = Instantiate(groupPrefab, childGroup.transform.localPosition, Quaternion.identity, transform);
+            var childGroupPosition = childGroup.transform.position;
+            var prefabGo = Instantiate(groupPrefab, childGroupPosition, Quaternion.identity, transform);
             var pixels = childGroup.pixels.Select(x => {
                 var xTransform = x.transform;
-                var instanceX = Instantiate(x, childGroup.transform.position - xTransform.position, xTransform.rotation);
+                var instanceX = Instantiate(x, xTransform.position, xTransform.rotation);
                 instanceX.name = x.name;
                 return instanceX;
             }).ToList();
@@ -462,6 +437,7 @@ public class Group : MonoBehaviour, IPrefabricated
             {
                 prefabGo.CloneGroup(groupChildren, addToListOfPixel);
             }
+            prefabGo.SetEnabledPivot(false);
             AddChildGroup(prefabGo);
             pixels.Clear();
         }

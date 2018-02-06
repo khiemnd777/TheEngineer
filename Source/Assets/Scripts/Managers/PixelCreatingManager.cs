@@ -56,7 +56,7 @@ public class PixelCreatingManager : MonoBehaviour
         //     closestPixel = null;
         // }
         pixelPrefab = null;
-
+        instancePixel.SetEnabledPivot(false);
         PixelManager.instance.AddPixel(instancePixel);
         hierarchyManager.UpdatePixelPart();
     }

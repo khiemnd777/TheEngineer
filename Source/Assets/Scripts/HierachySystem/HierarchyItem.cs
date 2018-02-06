@@ -13,6 +13,8 @@ public class HierarchyItem : MonoBehaviour
     , IEndDragHandler
 {
     public Transform arrow;
+    public InputField inputField;
+    public Button okButton;
     [System.NonSerialized]
     public HierarchyItem parent;
     [System.NonSerialized]
@@ -84,9 +86,24 @@ public class HierarchyItem : MonoBehaviour
         }
     }
 
+    void Awake()
+    {
+        VisiableInputField(false);
+    }
+
     void Start()
     {
         _id = this.GetID();
+        okButton.onClick.AddListener(() => 
+        {
+            var inputFieldText = inputField.text;
+            if(reference.IsNotNull() && !string.IsNullOrEmpty(inputFieldText)){
+                reference.name = inputFieldText;
+            }
+            name = inputFieldText;
+            text.text = inputFieldText;
+            ToggleInputField();
+        });
     }
 
     public void SetParent(HierarchyItem parent)
@@ -135,6 +152,7 @@ public class HierarchyItem : MonoBehaviour
         if (!draggable)
             return;
         draggedInstance = Instantiate<HierarchyItem>(this, eventData.position, Quaternion.identity, canvas.transform);
+        draggedInstance.rectTransform.pivot = new Vector2(0f, 1f);
         dragging = true;
     }
 
@@ -145,9 +163,10 @@ public class HierarchyItem : MonoBehaviour
         if (draggedInstance.IsNotNull())
         {
             var mousePosition = Input.mousePosition;
-            var instanceSizeDelta = draggedInstance.rectTransform.sizeDelta;
+            var instanceRect = draggedInstance.rectTransform.rect;
             var instancePosition = draggedInstance.transform.position;
-            var draggedPosition = new Vector3(mousePosition.x + instanceSizeDelta.x / 2f, mousePosition.y - instanceSizeDelta.y, instancePosition.z);
+            // var draggedPosition = new Vector3(mousePosition.x + instanceRect.width, mousePosition.y - instanceRect.height, instancePosition.z);
+            var draggedPosition = new Vector3(mousePosition.x + 15f, mousePosition.y - 15f, instancePosition.z);
             draggedInstance.transform.position = draggedPosition;
             EventObserver.instance.happeningEvent = Events.DragHierarchyItem;
         }
@@ -166,6 +185,23 @@ public class HierarchyItem : MonoBehaviour
             Destroy(draggedInstance.gameObject);
         }
         dragging = false;
+    }
+
+    public void ToggleInputField()
+    {
+        var inputFieldGo = inputField.gameObject;
+        var activeSelf = inputFieldGo.activeSelf;
+        if(!activeSelf)
+        {
+            inputField.text = reference.IsNotNull() ? reference.name : string.Empty;
+        }
+        inputFieldGo.SetActive(!activeSelf);
+    }
+
+    public void VisiableInputField(bool visible)
+    {
+        var inputFieldGo = inputField.gameObject;
+        inputFieldGo.SetActive(visible);
     }
 
     public void Collapse()

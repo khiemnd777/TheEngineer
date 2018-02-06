@@ -125,7 +125,7 @@ public class Pixel : MonoBehaviour, IPrefabricated
         if (countOfSelectedPixels > 1 && !SelectObjectManager.instance.multipleChoice)
         {
             Group.Create();
-            var group = Group.GetFirstGroup(this);
+            var group = GetFirstGroup();
             if (group.IsNotNull())
             {
                 realPosition = group.transform.localPosition;
@@ -135,9 +135,9 @@ public class Pixel : MonoBehaviour, IPrefabricated
         else
         {
             // if pixel has been in any group, then getting world position of it for computing accurately.
-            if (Group.HasGroup(this))
+            if (group.IsNotNull())
             {
-                var group = Group.GetFirstGroup(this);
+                var group = GetFirstGroup();
                 if (group.IsNotNull())
                 {
                     realPosition = group.transform.localPosition;
@@ -172,10 +172,10 @@ public class Pixel : MonoBehaviour, IPrefabricated
                 var targetPosition = worldMousePosition.ToVector2();
                 var realPosition = targetPosition + _anchorMovePoint;
                 realPosition = realPosition.Snap2();
-                if (Group.HasGroup(this))
+                if (group.IsNotNull())
                 {
                     // if pixel has been in a group, then move that group
-                    var group = Group.GetFirstGroup(this);
+                    var group = GetFirstGroup();
                     if (group.IsNotNull())
                     {
                         group.transform.position = realPosition;
@@ -357,6 +357,68 @@ public class Pixel : MonoBehaviour, IPrefabricated
         var singlePixel = instanceGo.GetComponent<Pixel>();
         pixelManager.AddPixel(singlePixel);
         return instanceGo;
+    }
+
+    public void SetEnabledPivot(bool enabled)
+    {
+        pivot.gameObject.SetActive(enabled);
+    }
+
+    public void TogglePivot()
+    {
+        var pivotGo = pivot.gameObject;
+        var activeSelf = pivotGo.activeSelf;
+        pivot.gameObject.SetActive(!activeSelf);
+    }
+
+    public IEnumerable<Group> GetGroups()
+    {
+        if(group.IsNull())
+            return null;
+        var groupOfPixel = group;
+        var parentalGroups = new List<Group>();
+        if(groupOfPixel.IsNull())
+            return parentalGroups;
+        parentalGroups.Add(groupOfPixel);
+        groupOfPixel.GetParentalGroups(ref parentalGroups);
+        return parentalGroups;
+    }
+
+    public Group GetFirstGroup()
+    {
+        if(group.IsNull())
+            return null;
+        var groupsOfPixel = GetGroups();
+        if (!groupsOfPixel.Any())
+            return null;
+        return groupsOfPixel.Last();
+    }
+
+    public Group GetLastGroup()
+    {
+        if(group.IsNull())
+            return null;
+        var groupsOfPixel = GetGroups();
+        if (!groupsOfPixel.Any())
+            return null;
+        return groupsOfPixel.First();
+    }
+
+    public Group GetGroupAtIndex(int index)
+    {
+        if(group.IsNull())
+            return null;
+        var groupsOfPixel = GetGroups();
+        if (!groupsOfPixel.Any())
+            return null;
+        return groupsOfPixel.ElementAt(groupsOfPixel.Count() - 1 - index);
+    }
+
+    public IEnumerable<Pixel> GetPixelsInGroup()
+    {
+        var groupOfPixel = GetFirstGroup();
+        var pixelsInGroup = groupOfPixel.GetPixelsInChildren();
+        return pixelsInGroup;
     }
 
     IEnumerator SetPythonPixelPosition()

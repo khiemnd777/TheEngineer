@@ -948,7 +948,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59cfa767faa924d52bfeb4abbd124532, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  id: 0
   text: {fileID: 102440727908216438}
   selecting: 0
   tempSelecting: 0
@@ -973,7 +972,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7128d255a4f42436cb2daa884d7af4a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  container: {fileID: 0}
   includedScript: {fileID: 4201981989275090}
 --- !u!114 &114944157856515608
 MonoBehaviour:

@@ -29,9 +29,23 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
             Debug.Log("Script added");
             var host = !pixel.group.IsNotNull()
                 ? GetComponent<ScriptableHost>()
-                : Group.GetFirstGroup(pixel).GetComponent<ScriptableHost>();
+                : pixel.GetFirstGroup().GetComponent<ScriptableHost>();
             var scriptable = Scriptable.CreateInstanceAndAssignTo(host);
             hierarchyManager.CreateScript(scriptable.gameObject);
+        });
+
+        RegisterItem("toggle-pivot", "Toggle Pivot", () =>
+        {
+            Debug.Log("Toggle pivot");
+            if(pixel.group.IsNotNull())
+            {
+                var firstGroup = pixel.GetFirstGroup();
+                firstGroup.TogglePivot();
+            }
+            else
+            {
+                pixel.TogglePivot();
+            }
         });
 
         RegisterItem("group", "Group", () =>
@@ -74,7 +88,7 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
                 var selectedPixelsToArray = selectedPixels.ToArray();
                 foreach (var pixel in selectedPixelsToArray)
                 {
-                    var group = Group.GetFirstGroup(pixel);
+                    var group = pixel.GetFirstGroup();
                     if (group.IsNotNull())
                     {
                         if (groupsAlreadyInPrefab.Any(x => x.id == group.id))
@@ -92,7 +106,7 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
             }
             else
             {
-                var group = Group.GetFirstGroup(pixel);
+                var group = pixel.GetFirstGroup();
                 if (group.IsNotNull())
                 {
                     hierarchyManager.CreatePrefab(group.gameObject);
@@ -109,8 +123,14 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
             var selectedPixels = PixelManager.instance.GetPixels(x => x.selecting);
             if(selectedPixels.Any())
             {
+                var potentialDeletingGroups = Group.GetManyGroups(selectedPixels);
                 var it = selectedPixels.ToList();
                 it.ForEach(x => x.Remove());
+                var potentialDeletingGroupsIt = potentialDeletingGroups.Where(x=>x.IsNotNull()).ToList();
+                Debug.Log(potentialDeletingGroupsIt.Count);
+                potentialDeletingGroupsIt.ForEach(group => group.Remove());
+                potentialDeletingGroupsIt.Clear();
+                potentialDeletingGroups = null;
             }
             else
             {
@@ -134,6 +154,7 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
                 // || pixel.group.IsNotNull() && x.Key == "add-script"
                 !pixel.group.IsNotNull() && numberOfPixelWithoutGroup == 1 && x.Key == "add-script"
                 || pixel.group.IsNotNull() && x.Key == "add-script"
+                || x.Key == "toggle-pivot"
                 || x.Key == "create-prefab"
                 || numberOfPixelWithoutGroup > 1 && x.Key == "group"
                 || numberOfSelectedGroup.Count > 1 && x.Key == "group"
@@ -147,6 +168,7 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
         {
             shownItems = menuItems.Where(x =>
                 !pixel.group.IsNotNull() && x.Key == "add-script"
+                || x.Key == "toggle-pivot"
                 || x.Key == "create-prefab"
                 || pixel.group.IsNotNull() && x.Key == "ungroup-single"
                 || x.Key == "take-off")

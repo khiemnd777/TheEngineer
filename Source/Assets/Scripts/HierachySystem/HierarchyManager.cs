@@ -275,7 +275,7 @@ public class HierarchyManager : MonoBehaviour
         // }
         else
         {
-            var parentDestId = destination.originalParentId;
+            // var parentDestId = destination.originalParentId;
             // if(parentDestId == pixelPart.id)
             // {
             //     AssignScriptIntoPixel(source.reference, destination.reference);

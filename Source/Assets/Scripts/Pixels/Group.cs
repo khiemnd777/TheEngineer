@@ -10,7 +10,6 @@ public class Group : MonoBehaviour, IPrefabricated
     public bool isPrefab { get; set; }
 
     PixelManager pixelManager;
-    MeshRenderer meshRendererOfPivot;
 
     List<Pixel> _pixels;
 
@@ -42,7 +41,6 @@ public class Group : MonoBehaviour, IPrefabricated
     void Awake()
     {
         pixelManager = PixelManager.instance;
-        meshRendererOfPivot = pivot.GetComponent<MeshRenderer>();
         id = this.GetID();
     }
 
@@ -403,7 +401,7 @@ public class Group : MonoBehaviour, IPrefabricated
             var pixelsInGroup = group.GetPixelsInChildren();
             var selectedPoints = pixelsInGroup.Select(x => x.transform.position).ToArray();
             var centerPoint = TransformUtility.ComputeCenterPoint(selectedPoints);
-            var groupPosition = centerPoint.ToVector2().Snap2();
+            // var groupPosition = centerPoint.ToVector2().Snap2();
             var pivot = group.GetComponentInChildren<GroupPivot>();
             pivot.transform.position = new Vector3(centerPoint.x, centerPoint.y, pivot.transform.position.z);
         }

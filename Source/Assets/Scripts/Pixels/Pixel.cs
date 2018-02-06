@@ -40,7 +40,7 @@ public class Pixel : MonoBehaviour, IPrefabricated
 
     public Transform parent
     {
-        get 
+        get
         {
             return transform.parent;
         }
@@ -81,7 +81,7 @@ public class Pixel : MonoBehaviour, IPrefabricated
 
     IEnumerator Dragging()
     {
-        while(true)
+        while (true)
         {
             if (Input.GetMouseButton(0))
             {
@@ -90,6 +90,8 @@ public class Pixel : MonoBehaviour, IPrefabricated
             yield return null;
         }
     }
+
+    List<Pixel> _cachedSelectedPixels;
 
     void DragStart()
     {
@@ -124,12 +126,24 @@ public class Pixel : MonoBehaviour, IPrefabricated
         // if multipleChoice was actived, then denying dragging start of group
         if (countOfSelectedPixels > 1 && !SelectObjectManager.instance.multipleChoice)
         {
-            Group.Create();
-            var group = GetFirstGroup();
-            if (group.IsNotNull())
-            {
-                realPosition = group.transform.localPosition;
-            }
+            if (_cachedSelectedPixels.IsNull())
+                _cachedSelectedPixels = new List<Pixel>();
+            _cachedSelectedPixels.Clear();
+            _cachedSelectedPixels = selectedPixels.ToList();
+            // var selectedPoints = _cachedSelectedPixels.Select(x => x.transform.position).ToArray();
+            // var centerPoint = TransformUtility.ComputeCenterPoint(selectedPoints);
+            // var selectedPosition = centerPoint.ToVector2();
+            // realPosition = selectedPosition;
+            // selectedPoints = null;
+            _anchorMovePoint = mousePosition;
+            // Group.Create();
+            // var group = GetFirstGroup();
+            // if (group.IsNotNull())
+            // {
+            //     realPosition = group.transform.localPosition;
+            // }
+
+            realPosition = transform.position;
             EventObserver.instance.happeningEvent = Events.DragMultiplePixelsStart;
         }
         else
@@ -143,9 +157,10 @@ public class Pixel : MonoBehaviour, IPrefabricated
                     realPosition = group.transform.localPosition;
                 }
             }
+            _anchorMovePoint = realPosition - mousePosition;
             EventObserver.instance.happeningEvent = Events.DragPixelStart;
         }
-        _anchorMovePoint = realPosition - mousePosition;
+        // _anchorMovePoint = realPosition - mousePosition;
         // if multipleChoice was actived, then denying of dragging
         draggedHold = true && !SelectObjectManager.instance.multipleChoice;
         if (onDragStart.IsNotNull())
@@ -165,31 +180,65 @@ public class Pixel : MonoBehaviour, IPrefabricated
                     EventObserver.instance.happeningEvent = Events.DragPixel;
                 if (EventObserver.instance.happeningEvent == Events.DragMultiplePixelsStart)
                     EventObserver.instance.happeningEvent = Events.DragMultiplePixels;
-                
+
                 // move if mouse has any movement
                 var mousePosition = Input.mousePosition;
                 var worldMousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
                 var targetPosition = worldMousePosition.ToVector2();
-                var realPosition = targetPosition + _anchorMovePoint;
-                realPosition = realPosition.Snap2();
-                if (group.IsNotNull())
+
+                if (EventObserver.instance.happeningEvent == Events.DragMultiplePixels)
                 {
-                    // if pixel has been in a group, then move that group
-                    var group = GetFirstGroup();
-                    if (group.IsNotNull())
+                    if (!_cachedSelectedPixels.Any())
+                        return;
+                    targetPosition = targetPosition.Snap2();
+                    var distanceDelta = targetPosition - _anchorMovePoint;
+                    var firstOuterGroupSelected = new List<int>();
+                    _cachedSelectedPixels.ForEach(pixel =>
                     {
-                        group.transform.position = realPosition;
-                    }
+                        var firstGroup = pixel.GetFirstGroup();
+                        if (firstGroup.IsNotNull())
+                        {
+                            if (firstOuterGroupSelected.Contains(firstGroup.id))
+                                return;
+                            firstOuterGroupSelected.Add(firstGroup.id);
+                            var firstGroupTransform = firstGroup.transform;
+                            var firstGroupPosition = firstGroupTransform.position;
+                            var snapPosition = firstGroupPosition + new Vector3(distanceDelta.x, distanceDelta.y, firstGroupPosition.z);
+                            firstGroupTransform.position = snapPosition.ToVector2().Snap2();
+                        }
+                        else
+                        {
+                            var pixelTransform = pixel.transform;
+                            var pixelPosition = pixelTransform.position;
+                            var snapPosition = pixelPosition + new Vector3(distanceDelta.x, distanceDelta.y, pixelPosition.z);
+                            pixelTransform.position = snapPosition.ToVector2().Snap2();
+                        }
+                    });
+                    firstOuterGroupSelected.Clear();
+                    _anchorMovePoint = targetPosition;
                 }
                 else
                 {
-                    // if pixel was in normal state
-                    transform.position = realPosition;
-                }
-
-                if (onDrag.IsNotNull())
-                {
-                    onDrag.Invoke(this, realPosition);
+                    var realPosition = targetPosition + _anchorMovePoint;
+                    realPosition = realPosition.Snap2();
+                    if (group.IsNotNull())
+                    {
+                        // if pixel has been in a group, then move that group
+                        var group = GetFirstGroup();
+                        if (group.IsNotNull())
+                        {
+                            group.transform.position = realPosition;
+                        }
+                    }
+                    else
+                    {
+                        // if pixel was in normal state
+                        transform.position = realPosition;
+                    }
+                    if (onDrag.IsNotNull())
+                    {
+                        onDrag.Invoke(this, realPosition);
+                    }
                 }
             }
         }
@@ -201,7 +250,7 @@ public class Pixel : MonoBehaviour, IPrefabricated
         if (EventObserver.instance.happeningEvent == Events.DragMultiplePixelsStart
             || EventObserver.instance.happeningEvent == Events.DragMultiplePixels)
         {
-            Group.UngroupOneByOne();
+            // Group.UngroupOneByOne();
         }
         else
         {
@@ -326,7 +375,7 @@ public class Pixel : MonoBehaviour, IPrefabricated
     public void Remove()
     {
         var scriptHostOfPixel = GetComponent<ScriptableHost>();
-        if(scriptHostOfPixel.IsNotNull())
+        if (scriptHostOfPixel.IsNotNull())
         {
             scriptHostOfPixel.RemoveAllScript();
         }
@@ -335,7 +384,7 @@ public class Pixel : MonoBehaviour, IPrefabricated
             // Group.UngroupSingle(pixel);
             var cachedGroup = _group;
             cachedGroup.RemovePixel(this);
-            if(cachedGroup.pixels.Count == 1)
+            if (cachedGroup.pixels.Count == 1)
             {
                 var lastPixel = cachedGroup.pixels.First();
                 cachedGroup.RemovePixel(lastPixel);
@@ -373,11 +422,11 @@ public class Pixel : MonoBehaviour, IPrefabricated
 
     public IEnumerable<Group> GetGroups()
     {
-        if(group.IsNull())
+        if (group.IsNull())
             return null;
         var groupOfPixel = group;
         var parentalGroups = new List<Group>();
-        if(groupOfPixel.IsNull())
+        if (groupOfPixel.IsNull())
             return parentalGroups;
         parentalGroups.Add(groupOfPixel);
         groupOfPixel.GetParentalGroups(ref parentalGroups);
@@ -386,7 +435,7 @@ public class Pixel : MonoBehaviour, IPrefabricated
 
     public Group GetFirstGroup()
     {
-        if(group.IsNull())
+        if (group.IsNull())
             return null;
         var groupsOfPixel = GetGroups();
         if (!groupsOfPixel.Any())
@@ -396,7 +445,7 @@ public class Pixel : MonoBehaviour, IPrefabricated
 
     public Group GetLastGroup()
     {
-        if(group.IsNull())
+        if (group.IsNull())
             return null;
         var groupsOfPixel = GetGroups();
         if (!groupsOfPixel.Any())
@@ -406,7 +455,7 @@ public class Pixel : MonoBehaviour, IPrefabricated
 
     public Group GetGroupAtIndex(int index)
     {
-        if(group.IsNull())
+        if (group.IsNull())
             return null;
         var groupsOfPixel = GetGroups();
         if (!groupsOfPixel.Any())

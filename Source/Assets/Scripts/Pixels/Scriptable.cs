@@ -19,6 +19,8 @@ public class Scriptable : MonoBehaviour
 
     List<ScriptableHost> _hosts = new List<ScriptableHost>();
 
+    ScriptManager scriptManager;
+
     public static Scriptable CreateInstance()
     {
         var res = Resources.Load<Scriptable>(Constants.SCRIPT_PREFAB);
@@ -65,6 +67,11 @@ public class Scriptable : MonoBehaviour
         return findingOut;
     }
 
+    void Awake()
+    {
+        scriptManager = ScriptManager.instance;
+    }
+
     void Start()
     {
         stoppable = true;
@@ -100,8 +107,8 @@ public class Scriptable : MonoBehaviour
     {
         if (Input.GetMouseButtonUp(0))
         {
-            ScriptManager.instance.SetScriptable(this, script);
-            ScriptManager.instance.SetActivePanel(true);
+            scriptManager.SetScriptable(this, script);
+            scriptManager.SetActivePanel(true);
 
             ExecuteFunc<System.Action>("__onleftmouseup", (act, args) =>
             {

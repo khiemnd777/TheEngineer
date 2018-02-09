@@ -8,7 +8,7 @@ public class DocumentEvents : MonoBehaviour, IPointerDownHandler
     public void OnPointerDown(PointerEventData eventData)
     {
         // hide script panel
-        ScriptManager.instance.ClearScriptable();
-        ScriptManager.instance.SetActivePanel(false);
+        // ScriptManager.instance.ClearScriptable();
+        // ScriptManager.instance.SetActivePanel(false);
     }
 }

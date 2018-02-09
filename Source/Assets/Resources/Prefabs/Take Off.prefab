@@ -146,7 +146,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Take Off
+  m_Text: Delete
 --- !u!222 &222145399823350816
 CanvasRenderer:
   m_ObjectHideFlags: 1

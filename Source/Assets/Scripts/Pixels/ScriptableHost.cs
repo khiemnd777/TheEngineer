@@ -20,6 +20,8 @@ public class ScriptableHost : MonoBehaviour
 
     public void AddScript(Scriptable script)
     {
+        if(scripts.Count(x => x.IsNotNull()) == 1)
+            return;
         script.AddHost(this);
         scripts.Add(script);
     }

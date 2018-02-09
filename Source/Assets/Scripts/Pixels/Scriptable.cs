@@ -107,9 +107,6 @@ public class Scriptable : MonoBehaviour
     {
         if (Input.GetMouseButtonUp(0))
         {
-            scriptManager.SetScriptable(this, script);
-            scriptManager.SetActivePanel(true);
-
             ExecuteFunc<System.Action>("__onleftmouseup", (act, args) =>
             {
                 act.Invoke();

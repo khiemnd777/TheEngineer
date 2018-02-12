@@ -13,12 +13,14 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
     Pixel pixel;
 
     HierarchyManager hierarchyManager;
+    ScriptManager scriptManager;
     List<Pixel> _pixels;
 
     protected override void Start()
     {
         base.Start();
         hierarchyManager = HierarchyManager.instance;
+        scriptManager = ScriptManager.instance;
         pixel = GetComponent<Pixel>();
     }
 
@@ -27,11 +29,19 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
         RegisterItem("add-script", "Add Script", scriptItPrefab, () =>
         {
             Debug.Log("Script added");
+            var host = pixel.GetScriptableHost();
+            var scriptable = Scriptable.CreateInstanceAndAssignTo(host);
+            hierarchyManager.CreateScript(scriptable.gameObject);
+            scriptManager.ShowImplementedScriptPanel(host);
+        });
+
+        RegisterItem("edit-script", "Edit Script", scriptItPrefab, () =>
+        {
+            Debug.Log("Edit script");
             var host = !pixel.group.IsNotNull()
                 ? GetComponent<ScriptableHost>()
                 : pixel.GetFirstGroup().GetComponent<ScriptableHost>();
-            var scriptable = Scriptable.CreateInstanceAndAssignTo(host);
-            hierarchyManager.CreateScript(scriptable.gameObject);
+            scriptManager.ShowImplementedScriptPanel(host);
         });
 
         RegisterItem("toggle-pivot", "Toggle Pivot", () =>
@@ -152,8 +162,9 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
             var numberOfPixelWithoutGroup = selectedPixels.Count(x => !x.group.IsNotNull());
             shownItems = menuItems.Where(x =>
                 // || pixel.group.IsNotNull() && x.Key == "add-script"
-                !pixel.group.IsNotNull() && numberOfPixelWithoutGroup == 1 && x.Key == "add-script"
-                || pixel.group.IsNotNull() && x.Key == "add-script"
+                !pixel.HasScript() && !pixel.group.IsNotNull() && numberOfPixelWithoutGroup == 1 && x.Key == "add-script"
+                || !pixel.HasScript() && pixel.group.IsNotNull() && x.Key == "add-script"
+                || pixel.HasScript() && x.Key == "edit-script"
                 || x.Key == "toggle-pivot"
                 || x.Key == "create-prefab"
                 || numberOfPixelWithoutGroup > 1 && x.Key == "group"
@@ -167,7 +178,8 @@ public class PixelContextMenuRegistrar : ContextMenuRegistrar
         else
         {
             shownItems = menuItems.Where(x =>
-                !pixel.group.IsNotNull() && x.Key == "add-script"
+                !pixel.HasScript() && !pixel.group.IsNotNull() && x.Key == "add-script"
+                || pixel.HasScript() && x.Key == "edit-script"
                 || x.Key == "toggle-pivot"
                 || x.Key == "create-prefab"
                 || pixel.group.IsNotNull() && x.Key == "ungroup-single"

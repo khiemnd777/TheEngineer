@@ -17,7 +17,15 @@ public class Scriptable : MonoBehaviour
     public ScriptScope scope;
     public ScriptRuntime runtime;
 
-    List<ScriptableHost> _hosts = new List<ScriptableHost>();
+    List<ScriptableHost> _hosts;
+
+    public ICollection<ScriptableHost> hosts
+    {
+        get
+        {
+            return _hosts ?? (_hosts = new List<ScriptableHost>());
+        }
+    }
 
     ScriptManager scriptManager;
 
@@ -69,6 +77,7 @@ public class Scriptable : MonoBehaviour
 
     void Awake()
     {
+        _hosts = new List<ScriptableHost>();
         scriptManager = ScriptManager.instance;
     }
 

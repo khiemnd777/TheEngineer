@@ -26,7 +26,8 @@ public class PixelCreatingManager : MonoBehaviour
             || EventObserver.instance.happeningEvent == Events.OutFocusMultipleSelect
             || EventObserver.instance.happeningEvent == Events.OutFocusSelect
             || EventObserver.instance.happeningEvent == Events.RemovePixel
-            || EventObserver.instance.happeningEvent == Events.DragHierarchyItem)
+            || EventObserver.instance.happeningEvent == Events.DragHierarchyItem
+            || EventObserver.instance.happeningEvent == Events.CloseScriptPanel)
         {
             return;
         }

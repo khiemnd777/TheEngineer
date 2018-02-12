@@ -47,8 +47,14 @@ public class ScriptManager : MonoBehaviour
 
     Scriptable currentScriptable;
 
+    GameObject unimplementedScriptPanelGo;
+    GameObject implementedScriptPanelGo;
+
     void Start()
     {
+        unimplementedScriptPanelGo = unimplementedScriptPanel.gameObject;
+        implementedScriptPanelGo = implementedScriptPanel.gameObject;
+
         VisibleUnimplementedScriptPanel(false);
         VisibleImplementedScriptPanel(false);
 
@@ -83,6 +89,10 @@ public class ScriptManager : MonoBehaviour
         if(currentScriptable.IsNull())
             return;
         currentScriptable.script = implementedScriptText.text;
+        var first = currentScriptable.hosts.First();
+        if(first.IsNull())
+            return;
+        first.gameObject.name = implementedHostName.text;
     }
 
     void SaveUnimplementedScript()
@@ -117,11 +127,17 @@ public class ScriptManager : MonoBehaviour
 
     public void VisibleUnimplementedScriptPanel(bool visible)
     {
-        unimplementedScriptPanel.gameObject.SetActive(visible);
+        unimplementedScriptPanelGo.SetActive(visible);
     }
 
     public void VisibleImplementedScriptPanel(bool visible)
     {
-        implementedScriptPanel.gameObject.SetActive(visible);
+        implementedScriptPanelGo.SetActive(visible);
+    }
+
+    public void CloseImplementedScriptPanel()
+    {
+        VisibleImplementedScriptPanel(false);
+        EventObserver.instance.happeningEvent = Events.CloseScriptPanel;
     }
 }

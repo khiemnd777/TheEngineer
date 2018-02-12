@@ -19,6 +19,7 @@ public enum Events
     , HideContextMenu
     , RemovePixel
     , DragHierarchyItem
+    , CloseScriptPanel
 }
 
 public class EventObserver : MonoBehaviour

@@ -296,6 +296,22 @@ public class Pixel : MonoBehaviour, IPrefabricated
         VisibleHoverable(false);
     }
 
+    public bool HasScript()
+    {
+        var host = !group.IsNotNull()
+            ? GetComponent<ScriptableHost>()
+            : GetFirstGroup().GetComponent<ScriptableHost>();
+        return host.GetAllScripts().Any();
+    }
+
+    public ScriptableHost GetScriptableHost()
+    {
+        var host = !group.IsNotNull()
+            ? GetComponent<ScriptableHost>()
+            : GetFirstGroup().GetComponent<ScriptableHost>();
+        return host;
+    }
+
     public void SetPosition(Vector2 newPosition)
     {
         transform.position = newPosition;

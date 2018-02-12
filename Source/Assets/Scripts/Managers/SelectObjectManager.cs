@@ -296,7 +296,8 @@ public class SelectObjectManager : MonoBehaviour
                 return;
             if (EventObserver.instance.happeningEvent == Events.OutFocusMultipleSelect
                 || EventObserver.instance.happeningEvent == Events.OutFocusSelect
-                || EventObserver.instance.happeningEvent == Events.RemovePixel)
+                || EventObserver.instance.happeningEvent == Events.RemovePixel
+                || EventObserver.instance.happeningEvent == Events.CloseScriptPanel)
             {
                 EventObserver.instance.happeningEvent = Events.None;
                 return;

@@ -100,6 +100,7 @@ public class ScriptManager : MonoBehaviour
         if(currentScriptable.IsNull())
             return;
         currentScriptable.script = unimplementedScriptText.text;
+        currentScriptable.name = unimplementedScriptName.text;
     }
 
     public void ShowUnimplementedScriptPanel(Scriptable scriptable)
@@ -138,6 +139,12 @@ public class ScriptManager : MonoBehaviour
     public void CloseImplementedScriptPanel()
     {
         VisibleImplementedScriptPanel(false);
+        EventObserver.instance.happeningEvent = Events.CloseScriptPanel;
+    }
+
+    public void CloseUnimplementedScriptPanel()
+    {
+        VisibleUnimplementedScriptPanel(false);
         EventObserver.instance.happeningEvent = Events.CloseScriptPanel;
     }
 }

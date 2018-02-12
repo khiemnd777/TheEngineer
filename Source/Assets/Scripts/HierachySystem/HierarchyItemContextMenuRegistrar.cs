@@ -10,11 +10,17 @@ public class HierarchyItemContextMenuRegistrar : ContextMenuRegistrar
 
     HierarchyItem item;
     HierarchyManager hierarchyManager;
+    ScriptManager scriptManager;
+
+    void Awake()
+    {
+        scriptManager = ScriptManager.instance;
+        hierarchyManager = HierarchyManager.instance;
+    }
 
     protected override void Start()
     {
         item = GetComponent<HierarchyItem>();
-        hierarchyManager = HierarchyManager.instance;
         base.Start();
     }
 
@@ -27,12 +33,25 @@ public class HierarchyItemContextMenuRegistrar : ContextMenuRegistrar
                 Debug.Log("Script created.");
                 var scriptable = Scriptable.CreateInstance();
                 hierarchyManager.CreateScript(scriptable.gameObject);
+                scriptManager.ShowUnimplementedScriptPanel(scriptable);
             });
         }
         if (!(Constants.HIERARCHY_PIXEL_PART.Equals(item.name)
             || Constants.HIERARCHY_PREFAB_PART.Equals(item.name)
             || Constants.HIERARCHY_SCRIPT_PART.Equals(item.name)))
         {
+            if(item.originalParentId == hierarchyManager.scriptPart.id)
+            {
+                RegisterItem("edit-script", "Edit Script", () =>
+                {
+                    Debug.Log("Edit script.");
+                    var itemRef = item.reference;
+                    if(itemRef.IsNull())
+                        return;
+                    var scriptable = itemRef.GetComponent<Scriptable>();
+                    scriptManager.ShowUnimplementedScriptPanel(scriptable);
+                });
+            }
             RegisterItem("rename", "Rename", () =>
             {
                 Debug.Log("rename.");

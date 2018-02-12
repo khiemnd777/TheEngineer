@@ -43,6 +43,7 @@ public class HierarchyManager : MonoBehaviour
 
     List<HierarchyItem> _items;
     PrefabManager prefabManager;
+    ScriptManager scriptManager;
 
     public List<HierarchyItem> items
     {
@@ -52,10 +53,14 @@ public class HierarchyManager : MonoBehaviour
         }
     }
 
+    void Awake()
+    {
+        scriptManager = ScriptManager.instance;
+        prefabManager = PrefabManager.instance;
+    }
+
     void Start()
     {
-        prefabManager = PrefabManager.instance;
-
         CreatePrefabPart();
         CreateScriptPart();
         // CreatePixelPart();

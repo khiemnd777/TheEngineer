@@ -88,6 +88,7 @@ public class HierarchyManager : MonoBehaviour
         // It seems to be non-necessary
         // StartCoroutine(DetectHierarchyItemEntered());
         StartCoroutine(DetectHierarchyItemShowArrow());
+        StartCoroutine(UpdateScriptName());
     }
 
     public HierarchyItem Create(string name, string label, bool draggable = true, GameObject reference = null, HierarchyItem parent = null, HierarchyItem originalParent = null)
@@ -295,7 +296,8 @@ public class HierarchyManager : MonoBehaviour
             return;
         var scriptable = sourceRef.GetComponent<Scriptable>();
         var host = destRef.GetComponent<ScriptableHost>();
-        if (scriptable.IsNull() || host.IsNull()){
+        if (scriptable.IsNull() || host.IsNull())
+        {
             sourceRef = null;
             destRef = null;
             return;
@@ -341,6 +343,23 @@ public class HierarchyManager : MonoBehaviour
                 // do any stuff here...
                 itemEntered = null;
             }
+            yield return null;
+        }
+    }
+
+    IEnumerator UpdateScriptName()
+    {
+        while(gameObject.IsNotNull())
+        {
+            var itemChildOfScriptPart = items.Where(x => x.originalParentId == scriptPart.id).ToList();
+            foreach(var item in itemChildOfScriptPart)
+            {
+                var itemRef = item.reference;
+                if(itemRef.IsNotNull()){
+                    item.text.text = itemRef.name;
+                }
+            }
+            itemChildOfScriptPart.Clear();
             yield return null;
         }
     }

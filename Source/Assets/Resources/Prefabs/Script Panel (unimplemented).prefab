@@ -652,7 +652,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: '# Todo stuff here...'
+  m_Text: '# do any stuff here!'
 --- !u!114 &114632766417446386
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -889,7 +889,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -16.015, y: -15.7}
+  m_AnchoredPosition: {x: -16.015, y: -15.700012}
   m_SizeDelta: {x: 21.190002, y: 20.160004}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224262367042897396

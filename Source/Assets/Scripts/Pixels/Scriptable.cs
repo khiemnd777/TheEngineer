@@ -19,6 +19,13 @@ public class Scriptable : MonoBehaviour
 
     List<ScriptableHost> _hosts;
 
+    System.Action _update;
+    System.Action _fixedUpdate;
+    System.Action _onLeftMouseUp;
+    System.Action _onRightMouseUp;
+    System.Action _onLeftMouseDown;
+    System.Action _onRightMouseDown;
+
     public ICollection<ScriptableHost> hosts
     {
         get
@@ -94,40 +101,53 @@ public class Scriptable : MonoBehaviour
     {
         if (stoppable)
             return;
-        ExecuteFunc<System.Action>("__update", (act, args) =>
-        {
-            act.Invoke();
-            // StorePythonVariables();
-        });
+        if(_update == null)
+            _update = GetVariable<System.Action>("__update");
+        _update.Invoke();
+
+        // ExecuteFunc<System.Action>("__update", (act, args) =>
+        // {
+        //     act.Invoke();
+        //     // StorePythonVariables();
+        // });
     }
 
     void FixedUpdate()
     {
         if (stoppable)
             return;
-        ExecuteFunc<System.Action>("__fixedupdate", (act, args) =>
-        {
-            act.Invoke();
-            // StorePythonVariables();
-        });
+        if(_fixedUpdate == null)
+            _fixedUpdate = GetVariable<System.Action>("__fixedupdate");
+        _fixedUpdate.Invoke();
+        // ExecuteFunc<System.Action>("__fixedupdate", (act, args) =>
+        // {
+        //     act.Invoke();
+        //     // StorePythonVariables();
+        // });
     }
 
     void OnMouseUp()
     {
         if (Input.GetMouseButtonUp(0))
         {
-            ExecuteFunc<System.Action>("__onleftmouseup", (act, args) =>
-            {
-                act.Invoke();
-            });
+            if(_onLeftMouseUp == null)
+                _onLeftMouseUp = GetVariable<System.Action>("__onleftmouseup");
+            _onLeftMouseUp.Invoke();
+            // ExecuteFunc<System.Action>("__onleftmouseup", (act, args) =>
+            // {
+            //     act.Invoke();
+            // });
         }
 
         if (Input.GetMouseButtonUp(1))
         {
-            ExecuteFunc<System.Action>("__onrightmouseup", (act, args) =>
-            {
-                act.Invoke();
-            });
+            if(_onRightMouseUp == null)
+                _onRightMouseUp = GetVariable<System.Action>("__onrightmouseup");
+            _onRightMouseUp.Invoke();
+            // ExecuteFunc<System.Action>("__onrightmouseup", (act, args) =>
+            // {
+            //     act.Invoke();
+            // });
         }
     }
 
@@ -135,17 +155,23 @@ public class Scriptable : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            ExecuteFunc<System.Action>("__onleftmousedown", (act, args) =>
-            {
-                act.Invoke();
-            });
+            if(_onLeftMouseDown == null)
+                _onLeftMouseDown = GetVariable<System.Action>("__onleftmousedown");
+            _onLeftMouseDown.Invoke();
+            // ExecuteFunc<System.Action>("__onleftmousedown", (act, args) =>
+            // {
+            //     act.Invoke();
+            // });
         }
         if (Input.GetMouseButtonDown(1))
         {
-            ExecuteFunc<System.Action>("__onrightmousedown", (act, args) =>
-            {
-                act.Invoke();
-            });
+            if(_onRightMouseDown == null)
+                _onRightMouseDown = GetVariable<System.Action>("__onrightmousedown");
+            _onRightMouseDown.Invoke();
+            // ExecuteFunc<System.Action>("__onrightmousedown", (act, args) =>
+            // {
+            //     act.Invoke();
+            // });
         }
     }
 
@@ -204,6 +230,9 @@ public class Scriptable : MonoBehaviour
 
     public void ExecuteScript()
     {
+        // release any variable
+        ReleaseAnyVariable();
+
         runtime = engine.Runtime;
         scope = runtime.CreateScope();
 
@@ -240,6 +269,16 @@ public class Scriptable : MonoBehaviour
         if (stoppable)
             if (!runtime.IsNull())
                 runtime.Shutdown();
+    }
+
+    public void ReleaseAnyVariable()
+    {
+        _fixedUpdate = null;
+        _update = null;
+        _onLeftMouseDown = null;
+        _onLeftMouseUp = null;
+        _onRightMouseDown = null;
+        _onRightMouseUp = null;
     }
 
     string GetScriptHeader()
@@ -354,6 +393,23 @@ public class Scriptable : MonoBehaviour
         catch
         {
             // if source executes out any error.
+            throw;
+        }
+    }
+
+    TAction GetVariable<TAction>(string name){
+        if(scope.IsNull())
+            return default(TAction);
+        if(!scope.ContainsVariable(name))
+            return default(TAction);
+        try
+        {
+            return scope.GetVariable<TAction>(name);
+        }
+        catch
+        {
+            // if source executes out any error.
+            throw;
         }
     }
 
@@ -391,15 +447,16 @@ public class Scriptable : MonoBehaviour
                 continue;
             if (scope.IsNull())
                 continue;
-            System.Action update;
-            System.Action fixedUpdate;
-            if (scope.TryGetVariable("__update", out update)
-                || scope.TryGetVariable("__fixedupdate", out fixedUpdate))
-            {
+            // System.Action update;
+            // System.Action fixedUpdate;
+            // if (scope.TryGetVariable("__update", out update)
+            //     || scope.TryGetVariable("__fixedupdate", out fixedUpdate))
+            // {
+            //     StorePythonVariables();
+            // }
+            if(_fixedUpdate != null || _update != null){
                 StorePythonVariables();
             }
-            update = null;
-            fixedUpdate = null;
         }
     }
 

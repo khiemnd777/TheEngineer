@@ -175,6 +175,11 @@ public class Scriptable : MonoBehaviour
         }
     }
 
+    public void CreateEngine()
+    {
+        engine = UnityPython.CreateEngine();
+    }
+
     public void AddHost(ScriptableHost host)
     {
         _hosts.Add(host);
@@ -375,7 +380,7 @@ public class Scriptable : MonoBehaviour
         });
     }
 
-    void ExecuteFunc<TAction>(string name, System.Action<TAction, object[]> action, params object[] args)
+    public void ExecuteFunc<TAction>(string name, System.Action<TAction, object[]> action, params object[] args)
     {
         if (scope.IsNull())
             return;
@@ -397,7 +402,7 @@ public class Scriptable : MonoBehaviour
         }
     }
 
-    TAction GetVariable<TAction>(string name){
+    public TAction GetVariable<TAction>(string name){
         if(scope.IsNull())
             return default(TAction);
         if(!scope.ContainsVariable(name))

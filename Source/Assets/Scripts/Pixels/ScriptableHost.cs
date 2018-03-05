@@ -7,8 +7,18 @@ public class ScriptableHost : MonoBehaviour
 {
     // public Transform container;
     public Transform includedScript;
+    public bool stoppable;
+
+    System.Action _update;
+    System.Action _fixedUpdate;
+    System.Action _onLeftMouseUp;
+    System.Action _onRightMouseUp;
+    System.Action _onLeftMouseDown;
+    System.Action _onRightMouseDown;
 
     List<Scriptable> _scripts;
+
+    ScriptManager scriptManager;
 
     public List<Scriptable> scripts
     {
@@ -16,6 +26,28 @@ public class ScriptableHost : MonoBehaviour
         {
             return _scripts ?? (_scripts = new List<Scriptable>());
         }
+    }
+
+    void Awake()
+    {
+        scriptManager = ScriptManager.instance;
+    }
+
+    void Start()
+    {
+        stoppable = true;
+    }
+
+    void Update()
+    {
+        if(!stoppable)
+            return;
+    }
+
+    void FixedUpdate()
+    {
+        if(!stoppable)
+            return;
     }
 
     public void AddScript(Scriptable script)

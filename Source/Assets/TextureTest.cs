@@ -39,10 +39,11 @@ public class TextureTest : MonoBehaviour
         Color c;
         if (hit.collider != null)
         {
-			var hitPointX = hit.point.x + 1/2f;
-			var hitPointY = hit.point.y + 1/2f;
-			var x = Mathf.Abs(transform.localPosition.x - hitPointX) / 1 * tex.width;
-			var y = Mathf.Abs(transform.localPosition.y - hitPointY)  / 1 * tex.height;
+			var scale = transform.lossyScale;
+			var hitPointX = hit.point.x + scale.x / 2f;
+			var hitPointY = hit.point.y + scale.y / 2f;
+			var x = Mathf.Abs(transform.localPosition.x - hitPointX) / scale.x * tex.width;
+			var y = Mathf.Abs(transform.localPosition.y - hitPointY)  / scale.y * tex.height;
             c = tex.GetPixel((int)x, (int)y); // Get color from texture
 			Debug.Log(c);
         }

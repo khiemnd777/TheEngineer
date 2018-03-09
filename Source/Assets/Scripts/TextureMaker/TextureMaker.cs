@@ -1,38 +1,121 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class TextureMaker : MonoBehaviour 
+[RequireComponent(typeof(MeshRenderer), typeof(BoxCollider2D), typeof(MeshFilter))]
+public class TextureMaker : MonoBehaviour
 {
-	public RectTransform textureMakerRect;
-	public float textureWidth;
-	public float textureHeight;
-	public float spaceX;
-	public float spaceY;
-	public TextureTile tilePrefab;
-	public List<TextureTile> tiles;
+	public int textureWidth;
+	public int textureHeight;
+	public Color paintColor;
+	public CUIColorPicker colorPicker;
 
-	RectTransform rectTransform;
+	Color[] _colors;
+	Color _hoveredColor;
+	Vector2 _hoveredCoordinate;
+	Texture2D _texture;
+	MeshRenderer _renderer;
+	MeshFilter _filter;
+	bool _isInside;
 
-	// void Start()
-	// {
-	// 	var rectWidth = textureMakerRect.rect.width;
-	// 	var rectHeight = textureMakerRect.rect.height;
-	// 	// new Texture2D(textureWidth, textureHeight, TextureFormat.)
-	// 	// pushing tiles into array by dimension of texture
-	// 	tiles = new List<TextureTile>();
-	// 	var numOfTile = textureWidth * textureHeight;
-	// 	for(var i = 0; i < numOfTile; i++){
-	// 		var tile = Instantiate<TextureTile>(tilePrefab, Vector3.zero, Quaternion.identity);
-	// 		var tileRect = tile.GetComponent<RectTransform>();
-	// 		tileRect.sizeDelta = new Vector2(rectWidth / textureWidth, rectHeight / textureHeight);
-	// 		tiles.Add(tile);
-	// 		tile.transform.SetParent(textureMakerRect);
-	// 		tile.transform.localPosition = Vector3.zero;
-	// 		tileRect = null;
-	// 		tile = null;
-	// 	}
-	// 	// computing dimension of grid
+	void Start()
+	{
+		_renderer = GetComponent<MeshRenderer>();
+		_filter = GetComponent<MeshFilter>();
 
-	// }
+		// register colorPicker value change event
+		colorPicker.SetOnValueChangeCallback(c => {
+			paintColor = c;
+		});
+
+		// init mesh filter of Quad
+		var quadGo = GameObject.CreatePrimitive(PrimitiveType.Quad);
+		_filter.mesh = quadGo.GetComponent<MeshFilter>().mesh;
+		Destroy(quadGo.gameObject);
+		// init paint color
+		paintColor.a = 1;
+		// create instance of texture
+		_texture = new Texture2D(textureWidth, textureHeight, TextureFormat.RGBA32, true);
+		_colors = new Color[textureWidth * textureHeight];
+		for(var x = 0; x < _texture.width; x++){
+			for(var y = 0; y < _texture.height; y++){
+				var initColor = Color.white; //(x & y) != 0 ? Color.white : Color.grey;
+				_colors[x + y  * _texture.width] = initColor;
+			}
+		}
+		_texture.SetPixels(_colors);
+		_texture.Apply();
+		_texture.wrapMode = TextureWrapMode.Clamp;
+        _texture.filterMode = FilterMode.Point;
+		var mainMaterial = _renderer.materials[0];
+        mainMaterial.mainTexture = _texture;
+        mainMaterial.shader = Shader.Find("Sprites/Default");
+
+		// start drag event;
+		StartCoroutine(Dragging());
+	}
+
+	void Update()
+    {
+		// hit on texture's coordinates;
+        var hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+        if (hit.collider != null)
+        {
+			_isInside = true;
+			_hoveredCoordinate = Utility.GetTexture2DCoordinate(_texture, hit.point, transform.position, transform.lossyScale);
+			_hoveredColor = Utility.GetTexture2DColor(_texture, _hoveredCoordinate);
+        }else{
+			_isInside = false;
+		}
+    }
+
+	void DragStart()
+	{
+
+	}
+
+	void Drag()
+	{
+		try{
+			var x = (int)_hoveredCoordinate.x;
+			var y = (int)_hoveredCoordinate.y;
+			var p = x + y * _texture.width;
+			if(p >= _texture.width * _texture.height)
+				return;
+			_colors[p] = paintColor;
+			_texture.SetPixels(_colors);
+			_texture.Apply();
+		}catch{
+			throw;
+		}
+	}
+
+	void Drop()
+	{
+		
+	}
+
+	IEnumerator Dragging()
+    {
+        while (true)
+        {
+            if (Input.GetMouseButton(0))
+            {
+				if(_isInside)
+					Drag();
+            }
+            yield return null;
+        }
+    }
+
+	void OnMouseDown()
+    {
+        DragStart();
+    }
+
+    void OnMouseUp()
+    {
+        Drop();
+    }
 }

@@ -64,7 +64,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1283680299389142
 GameObject:
   m_ObjectHideFlags: 1
@@ -84,7 +84,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1353959714522004
 GameObject:
   m_ObjectHideFlags: 1
@@ -104,7 +104,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1520956342892676
 GameObject:
   m_ObjectHideFlags: 1
@@ -212,7 +212,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1772710497626168
 GameObject:
   m_ObjectHideFlags: 1
@@ -227,7 +227,7 @@ GameObject:
   - component: {fileID: 114879689924869110}
   - component: {fileID: 114911413354055680}
   m_Layer: 0
-  m_Name: TextureMakerTop
+  m_Name: TextureMakerSurface
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1118,7 +1118,7 @@ TextMesh:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1134018653658182}
-  m_Text: Top
+  m_Text: Surface
   m_OffsetZ: 0
   m_CharacterSize: 0.13
   m_LineSpacing: 1

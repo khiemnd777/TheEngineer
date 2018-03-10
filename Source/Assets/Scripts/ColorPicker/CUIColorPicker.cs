@@ -5,9 +5,14 @@ using UnityEngine.UI;
 public class CUIColorPicker : MonoBehaviour
 {
     public Color Color { get { return _color; } set { Setup( value ); } }
+    public bool usePicker;
     public void SetOnValueChangeCallback( Action<Color> onValueChange )
     {
         _onValueChange = onValueChange;
+    }
+    public void UsePickerOff()
+    {
+        usePicker = false;
     }
     private Color _color = Color.red;
     private Action<Color> _onValueChange;
@@ -164,6 +169,11 @@ public class CUIColorPicker : MonoBehaviour
         var g = ( rng.Next() % 1000 ) / 1000.0f;
         var b = ( rng.Next() % 1000 ) / 1000.0f;
         Color = new Color( r, g, b );
+    }
+
+    public void UsePicker()
+    {
+        usePicker = true;    
     }
 
     void Awake()

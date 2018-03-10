@@ -120,6 +120,7 @@ public class CUIColorPicker : MonoBehaviour
                 }
                 _color = resultColor;
             }
+            usePicker = false;
         };
         applyHue();
         applySaturationValue();

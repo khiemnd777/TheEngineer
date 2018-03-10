@@ -8,26 +8,36 @@ public class TextureMaker : MonoBehaviour
 {
 	public int textureWidth;
 	public int textureHeight;
+	public bool readOnly;
 	public Color paintColor;
 	public CUIColorPicker colorPicker;
-
+	public Color[] colors{
+		get{
+			return _colors;
+		}
+	}
 	Color[] _colors;
 	Color _hoveredColor;
 	Vector2 _hoveredCoordinate;
 	Texture2D _texture;
 	MeshRenderer _renderer;
 	MeshFilter _filter;
+	System.Action<Color[]> _lookGoodCallback;
+	TextureColorStorage _textureColorStorage;
 	bool _isMoveInside;
 
-	void Start()
+	void Awake()
 	{
+		readOnly = false;
+		_textureColorStorage = TextureColorStorage.instance;
 		_renderer = GetComponent<MeshRenderer>();
 		_filter = GetComponent<MeshFilter>();
 
 		// register colorPicker value change event
-		colorPicker.SetOnValueChangeCallback(c => {
-			paintColor = c;
-		});
+		if(colorPicker != null)
+			colorPicker.SetOnValueChangeCallback(c => {
+				paintColor = c;
+			});
 
 		// init mesh filter of Quad
 		var quadGo = GameObject.CreatePrimitive(PrimitiveType.Quad);
@@ -35,7 +45,7 @@ public class TextureMaker : MonoBehaviour
 		Destroy(quadGo.gameObject);
 		// init paint color
 		var initColor = Color.white;
-		paintColor = colorPicker.Color;
+		paintColor = colorPicker == null ? Color.white : colorPicker.Color;
 		paintColor.a = 1;
 		// create instance of texture
 		_texture = new Texture2D(textureWidth, textureHeight, TextureFormat.RGBA32, true);
@@ -76,7 +86,7 @@ public class TextureMaker : MonoBehaviour
 	{
 		if(_isMoveInside)
 		{
-			if(colorPicker.usePicker){
+			if(colorPicker && colorPicker.usePicker){
 				var x = (int)_hoveredCoordinate.x;
 				var y = (int)_hoveredCoordinate.y;
 				var p = x + y * _texture.width;
@@ -91,6 +101,8 @@ public class TextureMaker : MonoBehaviour
 	void Drag()
 	{
 		try{
+			if(readOnly)
+				return;
 			var x = (int)_hoveredCoordinate.x;
 			var y = (int)_hoveredCoordinate.y;
 			var p = x + y * _texture.width;
@@ -145,11 +157,39 @@ public class TextureMaker : MonoBehaviour
 
 	public void LookGood()
 	{
+		if(_lookGoodCallback != null)
+			_lookGoodCallback.Invoke(_colors);
+	}
 
+	public void Copy()
+	{
+		_textureColorStorage.StorageColors(_colors);
+	}
+
+	public void Paste()
+	{
+		SetColors(_textureColorStorage.colors);
+	}
+
+	public void SetColors(Color[] colors)
+	{
+		for(var x = 0; x < _texture.width; x++){
+			for(var y = 0; y < _texture.height; y++){
+				var position = x + y  * _texture.width;
+				_colors[position] = position < colors.Length ? colors[position] : Color.white;
+			}
+		}
+		_texture.SetPixels(_colors);
+		_texture.Apply();
 	}
 
 	public void Fill()
 	{	
 		FillOver();
 	}
+	
+	public void SetLookGoodCallback(System.Action<Color[]> callback)
+    {
+        _lookGoodCallback = callback;
+    }
 }

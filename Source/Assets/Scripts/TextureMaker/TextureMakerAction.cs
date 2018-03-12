@@ -5,6 +5,11 @@ using UnityEngine;
 public class TextureMakerAction : MonoBehaviour
 {
     public RectTransform textureEditorPrefab;
+    public TextureMaker maker{
+        get {
+            return _maker;
+        }
+    }
 
 	Canvas _canvas;
     RectTransform _textureEditor;
@@ -58,8 +63,9 @@ public class TextureMakerAction : MonoBehaviour
 			_textureEditor = null;
 		});
 		maker.SetColors(_maker.colors);
+        var thisPosition = transform.position;
 		_textureEditor.transform.SetParent(_canvas.transform);
-		_textureEditor.transform.position = Vector3.one;
+		_textureEditor.transform.position = new Vector3(0, 0, thisPosition.z - 1);
 		_textureEditor.transform.localScale = Vector3.one;
     }
 }

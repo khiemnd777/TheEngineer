@@ -60,6 +60,7 @@ public class TextureMaker : MonoBehaviour
 		_texture.Apply();
 		_texture.wrapMode = TextureWrapMode.Clamp;
         _texture.filterMode = FilterMode.Point;
+		// assign into material renderer's texture
 		var mainMaterial = _renderer.materials[0];
         mainMaterial.mainTexture = _texture;
         mainMaterial.shader = Shader.Find("Sprites/Default");
@@ -181,6 +182,11 @@ public class TextureMaker : MonoBehaviour
 		}
 		_texture.SetPixels(_colors);
 		_texture.Apply();
+	}
+
+	public Texture2D GetTexture()
+	{
+		return _texture;
 	}
 
 	public void Fill()

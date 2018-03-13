@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Block : MonoBehaviour
+public abstract class Block : MonoBehaviour
 {
-
+    public abstract void SetTextures(Texture2D[] textures);
 }

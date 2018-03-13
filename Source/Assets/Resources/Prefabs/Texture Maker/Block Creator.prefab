@@ -51,7 +51,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28726e1f81c3147368f815980ffe4e7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  customBlockUIPrefab: {fileID: 114258534476863272, guid: 6d560dab1e21842ccadfde5a61f07966,
+  choiceBlockUIPrefab: {fileID: 114719481717453954, guid: ca7cc6e2f3cb649ceb12625bfff5f37e,
     type: 2}
   canvas: {fileID: 0}
-  blocks: []
+  block16x16Prefab: {fileID: 114670495537888098, guid: a6abe7a74bd174d7aa449dfb35583bb0,
+    type: 2}
+  customBlock16x16Prefab: {fileID: 114036074583408434, guid: ad6c36017ff2e4dce835e051ec763ff2,
+    type: 2}
+  block16x32Prefab: {fileID: 114456012566686312, guid: d042f3c588d7a41bd81448231dfb1de0,
+    type: 2}
+  customBlock16x32Prefab: {fileID: 114747160911581194, guid: 03e67e01a6bf34f3ab432ac622da84d4,
+    type: 2}
+  availableBlocks: []

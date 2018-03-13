@@ -16,12 +16,15 @@ public class TextureMakerAction : MonoBehaviour
     TextureMaker _maker;
     bool _isMoveInside;
 
-    void Start()
+    void Awake()
     {
         _maker = GetComponent<TextureMaker>();
-		_canvas = GetComponentInParent<Canvas>();
+    }
 
-		_maker.readOnly = true;
+    void Start()
+    {
+        _canvas = GetComponentInParent<Canvas>();
+        _maker.readOnly = true;
     }
 
     void Update()
@@ -57,6 +60,8 @@ public class TextureMakerAction : MonoBehaviour
     {
         _textureEditor = Instantiate(textureEditorPrefab, Vector3.one, Quaternion.identity);
 		var maker = _textureEditor.GetComponentInChildren<TextureMaker>();
+        maker.textureWidth = _maker.textureWidth;
+        maker.textureHeight = _maker.textureHeight;
 		maker.SetLookGoodCallback(colors => {
 			_maker.SetColors(colors);
 			Destroy(_textureEditor.gameObject);

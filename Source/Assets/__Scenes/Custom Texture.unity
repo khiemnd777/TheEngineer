@@ -189,7 +189,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1694159775}
-        m_MethodName: Create
+        m_MethodName: OpenChoiceBlockUI
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

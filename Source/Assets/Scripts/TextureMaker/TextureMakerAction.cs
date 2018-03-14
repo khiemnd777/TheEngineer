@@ -25,6 +25,7 @@ public class TextureMakerAction : MonoBehaviour
     {
         _canvas = GetComponentInParent<Canvas>();
         _maker.readOnly = true;
+        _maker.CreateTexture();
     }
 
     void Update()
@@ -60,8 +61,7 @@ public class TextureMakerAction : MonoBehaviour
     {
         _textureEditor = Instantiate(textureEditorPrefab, Vector3.one, Quaternion.identity);
 		var maker = _textureEditor.GetComponentInChildren<TextureMaker>();
-        maker.textureWidth = _maker.textureWidth;
-        maker.textureHeight = _maker.textureHeight;
+        maker.CreateTexture(_maker.textureWidth, _maker.textureHeight);
 		maker.SetLookGoodCallback(colors => {
 			_maker.SetColors(colors);
 			Destroy(_textureEditor.gameObject);

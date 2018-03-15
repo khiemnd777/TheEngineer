@@ -8,13 +8,13 @@ public class BlockCreator : MonoBehaviour
     public Canvas canvas;
 
     [Header("Block Type")]
-    public Block16x16 block16x16Prefab;
+    public Block16x16Template block16x16Prefab;
     public CustomBlock16x16 customBlock16x16Prefab;
     [Space]
-    public Block16x32 block16x32Prefab;
+    public Block16x32Template block16x32Prefab;
     public CustomBlock16x32 customBlock16x32Prefab;
 
-    public List<Block> availableBlocks = new List<Block>();
+    public List<BlockTemplate> blockTemplates = new List<BlockTemplate>();
 
     ChoiceBlockUI _choiceBlockUI;
 
@@ -47,8 +47,8 @@ public class BlockCreator : MonoBehaviour
 		standardTextureMaker.CreateTexture(16, 16);
         customBlockInstance.SetOKCallback(textures =>
         {
-            var instance = Instantiate<Block16x16>(block16x16Prefab, Vector3.one, Quaternion.identity);
-            availableBlocks.Add(instance);
+            var instance = Instantiate<Block16x16Template>(block16x16Prefab, Vector3.one, Quaternion.identity);
+            blockTemplates.Add(instance);
             instance.SetTextures(textures);
             Destroy(_choiceBlockUI.gameObject);
         });
@@ -71,8 +71,8 @@ public class BlockCreator : MonoBehaviour
         textureMaker.CreateTexture(16, 32);
         customBlockInstance.SetOKCallback(textures =>
         {
-            var instance = Instantiate<Block16x32>(block16x32Prefab, Vector3.one, Quaternion.identity);
-            availableBlocks.Add(instance);
+            var instance = Instantiate<Block16x32Template>(block16x32Prefab, Vector3.one, Quaternion.identity);
+            blockTemplates.Add(instance);
             instance.SetTextures(textures);
             Destroy(_choiceBlockUI.gameObject);
         });

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Block16x16 : Block
+public class Block16x16Template : BlockTemplate
 {
     public Texture2D surfaceTexture;
     public Texture2D standardTexture;

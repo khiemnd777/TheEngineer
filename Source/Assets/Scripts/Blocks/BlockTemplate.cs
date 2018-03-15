@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public abstract class Block : MonoBehaviour
+public abstract class BlockTemplate : MonoBehaviour
 {
     protected MeshRenderer _renderer;
     protected MeshFilter _filter;

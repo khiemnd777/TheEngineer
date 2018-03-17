@@ -1,18 +1,18 @@
 
 public class EntityAnd : BlockBehaviourEntity
 {
-    public BlockConnector<bool> connectorAIn;
-    public BlockConnector<bool> connectorBIn;
-    public BlockConnector<bool> connectorTrue;
-    public BlockConnector<bool> connectorFalse;
+    public BlockConnector inputA;
+    public BlockConnector inputB;
+    public BlockConnector outputTrue;
+    public BlockConnector outputFalse;
 
     public override void Execute()
     {
-        var consequence = connectorAIn.value && connectorBIn.value;
-        // connectorOut.value = consequence;
+        var consequence = inputA.a.returnValue && inputB.a.returnValue;
+        returnValue = consequence;
         if(consequence)
-            connectorTrue.b.Execute();
+            outputTrue.b.Execute();
         else
-            connectorFalse.b.Execute();
+            outputFalse.b.Execute();
     }
 }

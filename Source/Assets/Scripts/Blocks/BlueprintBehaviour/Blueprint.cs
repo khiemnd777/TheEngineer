@@ -6,6 +6,6 @@ public abstract class Blueprint : MonoBehaviour
 
     public virtual void Update()
     {
-        
+           
     }
 }

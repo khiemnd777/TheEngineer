@@ -1,7 +1,6 @@
 
-public class BlockConnector<T>
+public class BlockConnector
 {
-    public T value;
     public BlockBehaviourEntity a;
     public BlockBehaviourEntity b;
 }

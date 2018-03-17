@@ -4,5 +4,5 @@ using UnityEngine;
 
 public abstract class BlueprintEntity : MonoBehaviour
 {
-    public abstract void Execute();
+    public BlockBehaviourEntity behaviourEntity;
 }

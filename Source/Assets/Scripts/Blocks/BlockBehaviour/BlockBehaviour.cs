@@ -13,11 +13,13 @@ public class BlockBehaviour
         anyState = new BlockConnector[5];
     }
 
+    // This function will be run in the Update function.
+    // It updates per frame.
     public void Execute()
     {
         foreach(var state in anyState)
         {
-            state.b.Execute();
+            state.b.Execute(block);
         }
     }
 }

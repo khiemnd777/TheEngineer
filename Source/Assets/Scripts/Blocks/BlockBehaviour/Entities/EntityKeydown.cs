@@ -6,10 +6,12 @@ public class EntityKeydown : BlockBehaviourEntity
     public BlockConnector input;
     public BlockConnector output;
 
-    public override void Execute()
+    public override void Execute(Block block)
     {
+        if(input == null)
+            return;
         returnValue = Input.GetKeyDown(keyName);
-        if(returnValue)
-            output.b.Execute();
+        if(returnValue && output != null)
+            output.b.Execute(block);
     }
 }

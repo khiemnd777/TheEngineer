@@ -1,11 +1,12 @@
 using UnityEngine;
 
-public abstract class Blueprint : MonoBehaviour
+public class Blueprint : MonoBehaviour
 {
-    public Transform reference;
-
-    public virtual void Update()
+    public Block block;
+    
+    void Start()
     {
-           
+        var behaviour = new BlockBehaviour();
+        block.SetBehaviour(behaviour);
     }
 }

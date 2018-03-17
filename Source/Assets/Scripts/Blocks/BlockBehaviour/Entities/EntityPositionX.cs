@@ -4,27 +4,29 @@ using System.Collections;
 public class EntityPositionX : BlockBehaviourEntity
 {
     public float number;
-    public Block block;
     public BlockConnector input;
     public BlockConnector output;
 
-    public override void Execute()
+    Block _block;
+
+    public override void Execute(Block block)
     {
-        block.StartCoroutine("Adding");
+        _block = block;
+        _block.StartCoroutine("Adding");
         returnValue = true;
-        output.b.Execute();
+        output.b.Execute(block);
     }
 
     IEnumerator Adding()
     {
         var percent = 0f;
-        var originalPos = block.transform.position;
+        var originalPos = _block.transform.position;
         var navigateToPos = new Vector3(originalPos.x + number, originalPos.y, originalPos.z);
         while(percent <= 1){
             percent += Time.deltaTime / 60;
-            block.transform.position = Vector3.Lerp(originalPos, navigateToPos, percent);
+            _block.transform.position = Vector3.Lerp(originalPos, navigateToPos, percent);
             yield return null;
         }
-        block.StopCoroutine("Adding");
+        _block.StopCoroutine("Adding");
     }
 }

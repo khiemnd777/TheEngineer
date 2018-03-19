@@ -1,8 +1,9 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BlueprintEntityKeydown : BlueprintEntity
 {
-    public string keyName;
+    public InputField keyName;
     public BlueprintEntityPin input;
     public BlueprintEntityPin output;
 
@@ -20,5 +21,15 @@ public class BlueprintEntityKeydown : BlueprintEntity
         output.dropToConnectorCallback = blockConnector => {
             ((EntityKeydown)behaviourEntity).output = blockConnector;
         };
+    }
+
+    void Update()
+    {
+        var textLen = keyName.text.Length;
+        if(textLen > 1){
+            var newText = keyName.text.Substring(textLen - 1, textLen - 1);
+            keyName.text = newText;
+        }
+        keyName.text = keyName.text.ToUpperInvariant();
     }
 }

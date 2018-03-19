@@ -1,8 +1,9 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BlueprintEntityPositionY : BlueprintEntity
 {
-    public string keyName;
+    public InputField number;
     public BlueprintEntityPin input;
     public BlueprintEntityPin output;
 

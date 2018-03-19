@@ -8,6 +8,11 @@ public class BlockBehaviour
 
     public BlockConnector[] anyState;
 
+    public BlockBehaviour()
+    {
+        Init();
+    }
+
     public void Init()
     {
         anyState = new BlockConnector[5];

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class BlueprintEntityPin : MonoBehaviour
 {
+    [System.NonSerialized]
     public BlueprintEntity entity;
 
     public System.Action<BlockConnector> dropToConnectorCallback;

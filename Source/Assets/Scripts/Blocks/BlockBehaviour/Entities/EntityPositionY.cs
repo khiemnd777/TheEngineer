@@ -14,7 +14,8 @@ public class EntityPositionY : BlockBehaviourEntity
         _block = block;
         _block.StartCoroutine("Adding");
         returnValue = true;
-        output.b.Execute(block);
+        if(output != null)
+            output.b.Execute(block);
     }
 
     IEnumerator Adding()

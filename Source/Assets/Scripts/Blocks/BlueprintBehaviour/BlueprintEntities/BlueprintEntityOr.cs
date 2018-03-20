@@ -7,8 +7,10 @@ public class BlueprintEntityOr : BlueprintEntity
     public BlueprintEntityPin outputTrue;
     public BlueprintEntityPin outputFalse;
 
-    void Start()
+    public override void Start()
     {
+        base.Start();
+        
         inputA.entity = this;
         inputB.entity = this;
         outputTrue.entity = this;

@@ -7,8 +7,10 @@ public class BlueprintEntityPositionY : BlueprintEntity
     public BlueprintEntityPin input;
     public BlueprintEntityPin output;
 
-    void Start()
+    public override void Start()
     {
+        base.Start();
+        
         input.entity = this;
         output.entity = this;
 

@@ -5,6 +5,9 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/__Scenes/Main.unity
     guid: 9c858a36d5d8d4987bab25b66810f26c
+  - enabled: 1
+    path: Assets/__Scenes/Custom Texture.unity
+    guid: 4f53ff3d458e64ca7a3f127b6e8154dd

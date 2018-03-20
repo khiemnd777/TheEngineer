@@ -1,14 +1,15 @@
 using UnityEngine;
 
-public class BlueprintEntityAdd : BlueprintEntity
+public class BlueprintEntityAnd : BlueprintEntity
 {
     public BlueprintEntityPin inputA;
     public BlueprintEntityPin inputB;
     public BlueprintEntityPin outputTrue;
     public BlueprintEntityPin outputFalse;
 
-    void Start()
+    public override void Start()
     {
+        base.Start();
         inputA.entity = this;
         inputB.entity = this;
         outputTrue.entity = this;
@@ -16,19 +17,23 @@ public class BlueprintEntityAdd : BlueprintEntity
 
         behaviourEntity = new EntityAnd();
 
-        inputA.dropToConnectorCallback = blockConnector => {
+        inputA.dropToConnectorCallback = blockConnector =>
+        {
             ((EntityAnd)behaviourEntity).inputA = blockConnector;
         };
 
-        inputB.dropToConnectorCallback = blockConnector => {
+        inputB.dropToConnectorCallback = blockConnector =>
+        {
             ((EntityAnd)behaviourEntity).inputB = blockConnector;
         };
-        
-        outputTrue.dropToConnectorCallback = blockConnector => {
+
+        outputTrue.dropToConnectorCallback = blockConnector =>
+        {
             ((EntityAnd)behaviourEntity).outputTrue = blockConnector;
         };
 
-        outputFalse.dropToConnectorCallback = blockConnector => {
+        outputFalse.dropToConnectorCallback = blockConnector =>
+        {
             ((EntityAnd)behaviourEntity).outputFalse = blockConnector;
         };
     }

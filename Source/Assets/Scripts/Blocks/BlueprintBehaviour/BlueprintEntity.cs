@@ -14,30 +14,41 @@ public abstract class BlueprintEntity : MonoBehaviour
     public RectTransform rectTransform;
 
     Vector3 _anchorPoint;
-    RectTransform parent;
+    Vector2 _anchorPoint2;
+    Canvas _canvas;
 
     public virtual void Start()
     {
         rectTransform = GetComponent<RectTransform>();
+        _canvas = GetComponentInParent<Canvas>();
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        _anchorPoint = new Vector3(eventData.position.x, eventData.position.y, 0f);
+        _anchorPoint = Input.mousePosition;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(editor, Input.mousePosition, Camera.main, out _anchorPoint2);
         transform.SetAsLastSibling();
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        var mousePosition = new Vector3(eventData.position.x, eventData.position.y, 0f);
+        var width = rectTransform.rect.width;
+        var height = rectTransform.rect.height;
+
+        var anchorPosition = rectTransform.anchoredPosition;
+        var relX = Input.mousePosition.x - Mathf.Abs(editor.rect.x);
+        Debug.Log(eventData.position);
+        var distance2 = anchorPosition - _anchorPoint2;
+        var deltaWidth2 = width / 2f - distance2.x;
+        var deltaHeight2 = height / 2f - distance2.y;
+
+        var mousePosition = Input.mousePosition;
         var position = transform.position;
         var distance = position - _anchorPoint;
         var realPosition = mousePosition + distance;
-        var width = rectTransform.rect.width;
-        var height = rectTransform.rect.height;
+        
         var deltaWidth = width / 2f - Mathf.Abs(distance.x);
         var deltaHeight = height / 2f - Mathf.Abs(distance.y);
-        Debug.Log(distance.x);
         var checkContainingLeftConner = mousePosition;
         var checkContainingRightConner = mousePosition;
         if (distance.x < 0)
@@ -69,15 +80,18 @@ public abstract class BlueprintEntity : MonoBehaviour
         if (!RectTransformUtility.RectangleContainsScreenPoint(editor, checkContainingLeftConner))
         {
             _anchorPoint = mousePosition;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(editor, Input.mousePosition, Camera.main, out _anchorPoint2);
             return;
         }
         if (!RectTransformUtility.RectangleContainsScreenPoint(editor, checkContainingRightConner))
         {
             _anchorPoint = mousePosition;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(editor, Input.mousePosition, Camera.main, out _anchorPoint2);
             return;
         }
         transform.position = realPosition;
         _anchorPoint = mousePosition;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(editor, Input.mousePosition, Camera.main, out _anchorPoint2);
     }
 
     public void OnEndDrag(PointerEventData eventData)

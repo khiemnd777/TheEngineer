@@ -24,8 +24,9 @@ public class BlueprintEntityKeydown : BlueprintEntity
         };
     }
 
-    void Update()
+    public override void Update()
     {
+        base.Update();
         var textLen = keyName.text.Length;
         if(textLen > 1){
             var newText = keyName.text.Substring(textLen - 1, textLen - 1);

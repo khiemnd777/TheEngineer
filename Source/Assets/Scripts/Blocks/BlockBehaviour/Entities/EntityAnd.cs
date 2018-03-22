@@ -10,7 +10,8 @@ public class EntityAnd : BlockBehaviourEntity
     {
         if(inputA == null || inputB == null)
             return;
-        var consequence = inputA.a.returnValue && inputB.a.returnValue;
+        var consequence = System.Convert.ToBoolean(inputA.a.returnValue) 
+            && System.Convert.ToBoolean(inputB.a.returnValue);
         returnValue = consequence;
         if(consequence){
             if(outputTrue == null)

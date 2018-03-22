@@ -1,6 +1,6 @@
 
 public abstract class BlockBehaviourEntity
 {
-    public bool returnValue;
+    public object returnValue;
     public abstract void Execute(Block block);
 }

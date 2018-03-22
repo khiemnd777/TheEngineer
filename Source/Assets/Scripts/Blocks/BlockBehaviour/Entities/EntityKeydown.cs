@@ -10,8 +10,9 @@ public class EntityKeydown : BlockBehaviourEntity
     {
         if(input == null)
             return;
-        returnValue = Input.GetKeyDown(keyName);
-        if(returnValue && output != null)
+        var consequence = Input.GetKeyDown(keyName);
+        returnValue = consequence;
+        if(consequence && output != null)
             output.b.Execute(block);
     }
 }

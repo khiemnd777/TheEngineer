@@ -26,7 +26,7 @@ public class BlueprintConnector : MonoBehaviour
 
     void Update()
     {
-        lineRenderer.gameObject.SetActive(anchorA != null && anchorB != null);
+        // lineRenderer.gameObject.SetActive(anchorA != null && anchorB != null);
         // detect position of A and snag into head of A
         if(headA != null && !headA.Equals(null) && anchorA != null)
         {

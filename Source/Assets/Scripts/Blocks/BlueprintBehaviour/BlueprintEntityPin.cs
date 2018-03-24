@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 public enum BlueprintEntityPinType
@@ -13,6 +14,10 @@ public class BlueprintEntityPin : MonoBehaviour
     , IBeginDragHandler
     , IDragHandler
     , IEndDragHandler
+    , IPointerDownHandler
+    , IPointerUpHandler
+    , IPointerEnterHandler
+    , IPointerExitHandler
 {
     const string connectorResPath = "Prefabs/Blueprint Behaviour/Blueprint Connector";
 
@@ -24,11 +29,15 @@ public class BlueprintEntityPin : MonoBehaviour
 
     Transform _parentTransform;
     BlueprintConnector _connectorPrefab;
+    Image _pinImage;
+    Color _highlightPin = new Color32(207, 255, 43, 255);
+    Color _normalPin = new Color32(255, 255, 255, 255);
 
     void Start()
     {
-        _parentTransform = transform.parent;
+        _parentTransform = transform.parent.parent;
         _connectorPrefab = Resources.Load<BlueprintConnector>(connectorResPath);
+        _pinImage = GetComponent<Image>();
     }
 
     public void CreateConnector()
@@ -40,9 +49,11 @@ public class BlueprintEntityPin : MonoBehaviour
         // connectorTransform.SetParent(_parentTransform);
         // connectorTransform.position = transform.position;
         var connector = Instantiate<BlueprintConnector>(_connectorPrefab
-            , transform.position
+            , Vector3.zero
             , Quaternion.identity
             , _parentTransform);
+        connector.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+        connector.transform.SetAsFirstSibling();
         if (pinType == BlueprintEntityPinType.In)
             connector.SetEntityB(entity, transform);
         else
@@ -125,5 +136,25 @@ public class BlueprintEntityPin : MonoBehaviour
             if (currentConnector != null && !currentConnector.Equals(null))
                 Destroy(currentConnector.gameObject);
         }
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        _pinImage.color = _highlightPin;
+    }
+
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        _pinImage.color = _normalPin;
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        _pinImage.color = _highlightPin;
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        _pinImage.color = _normalPin;
     }
 }

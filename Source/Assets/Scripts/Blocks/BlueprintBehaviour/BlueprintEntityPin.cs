@@ -14,20 +14,39 @@ public class BlueprintEntityPin : MonoBehaviour
     , IDragHandler
     , IEndDragHandler
 {
+    const string connectorResPath = "Prefabs/Blueprint Behaviour/Blueprint Connector";
+
     [System.NonSerialized]
     public BlueprintEntity entity;
     public BlueprintEntityPinType pinType;
 
     public System.Action<BlockConnector> dropToConnectorCallback;
 
+    Transform _parentTransform;
+    BlueprintConnector _connectorPrefab;
+
+    void Start()
+    {
+        _parentTransform = transform.parent;
+        _connectorPrefab = Resources.Load<BlueprintConnector>(connectorResPath);
+    }
+
     public void CreateConnector()
     {
-        var connectorGo = new GameObject("BlueprintConnector", typeof(BlueprintConnector));
-        var connector = connectorGo.GetComponent<BlueprintConnector>();
+        // var connectorGo = new GameObject("BlueprintConnector", typeof(BlueprintConnector));
+        // connectorGo.AddComponent<RectTransform>();
+        // var connector = connectorGo.GetComponent<BlueprintConnector>();
+        // var connectorTransform = connector.transform;
+        // connectorTransform.SetParent(_parentTransform);
+        // connectorTransform.position = transform.position;
+        var connector = Instantiate<BlueprintConnector>(_connectorPrefab
+            , transform.position
+            , Quaternion.identity
+            , _parentTransform);
         if (pinType == BlueprintEntityPinType.In)
-            connector.SetEntityB(entity);
+            connector.SetEntityB(entity, transform);
         else
-            connector.SetEntityA(entity);
+            connector.SetEntityA(entity, transform);
         BlueprintConnector.current = connector;
     }
 
@@ -42,7 +61,7 @@ public class BlueprintEntityPin : MonoBehaviour
                 BlueprintConnector.current = null;
                 return false;
             }
-            connector.SetEntityB(entity);
+            connector.SetEntityB(entity, transform);
         }
         else
         {
@@ -52,7 +71,7 @@ public class BlueprintEntityPin : MonoBehaviour
                 BlueprintConnector.current = null;
                 return false;
             }
-            connector.SetEntityA(entity);
+            connector.SetEntityA(entity, transform);
         }
         // create block connector
         var blockConnector = new BlockConnector();
@@ -81,6 +100,7 @@ public class BlueprintEntityPin : MonoBehaviour
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        // detect an appropriate pin as oppose one
         BlueprintEntityPin detectedPin = null;
         foreach (var go in eventData.hovered)
         {
@@ -94,6 +114,7 @@ public class BlueprintEntityPin : MonoBehaviour
             detectedPin = pin;
             break;
         }
+        // if detected pin has been found
         if (detectedPin != null && !detectedPin.Equals(null))
         {
             detectedPin.DropToConnector();
@@ -104,6 +125,5 @@ public class BlueprintEntityPin : MonoBehaviour
             if (currentConnector != null && !currentConnector.Equals(null))
                 Destroy(currentConnector.gameObject);
         }
-        // DropToConnector();
     }
 }

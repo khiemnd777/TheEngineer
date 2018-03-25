@@ -62,20 +62,8 @@ public class BlueprintEntityPin : MonoBehaviour
             connector.SetEntityB(entity, transform);
         else
             connector.SetEntityA(entity, transform);
+        connector.CreateConnectorOverlay();
         BlueprintConnector.current = connector;
-        CreateConnectorOverlay();
-    }
-
-    void CreateConnectorOverlay()
-    {
-        var connectorGo = new GameObject("ConnectorOverlay");
-        connectorGo.transform.SetParent(_parentTransform);
-        connectorGo.AddComponent<RectTransform>();
-        _connectorOverlay = connectorGo.GetComponent<RectTransform>();
-        _connectorOverlay.sizeDelta = Vector2.zero;
-        _connectorOverlay.anchorMin = new Vector2(0, 1);
-        _connectorOverlay.anchorMax = new Vector2(0, 1);
-        connectorGo.transform.position = Vector3.zero;
     }
 
     public bool DropToConnector()
@@ -123,29 +111,14 @@ public class BlueprintEntityPin : MonoBehaviour
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (_connectorOverlay != null && !_connectorOverlay.Equals(null))
-        {
-            _connectorOverlay.transform.position = Input.mousePosition;
-            var connector = BlueprintConnector.current;
-            if (connector != null)
-            {
-                var connectorLineRenderer = connector.lineRenderer;
-                if(pinType == BlueprintEntityPinType.Out)
-                    connectorLineRenderer.Points[1] = _connectorOverlay.anchoredPosition;
-                else
-                    connectorLineRenderer.Points[0] = _connectorOverlay.anchoredPosition;
-                connectorLineRenderer.OnRebuildRequested();
-                if(_flagShownConnectorLine == 2)
-                    connectorLineRenderer.gameObject.SetActive(true);
-                else
-                    ++_flagShownConnectorLine;
-            }
+        var connector = BlueprintConnector.current;
+        if(connector != null){
+            connector.OnPinDrag(this);
         }
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        _flagShownConnectorLine = 0;
         // detect an appropriate pin as oppose one
         BlueprintEntityPin detectedPin = null;
         foreach (var go in eventData.hovered)
@@ -163,6 +136,7 @@ public class BlueprintEntityPin : MonoBehaviour
         // if detected pin has been found
         if (detectedPin != null && !detectedPin.Equals(null))
         {
+            BlueprintConnector.current.OnPinDragEnd(this);
             detectedPin.DropToConnector();
         }
         else
@@ -171,8 +145,6 @@ public class BlueprintEntityPin : MonoBehaviour
             if (currentConnector != null && !currentConnector.Equals(null))
                 Destroy(currentConnector.gameObject);
         }
-        Destroy(_connectorOverlay.gameObject);
-        _connectorOverlay = null;
     }
 
     public void OnPointerDown(PointerEventData eventData)

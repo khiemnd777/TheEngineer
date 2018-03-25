@@ -19,6 +19,9 @@ public class BlueprintConnector : MonoBehaviour
     [System.NonSerialized]
     public Transform anchorB;
 
+    RectTransform _connectorOverlay;
+    int _flagShownConnectorLine;
+
     void Start()
     {
         
@@ -51,8 +54,6 @@ public class BlueprintConnector : MonoBehaviour
             // in fact, it is a difference between point of A and one of B
             // because of the first of line's position is always zero.
             // therefore, point of B will be zero adding diff position. 
-            // var dist = ((anchorB.parent.position - anchorB.position) 
-            //     - (anchorA.parent.position - anchorA.position)).sqrMagnitude;
             var rectB = anchorB.GetComponent<RectTransform>();
             var rectB_anchoredPosition = rectB.anchoredPosition;
             var rectParentB = anchorB.parent.GetComponent<RectTransform>();
@@ -62,17 +63,6 @@ public class BlueprintConnector : MonoBehaviour
             var anchorB_realAnchoredPositionY = rectParentB_anchoredPosition.y + rectB_anchoredPosition.y;
             var realAnchoredPositionB = new Vector2(anchorB_realAnchoredPositionX, anchorB_realAnchoredPositionY);
 
-            // var rectA = anchorA.GetComponent<RectTransform>();
-            // var rectA_anchoredPosition = rectA.anchoredPosition;
-            // var rectParentA = anchorA.parent.GetComponent<RectTransform>();
-            // var rectParentA_anchoredPosition = rectParentA.anchoredPosition;
-            // var widthParentA = rectParentA.sizeDelta.x;
-            // var anchorA_realAnchoredPositionX = rectParentA_anchoredPosition.x + widthParentA * rectParentA.pivot.x;
-            // var anchorA_realAnchoredPositionY = rectParentA_anchoredPosition.y + rectA_anchoredPosition.y;
-            // var realAnchoredPositionA = new Vector2(anchorA_realAnchoredPositionX, anchorA_realAnchoredPositionY);
-
-            // var dist = realAnchoredPositionB - realAnchoredPositionA;
-            // lineRenderer.Points[1] = dist;
             lineRenderer.Points[1] = realAnchoredPositionB;
         }
         lineRenderer.OnRebuildRequested();
@@ -88,5 +78,49 @@ public class BlueprintConnector : MonoBehaviour
     {
         this.b = b;
         this.anchorB = anchorB;
+    }
+
+    public void CreateConnectorOverlay()
+    {
+        var connectorGo = new GameObject("ConnectorOverlay");
+        connectorGo.transform.SetParent(transform.parent);
+        connectorGo.AddComponent<RectTransform>();
+        _connectorOverlay = connectorGo.GetComponent<RectTransform>();
+        _connectorOverlay.sizeDelta = Vector2.zero;
+        _connectorOverlay.anchorMin = new Vector2(0, 1);
+        _connectorOverlay.anchorMax = new Vector2(0, 1);
+        connectorGo.transform.position = Vector3.zero;
+    }
+
+    public void DrawEndLineByMouse(BlueprintEntityPinType pinType)
+    {
+        if(_connectorOverlay == null || _connectorOverlay.Equals(null))
+            return;
+        _connectorOverlay.transform.position = Input.mousePosition;
+        var connector = BlueprintConnector.current;
+        if (connector != null)
+        {
+            var connectorLineRenderer = connector.lineRenderer;
+            if(pinType == BlueprintEntityPinType.Out)
+                connectorLineRenderer.Points[1] = _connectorOverlay.anchoredPosition;
+            else
+                connectorLineRenderer.Points[0] = _connectorOverlay.anchoredPosition;
+            connectorLineRenderer.OnRebuildRequested();
+            if(_flagShownConnectorLine == 2)
+                connectorLineRenderer.gameObject.SetActive(true);
+            else
+                ++_flagShownConnectorLine;
+        }
+    }
+
+    public void OnPinDrag(BlueprintEntityPin pin)
+    {
+        DrawEndLineByMouse(pin.pinType);
+    }
+
+    public void OnPinDragEnd(BlueprintEntityPin pin)
+    {
+        Destroy(_connectorOverlay.gameObject);
+        _connectorOverlay = null;
     }
 }

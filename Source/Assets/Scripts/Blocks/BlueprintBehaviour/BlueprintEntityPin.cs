@@ -66,9 +66,10 @@ public class BlueprintEntityPin : MonoBehaviour
         BlueprintConnector.current = connector;
     }
 
-    public bool DropToConnector()
+    public bool DropToConnector(BlueprintEntityPin oppositionPin)
     {
         var connector = BlueprintConnector.current;
+        // if having a same pin type at two head, remove them.
         if (pinType == BlueprintEntityPinType.In)
         {
             if (connector.b != null)
@@ -97,6 +98,9 @@ public class BlueprintEntityPin : MonoBehaviour
         if (dropToConnectorCallback != null)
         {
             dropToConnectorCallback.Invoke(blockConnector);
+        }
+        if(oppositionPin.dropToConnectorCallback != null){
+            oppositionPin.dropToConnectorCallback.Invoke(blockConnector);
         }
         Debug.Log(blockConnector.a);
         Debug.Log(blockConnector.b);
@@ -137,7 +141,7 @@ public class BlueprintEntityPin : MonoBehaviour
         if (detectedPin != null && !detectedPin.Equals(null))
         {
             BlueprintConnector.current.OnPinDragEnd(this);
-            detectedPin.DropToConnector();
+            detectedPin.DropToConnector(this);
         }
         else
         {

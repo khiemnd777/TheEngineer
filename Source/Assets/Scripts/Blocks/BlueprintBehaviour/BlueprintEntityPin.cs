@@ -44,12 +44,6 @@ public class BlueprintEntityPin : MonoBehaviour
 
     public void CreateConnector()
     {
-        // var connectorGo = new GameObject("BlueprintConnector", typeof(BlueprintConnector));
-        // connectorGo.AddComponent<RectTransform>();
-        // var connector = connectorGo.GetComponent<BlueprintConnector>();
-        // var connectorTransform = connector.transform;
-        // connectorTransform.SetParent(_parentTransform);
-        // connectorTransform.position = transform.position;
         var connector = Instantiate<BlueprintConnector>(
             _connectorPrefab
             , transform.position
@@ -59,9 +53,9 @@ public class BlueprintEntityPin : MonoBehaviour
         connector.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
         connector.transform.SetAsFirstSibling();
         if (pinType == BlueprintEntityPinType.In)
-            connector.SetEntityB(entity, transform);
+            connector.SetEntityB(entity, this);
         else
-            connector.SetEntityA(entity, transform);
+            connector.SetEntityA(entity, this);
         connector.CreateConnectorOverlay();
         BlueprintConnector.current = connector;
     }
@@ -78,7 +72,7 @@ public class BlueprintEntityPin : MonoBehaviour
                 BlueprintConnector.current = null;
                 return false;
             }
-            connector.SetEntityB(entity, transform);
+            connector.SetEntityB(entity, this);
         }
         else
         {
@@ -88,7 +82,7 @@ public class BlueprintEntityPin : MonoBehaviour
                 BlueprintConnector.current = null;
                 return false;
             }
-            connector.SetEntityA(entity, transform);
+            connector.SetEntityA(entity, this);
         }
         // create block connector
         var blockConnector = new BlockConnector();

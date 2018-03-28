@@ -15,12 +15,19 @@ public class BlueprintConnector : MonoBehaviour
     public BlueprintEntity b;
 
     [System.NonSerialized]
-    public Transform anchorA;
+    public BlueprintEntityPin anchorA;
     [System.NonSerialized]
-    public Transform anchorB;
+    public BlueprintEntityPin anchorB;
 
     RectTransform _connectorOverlay;
     int _flagShownConnectorLine;
+
+    Transform _anchorATransform;
+    Transform _anchorBTransform;
+    RectTransform _rectA;
+    RectTransform _rectB;
+    RectTransform _rectParentA;
+    RectTransform _rectParentB;
 
     void Start()
     {
@@ -33,51 +40,47 @@ public class BlueprintConnector : MonoBehaviour
         // detect position of A and snag into head of A
         if(headA != null && !headA.Equals(null) && anchorA != null)
         {
-            headA.position = anchorA.position;
-
-            var rectA = anchorA.GetComponent<RectTransform>();
-            var rectA_anchoredPosition = rectA.anchoredPosition;
-            var rectParentA = anchorA.parent.GetComponent<RectTransform>();
-            var rectParentA_anchoredPosition = rectParentA.anchoredPosition;
-            var widthParentA = rectParentA.sizeDelta.x;
-            var anchorA_realAnchoredPositionX = rectParentA_anchoredPosition.x + widthParentA * rectParentA.pivot.x;
-            var anchorA_realAnchoredPositionY = rectParentA_anchoredPosition.y + rectA_anchoredPosition.y;
-            var realAnchoredPositionA = new Vector2(anchorA_realAnchoredPositionX, anchorA_realAnchoredPositionY);
-
+            headA.position = _anchorATransform.position;
+            var realAnchoredPositionA = ComputeRealAnchoredPosition(_rectA, _rectParentA, anchorA.pinType);
             lineRenderer.Points[0] = realAnchoredPositionA;
         }
         // detect position of B and snag into head of B
         if(headB != null && !headB.Equals(null) && anchorB != null)
         {
-            headB.position = anchorB.position;
-            // naming of line renderer's Points make me confusion
-            // in fact, it is a difference between point of A and one of B
-            // because of the first of line's position is always zero.
-            // therefore, point of B will be zero adding diff position. 
-            var rectB = anchorB.GetComponent<RectTransform>();
-            var rectB_anchoredPosition = rectB.anchoredPosition;
-            var rectParentB = anchorB.parent.GetComponent<RectTransform>();
-            var rectParentB_anchoredPosition = rectParentB.anchoredPosition;
-            var widthParentB = rectParentB.sizeDelta.x;
-            var anchorB_realAnchoredPositionX = rectParentB_anchoredPosition.x - widthParentB * rectParentB.pivot.x;
-            var anchorB_realAnchoredPositionY = rectParentB_anchoredPosition.y + rectB_anchoredPosition.y;
-            var realAnchoredPositionB = new Vector2(anchorB_realAnchoredPositionX, anchorB_realAnchoredPositionY);
-
+            headB.position = _anchorBTransform.position;
+            var realAnchoredPositionB = ComputeRealAnchoredPosition(_rectB, _rectParentB, anchorB.pinType);
             lineRenderer.Points[1] = realAnchoredPositionB;
         }
         lineRenderer.OnRebuildRequested();
     }
 
-    public void SetEntityA(BlueprintEntity a, Transform anchorA)
+    Vector2 ComputeRealAnchoredPosition(RectTransform rect, RectTransform rectParent, BlueprintEntityPinType pinType){
+        var direction = pinType == BlueprintEntityPinType.In ? -1 : 1;
+        var rect_anchoredPosition = rect.anchoredPosition;
+        var rectParent_anchoredPosition = rectParent.anchoredPosition;
+        var widthParent = rectParent.sizeDelta.x;
+        var anchor_realAnchoredPositionX = rectParent_anchoredPosition.x + widthParent * rectParent.pivot.x * direction;
+        var anchor_realAnchoredPositionY = rectParent_anchoredPosition.y + rect_anchoredPosition.y;
+        var realAnchoredPosition = new Vector2(anchor_realAnchoredPositionX, anchor_realAnchoredPositionY);
+        return realAnchoredPosition;
+    }
+
+    public void SetEntityA(BlueprintEntity a, BlueprintEntityPin anchorA)
     {
         this.a = a;
         this.anchorA = anchorA;
+        _anchorATransform = anchorA.transform;
+        _rectA = anchorA.GetComponent<RectTransform>();
+        _rectParentA = _anchorATransform.parent.GetComponent<RectTransform>();
     }
 
-    public void SetEntityB(BlueprintEntity b, Transform anchorB)
+    public void SetEntityB(BlueprintEntity b, BlueprintEntityPin anchorB)
     {
         this.b = b;
         this.anchorB = anchorB;
+        _anchorBTransform = anchorB.transform;
+        _rectB = anchorB.GetComponent<RectTransform>();
+        _rectParentB = _anchorBTransform.parent.GetComponent<RectTransform>();
     }
 
     public void CreateConnectorOverlay()

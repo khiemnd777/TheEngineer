@@ -36,5 +36,38 @@ public class BlueprintEntityAnd : BlueprintEntity
         {
             ((EntityAnd)behaviourEntity).outputFalse = blockConnector;
         };
+
+        inputA.removeConnectorCallback = () =>
+        {
+            ((EntityAnd)behaviourEntity).inputA = null;
+        };
+
+        inputB.removeConnectorCallback = () =>
+        {
+            ((EntityAnd)behaviourEntity).inputB = null;
+        };
+
+        outputTrue.removeConnectorCallback = () =>
+        {
+            ((EntityAnd)behaviourEntity).outputTrue = null;
+        };
+
+        outputFalse.removeConnectorCallback = () =>
+        {
+            ((EntityAnd)behaviourEntity).outputFalse = null;
+        };
+    }
+
+    public override void Remove()
+    {
+        if(inputA.blueprintConnector != null && !inputA.blueprintConnector.Equals(null))
+            inputA.blueprintConnector.Remove();
+        if(inputB.blueprintConnector != null && !inputB.blueprintConnector.Equals(null))
+            inputB.blueprintConnector.Remove();
+        if(outputTrue.blueprintConnector != null && !outputTrue.blueprintConnector.Equals(null))
+            outputTrue.blueprintConnector.Remove();
+        if(outputFalse.blueprintConnector != null && !outputFalse.blueprintConnector.Equals(null))
+            outputFalse.blueprintConnector.Remove();
+        base.Remove();
     }
 }

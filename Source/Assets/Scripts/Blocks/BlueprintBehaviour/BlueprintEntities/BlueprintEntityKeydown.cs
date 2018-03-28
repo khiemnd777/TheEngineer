@@ -22,6 +22,14 @@ public class BlueprintEntityKeydown : BlueprintEntity
         output.dropToConnectorCallback = blockConnector => {
             ((EntityKeydown)behaviourEntity).output = blockConnector;
         };
+
+        input.removeConnectorCallback = () => {
+            ((EntityKeydown)behaviourEntity).input = null;
+        };
+
+        output.removeConnectorCallback = () => {
+            ((EntityKeydown)behaviourEntity).output = null;
+        };
     }
 
     public override void Update()
@@ -33,5 +41,14 @@ public class BlueprintEntityKeydown : BlueprintEntity
             keyName.text = newText;
         }
         keyName.text = keyName.text.ToUpperInvariant();
+    }
+
+    public override void Remove()
+    {
+        if(input.blueprintConnector != null && !input.blueprintConnector.Equals(null))
+            input.blueprintConnector.Remove();
+        if(output.blueprintConnector != null && !output.blueprintConnector.Equals(null))
+            output.blueprintConnector.Remove();
+        base.Remove();
     }
 }

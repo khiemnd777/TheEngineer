@@ -19,15 +19,15 @@ public class BlueprintConnector : MonoBehaviour
     [System.NonSerialized]
     public BlueprintEntityPin anchorB;
 
-    RectTransform _connectorOverlay;
+    BlockConnector _blockConnector;
     int _flagShownConnectorLine;
-
     Transform _anchorATransform;
     Transform _anchorBTransform;
     RectTransform _rectA;
     RectTransform _rectB;
     RectTransform _rectParentA;
     RectTransform _rectParentB;
+    RectTransform _connectorOverlay;
 
     void Start()
     {
@@ -36,7 +36,6 @@ public class BlueprintConnector : MonoBehaviour
 
     void Update()
     {
-        // lineRenderer.gameObject.SetActive(anchorA != null && anchorB != null);
         // detect position of A and snag into head of A
         if(headA != null && !headA.Equals(null) && anchorA != null)
         {
@@ -125,5 +124,20 @@ public class BlueprintConnector : MonoBehaviour
     {
         Destroy(_connectorOverlay.gameObject);
         _connectorOverlay = null;
+    }
+
+    public BlockConnector CreateBlockConnector(){
+        _blockConnector = new BlockConnector();
+        _blockConnector.a = a.behaviourEntity;
+        _blockConnector.b = b.behaviourEntity;
+        return _blockConnector;
+    }
+
+    public void Remove()
+    {
+        anchorA.OnRemoveConnector();
+        anchorB.OnRemoveConnector();
+        _blockConnector = null;
+        Destroy(gameObject);
     }
 }

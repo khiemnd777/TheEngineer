@@ -16,4 +16,9 @@ public abstract class BlueprintEntity : MonoBehaviour
     {
         
     }
+
+    public virtual void Remove()
+    {
+        Destroy(gameObject);
+    }
 }

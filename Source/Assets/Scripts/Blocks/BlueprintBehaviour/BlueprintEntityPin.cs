@@ -26,6 +26,9 @@ public class BlueprintEntityPin : MonoBehaviour
     public BlueprintEntityPinType pinType;
 
     public System.Action<BlockConnector> dropToConnectorCallback;
+    public System.Action removeConnectorCallback;
+    [System.NonSerialized]
+    public BlueprintConnector blueprintConnector;
 
     Transform _parentTransform;
     BlueprintConnector _connectorPrefab;
@@ -85,9 +88,7 @@ public class BlueprintEntityPin : MonoBehaviour
             connector.SetEntityA(entity, this);
         }
         // create block connector
-        var blockConnector = new BlockConnector();
-        blockConnector.a = connector.a.behaviourEntity;
-        blockConnector.b = connector.b.behaviourEntity;
+        var blockConnector = connector.CreateBlockConnector();
 
         if (dropToConnectorCallback != null)
         {
@@ -98,8 +99,18 @@ public class BlueprintEntityPin : MonoBehaviour
         }
         Debug.Log(blockConnector.a);
         Debug.Log(blockConnector.b);
+        oppositionPin.blueprintConnector 
+            = blueprintConnector 
+            = connector;
         BlueprintConnector.current = null;
         return true;
+    }
+
+    public void OnRemoveConnector()
+    {
+        if(removeConnectorCallback != null){
+            removeConnectorCallback.Invoke();
+        }
     }
 
     public void OnBeginDrag(PointerEventData eventData)

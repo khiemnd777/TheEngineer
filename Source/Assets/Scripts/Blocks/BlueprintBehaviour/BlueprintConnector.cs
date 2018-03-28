@@ -7,6 +7,7 @@ public class BlueprintConnector : MonoBehaviour
 
     public RectTransform headA;
     public RectTransform headB;
+    public BlueprintConnectorRemoveButton removeButton;
     public UILineRenderer lineRenderer;
 
     [System.NonSerialized]
@@ -28,10 +29,17 @@ public class BlueprintConnector : MonoBehaviour
     RectTransform _rectParentA;
     RectTransform _rectParentB;
     RectTransform _connectorOverlay;
+    RectTransform __removeButtonRect;
+    RectTransform _removeButtonRect
+    {
+        get{
+            return __removeButtonRect ?? (__removeButtonRect = removeButton.GetComponent<RectTransform>());
+        }
+    }
 
     void Start()
     {
-        
+        removeButton.connector = this;
     }
 
     void Update()
@@ -51,6 +59,8 @@ public class BlueprintConnector : MonoBehaviour
             lineRenderer.Points[1] = realAnchoredPositionB;
         }
         lineRenderer.OnRebuildRequested();
+        // updating remove button position
+        UpdateRemoveButtonPosition();
     }
 
     Vector2 ComputeRealAnchoredPosition(RectTransform rect, RectTransform rectParent, BlueprintEntityPinType pinType){
@@ -99,20 +109,25 @@ public class BlueprintConnector : MonoBehaviour
         if(_connectorOverlay == null || _connectorOverlay.Equals(null))
             return;
         _connectorOverlay.transform.position = Input.mousePosition;
-        var connector = BlueprintConnector.current;
-        if (connector != null)
-        {
-            var connectorLineRenderer = connector.lineRenderer;
-            if(pinType == BlueprintEntityPinType.Out)
-                connectorLineRenderer.Points[1] = _connectorOverlay.anchoredPosition;
-            else
-                connectorLineRenderer.Points[0] = _connectorOverlay.anchoredPosition;
-            connectorLineRenderer.OnRebuildRequested();
-            if(_flagShownConnectorLine == 2)
-                connectorLineRenderer.gameObject.SetActive(true);
-            else
-                ++_flagShownConnectorLine;
-        }
+        var connectorLineRenderer = lineRenderer;
+        if(pinType == BlueprintEntityPinType.Out)
+            connectorLineRenderer.Points[1] = _connectorOverlay.anchoredPosition;
+        else
+            connectorLineRenderer.Points[0] = _connectorOverlay.anchoredPosition;
+        connectorLineRenderer.OnRebuildRequested();
+        if(_flagShownConnectorLine == 2)
+            connectorLineRenderer.gameObject.SetActive(true);
+        else
+            ++_flagShownConnectorLine;
+        connectorLineRenderer = null;
+        // updating remove button position
+        UpdateRemoveButtonPosition();
+    }
+
+    void UpdateRemoveButtonPosition()
+    {
+        var removeBtnPos = TransformUtility.ComputeCenterPoint2(lineRenderer.Points);
+        _removeButtonRect.anchoredPosition = removeBtnPos;
     }
 
     public void OnPinDrag(BlueprintEntityPin pin)

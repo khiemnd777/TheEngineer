@@ -49,4 +49,13 @@ public class TransformUtility
         }
         return center / points.Length;
     }
+
+    public static Vector2 ComputeCenterPoint2(Vector2[] points)
+    {
+        var center = Vector2.zero;
+        for(var i = 0; i < points.Length; i++){
+            center += points[i];
+        }
+        return center / points.Length;
+    }
 }

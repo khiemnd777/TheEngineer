@@ -40,15 +40,16 @@ public class ContextMenu : MonoBehaviour
 
     void Start()
     {
-        MouseEventDetector.instance.onSingleMouseUp += (position) =>
-        {
-            HideOnMouseUp();
-        };
-
-        SelectObjectManager.instance.onMultipleSelecting += () =>
-        {
-            Hide();
-        };
+        if(FindObjectOfType<MouseEventDetector>() != null)
+            MouseEventDetector.instance.onSingleMouseUp += (position) =>
+            {
+                HideOnMouseUp();
+            };
+        if(FindObjectOfType<SelectObjectManager>() != null)
+            SelectObjectManager.instance.onMultipleSelecting += () =>
+            {
+                Hide();
+            };
     }
 
     void Update()
